@@ -1,0 +1,130 @@
+﻿@model WoodDetailsIndexViewModel;
+@{
+    ViewData["Title"] = "Wood Stock";
+
+    var list = new List<SelectListItem>() {
+        new SelectListItem { Text = "10", Value = "10"},
+        new SelectListItem { Text = "20", Value = "20" },
+        new SelectListItem { Text = "30", Value = "30" },
+        new SelectListItem { Text = "40", Value = "40"},
+        new SelectListItem { Text = "50", Value = "50" }
+    };
+}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="m-t-0 header-title"><b>@Localizer["Wood Stock"]</b></h4>
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <a href="/inventory/wood-details/new" class="btn btn-icon waves-effect waves-light btn-success btn-sm"><i class="fa fa-plus"></i> @Localizer["Add New Stock Item"]</a>
+                    </div>
+                    <form action="/inventory/wood-details" method="get" class="row col-sm-6">
+                        <div class="offset-sm-2 col-sm-6">
+                            @Html.TextBox("name", (string)ViewBag.name, new { @class = "form-control", placeholder = "Goliya No" })
+                        </div>
+                        <div class="col-sm-2">
+                            @Html.DropDownList("number_of_rows", list, new { @class = "form-control" })
+                        </div>
+                        <div class="col-sm-2">
+                            <button type="submit" class="form-control btn btn-primary btn-sm"><i class="fa fa-refresh"></i></button>
+                        </div>
+                    </form>
+                </div>
+                <div class="table-responsive">
+                    <table class="table m-0 table-colored-bordered table-bordered-custom ">
+                        <thead class="bg-custom text-white">
+                            <tr>
+                                <th rowspan="2">#</th>
+                                <th rowspan="2">@Localizer["Year"]</th>
+                                <th rowspan="2">@Localizer["Piling"]</th>
+                                <th rowspan="2">@Localizer["Ghatgaddhi Goliya No"]</th>
+                                <th rowspan="2">@Localizer["Tuna / Goliya No"]</th>
+                                <th rowspan="2">@Localizer["Wood Type"]</th>
+                                <th rowspan="2">@Localizer["Purpose"]</th>
+                                <th rowspan="2">@Localizer["Stock Type"]</th>
+                                <th colspan="2" class="text-center">@Localizer["Wood Size"]</th>
+                                <th rowspan="2">@Localizer["Total Wood Size"]</th>
+                                <th colspan="2" class="text-center">@Localizer["Hole Status"]</th>
+                                <th rowspan="2">@Localizer["Total Size"]</th>
+                                <th rowspan="2">@Localizer["Grade"]</th>
+                                <th rowspan="2">@Localizer["Status"]</th>
+                                <th rowspan="2" width="100">@Localizer["Actions"]</th>
+                            </tr>
+                            <tr>
+                                <th>@Localizer["Circle(inch)"]</th>
+                                <th>@Localizer["Length(Feet)"]</th>
+                                <th>@Localizer["Hole Size"]</th>
+                                <th>@Localizer["Hole Total"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                var sn = 1;
+                                foreach (var item in Model.wood_details)
+                                {
+                                    string status = "Sold";
+                                    string statusColor = "danger";
+                                    if (item.is_sold == false)
+                                    {
+                                        status = "In Stock";
+                                        statusColor = "success";
+                                    }
+
+                                    var ballaballiType = "";
+                                    if (item.balla_balli_category_id > 0)
+                                    {
+                                        ballaballiType = "(" + Enum.GetName(typeof(LE.Inventory.Common.Enums.BallaBalliCategorys), item.balla_balli_category_id) + ")";
+                                    }
+                                    <tr>
+                                        <td>@sn</td>
+                                        <td>@item.year</td>
+                                        <td>@item.piling.title</td>
+                                        <td>@item.goliya_number</td>
+                                        <td>@item.tuna_no</td>
+                                        <td>@item.wood_type.name</td>
+                                        <td>@item.category_purpose.name</td>
+                                        <td>@Enum.GetName(typeof(LE.Inventory.Common.Enums.StockTypes), item.stock_type_id) @ballaballiType</td>
+                                        <td>@item.circle_size</td>
+                                        <td>@item.length</td>
+                                        <td>@item.fresh_total_size</td>
+                                        <td>
+                                            @{
+                                                foreach (var damage in item.DamagedWoodDetails)
+                                                {
+                                                    <span><i class="fa fa-arrow-circle-right"> </i> @damage.damaged_first_size + @damage.damaged_second_size + @damage.damaged_third_size + @damage.damaged_fourth_size + @damage.damaged_fifth_size X @damage.damaged_feet_size</span>
+
+                                                    <br />
+                                                }
+                                            }
+                                        </td>
+                                        <td>@item.getDamagedsize()</td>
+                                        <td>@item.getNetTotal()</td>
+                                        <td>@item.grade</td>
+
+                                        <td><span class="badge badge-@statusColor">@status</span></td>
+                                        <td>
+                                            @if (item.is_sold == false)
+                                            {
+                                                <a href="/inventory/wood-details/edit/@item.wood_details_id" class="btn btn-icon waves-effect waves-light btn-primary btn-sm"><i class="fa fa-pencil"></i></a>
+
+                                                <a href="/inventory/wood-details/delete/@item.wood_details_id" class="btn btn-icon waves-effect waves-light btn-danger btn-sm delete"><i class="fa fa-trash"></i></a>
+                                            }
+                                            else
+                                            {
+                                                <a href="/billing/wood-billing/bill?wood_bill_id=@item.sales_id" target="_blank" class="btn btn-icon waves-effect waves-light btn-info btn-sm"><i class="fa fa-list"></i></a>
+                                            }
+                                        </td>
+                                    </tr>
+                                    sn++;
+                                }
+                            }
+                        </tbody>
+                    </table>
+                    <br />
+                    <LeadingEdgePager info="@ViewBag.pagerInfo"></LeadingEdgePager>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

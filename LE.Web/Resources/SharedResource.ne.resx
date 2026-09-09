@@ -1,0 +1,1212 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Account Information" xml:space="preserve">
+    <value>लेखां जानकारी</value>
+  </data>
+  <data name="Account Statement" xml:space="preserve">
+    <value>खाता विवरण</value>
+  </data>
+  <data name="Account Title" xml:space="preserve">
+    <value>खाता शीर्षक</value>
+  </data>
+  <data name="Account Vouchers" xml:space="preserve">
+    <value>लेखां भाउचर</value>
+  </data>
+  <data name="Accounting" xml:space="preserve">
+    <value>लेखां</value>
+  </data>
+  <data name="Accounts" xml:space="preserve">
+    <value>खाताहरू</value>
+  </data>
+  <data name="Action" xml:space="preserve">
+    <value>कार्य</value>
+  </data>
+  <data name="Actions" xml:space="preserve">
+    <value>कार्यहरू</value>
+  </data>
+  <data name="Active" xml:space="preserve">
+    <value>सक्रिय</value>
+  </data>
+  <data name="Add New Category" xml:space="preserve">
+    <value>नयाँ कोटी थप्नुहोस्</value>
+  </data>
+  <data name="Add New Firewood" xml:space="preserve">
+    <value>नयाँ दाहुरा थप गर्नुहोस्</value>
+  </data>
+  <data name="Add New Group" xml:space="preserve">
+    <value>नयाँ समूह</value>
+  </data>
+  <data name="Add New Ledger" xml:space="preserve">
+    <value>नयाँ लेजर थप्नुहोस्</value>
+  </data>
+  <data name="Add New Member" xml:space="preserve">
+    <value>नयाँ सदस्य थप्नुहोस्</value>
+  </data>
+  <data name="Add New Role" xml:space="preserve">
+    <value>नयाँ भूमिका थप्नुहोस्</value>
+  </data>
+  <data name="Add New Service" xml:space="preserve">
+    <value>नयाँ सेवा थप्नुहोस्</value>
+  </data>
+  <data name="Add New Service Category" xml:space="preserve">
+    <value>नयाँ सेवा कोटी थप्नुहोस्</value>
+  </data>
+  <data name="Add New Stock Item" xml:space="preserve">
+    <value>नयाँ स्टक वस्तु थप्नुहोस्</value>
+  </data>
+  <data name="Add New Stock Unit" xml:space="preserve">
+    <value>नयाँ स्टक एकाई जोड्नुहोस्</value>
+  </data>
+  <data name="Add New Tole" xml:space="preserve">
+    <value>नयाँ टोल थप्नुहोस्</value>
+  </data>
+  <data name="Add New Type" xml:space="preserve">
+    <value>नयाँ प्रकार थप्नुहोस्</value>
+  </data>
+  <data name="Add New User" xml:space="preserve">
+    <value>नयाँ प्रयोगकर्ता थप्नुहोस्</value>
+  </data>
+  <data name="Add Stock" xml:space="preserve">
+    <value>स्टक थप्नुहोस्</value>
+  </data>
+  <data name="Address" xml:space="preserve">
+    <value>ठेगाना</value>
+  </data>
+  <data name="Address 1" xml:space="preserve">
+    <value>ठेगाना १</value>
+  </data>
+  <data name="Address 2" xml:space="preserve">
+    <value>ठेगाना २</value>
+  </data>
+  <data name="Address Line 1" xml:space="preserve">
+    <value>ठेगाना लाइन १</value>
+  </data>
+  <data name="Address Line 2" xml:space="preserve">
+    <value>ठेगाना लाइन २</value>
+  </data>
+  <data name="Adds a Stock." xml:space="preserve">
+    <value>स्टक थप्नुहोस्।</value>
+  </data>
+  <data name="admin" xml:space="preserve">
+    <value>प्रशासक</value>
+  </data>
+  <data name="Administration" xml:space="preserve">
+    <value>प्रशासन</value>
+  </data>
+  <data name="Amount" xml:space="preserve">
+    <value>रकम</value>
+  </data>
+  <data name="Assets" xml:space="preserve">
+    <value>सम्पत्ति</value>
+  </data>
+  <data name="Available Stock" xml:space="preserve">
+    <value>उपलब्ध स्टक</value>
+  </data>
+  <data name="Balance" xml:space="preserve">
+    <value>शेष</value>
+  </data>
+  <data name="Balance Amount" xml:space="preserve">
+    <value>शेष रकम</value>
+  </data>
+  <data name="Balance Sheet" xml:space="preserve">
+    <value>वासलात</value>
+  </data>
+  <data name="ballaballi sales" xml:space="preserve">
+    <value>बलब्ली बिक्री</value>
+  </data>
+  <data name="Bill" xml:space="preserve">
+    <value>बिल</value>
+  </data>
+  <data name="Bill Date" xml:space="preserve">
+    <value>बिल मिति</value>
+  </data>
+  <data name="Bill No" xml:space="preserve">
+    <value>बिल नं</value>
+  </data>
+  <data name="Billing" xml:space="preserve">
+    <value>बिलिङ</value>
+  </data>
+  <data name="By" xml:space="preserve">
+    <value>द्वारा</value>
+  </data>
+  <data name="By Net Loss" xml:space="preserve">
+    <value>नेट घाटा द्वारा</value>
+  </data>
+  <data name="cash" xml:space="preserve">
+    <value>नगद</value>
+  </data>
+  <data name="Cash &amp; Bank Book" xml:space="preserve">
+    <value>नगद र बैंक पुस्तक</value>
+  </data>
+  <data name="Cash And Bank Book" xml:space="preserve">
+    <value>नगद &amp; बैँक बूक</value>
+  </data>
+  <data name="Cash Bill" xml:space="preserve">
+    <value>नगद रसिद</value>
+  </data>
+  <data name="Cash Sales Bill" xml:space="preserve">
+    <value>नगद बिक्री रसिद</value>
+  </data>
+  <data name="Category" xml:space="preserve">
+    <value>कोटि</value>
+  </data>
+  <data name="Category Name" xml:space="preserve">
+    <value>कोटी को नाम</value>
+  </data>
+  <data name="Category Purpose" xml:space="preserve">
+    <value>कोटी उद्देश्य</value>
+  </data>
+  <data name="Change Password" xml:space="preserve">
+    <value>पासवर्ड परिवर्तन</value>
+  </data>
+  <data name="Cheque No" xml:space="preserve">
+    <value>चेक नं</value>
+  </data>
+  <data name="Choose File" xml:space="preserve">
+    <value>फाईल छनौट गर्नुहोस्</value>
+  </data>
+  <data name="Circle(inch)" xml:space="preserve">
+    <value>गोलाई (इन्च)</value>
+  </data>
+  <data name="Contact" xml:space="preserve">
+    <value>सम्पर्क</value>
+  </data>
+  <data name="Contact No" xml:space="preserve">
+    <value>संपर्क नम्बर</value>
+  </data>
+  <data name="Counter Bill Report" xml:space="preserve">
+    <value>काउन्टर बिल रिपोर्ट</value>
+  </data>
+  <data name="Create a role, assign permissions to role" xml:space="preserve">
+    <value>भूमिका सिर्जना गर्नुहोस्, भूमिकालाई अनुमति दिनुहोस्</value>
+  </data>
+  <data name="Created By" xml:space="preserve">
+    <value>द्वारा बनाईएको</value>
+  </data>
+  <data name="Created Date" xml:space="preserve">
+    <value>सिर्जना गरिएको मिति</value>
+  </data>
+  <data name="Creates a Category." xml:space="preserve">
+    <value>कोटी सिर्जना गर्दछ।</value>
+  </data>
+  <data name="Creates a Member" xml:space="preserve">
+    <value>सदस्य बनाउनुहोस्</value>
+  </data>
+  <data name="Creates a Member." xml:space="preserve">
+    <value>सदस्य बनाउनुहोस्।</value>
+  </data>
+  <data name="Creates a Service Category" xml:space="preserve">
+    <value>सेवा कोटि सिर्जना गर्नुहोस्।</value>
+  </data>
+  <data name="Creates a Service Category." xml:space="preserve">
+    <value>एक सेवा वर्ग सिर्जना गर्दछ।</value>
+  </data>
+  <data name="Creates a Service." xml:space="preserve">
+    <value>सेवा सिर्जना गर्नुहोस्।</value>
+  </data>
+  <data name="Creates a Stock Unit." xml:space="preserve">
+    <value>एक स्टक एकाई बनाउँछ।</value>
+  </data>
+  <data name="Creates a Tole" xml:space="preserve">
+    <value>भूमिका सिर्जना गर्नुहोस्</value>
+  </data>
+  <data name="Creates a Tole." xml:space="preserve">
+    <value>टोल सिर्जना गर्नुहोस्।</value>
+  </data>
+  <data name="Creates a Wood Type." xml:space="preserve">
+    <value>काठको प्रकार सिर्जना गर्दछ।</value>
+  </data>
+  <data name="Credit" xml:space="preserve">
+    <value>क्रेडिट</value>
+  </data>
+  <data name="Credit Amount" xml:space="preserve">
+    <value>क्रेडिट रकम</value>
+  </data>
+  <data name="Customer" xml:space="preserve">
+    <value>ग्राहक</value>
+  </data>
+  <data name="Dashboard" xml:space="preserve">
+    <value>ड्यासबोर्ड</value>
+  </data>
+  <data name="Date" xml:space="preserve">
+    <value>मिति</value>
+  </data>
+  <data name="Day Close" xml:space="preserve">
+    <value>डे क्लोज</value>
+  </data>
+  <data name="Debit" xml:space="preserve">
+    <value>डेबिट</value>
+  </data>
+  <data name="Debit Amount" xml:space="preserve">
+    <value>डेबिट रकम</value>
+  </data>
+  <data name="Default Sales Rate" xml:space="preserve">
+    <value>पूर्वनिर्धारित बिक्री दर</value>
+  </data>
+  <data name="Difference in Opening Balances" xml:space="preserve">
+    <value>ब्यालेन्स खोल्नेमा भिन्नता</value>
+  </data>
+  <data name="Discount" xml:space="preserve">
+    <value>छुट</value>
+  </data>
+  <data name="Dr-Cr" xml:space="preserve">
+    <value>डेबिट - क्रेडिट</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>ईमेल</value>
+  </data>
+  <data name="Email Address" xml:space="preserve">
+    <value>इ - मेल ठेगाना</value>
+  </data>
+  <data name="Enabled/Disabled" xml:space="preserve">
+    <value>सक्षम / अक्षम</value>
+  </data>
+  <data name="Entry Date" xml:space="preserve">
+    <value>प्रवेश मिति</value>
+  </data>
+  <data name="Fields are mandatory" xml:space="preserve">
+    <value>क्षेत्रहरू अनिवार्य छन्</value>
+  </data>
+  <data name="Firewood" xml:space="preserve">
+    <value>दाहुरा</value>
+  </data>
+  <data name="Firewood Bill" xml:space="preserve">
+    <value>दाहुरा बिल</value>
+  </data>
+  <data name="Firewood Bill Report" xml:space="preserve">
+    <value>दाहुरा बिल रिपोर्ट</value>
+  </data>
+  <data name="Fire Wood Bill Report" xml:space="preserve">
+    <value>दाहुरा बिल रिपोर्ट</value>
+  </data>
+  <data name="firewood sales" xml:space="preserve">
+    <value>दाउरा बिक्री</value>
+  </data>
+  <data name="Firewood Stock" xml:space="preserve">
+    <value>दाहुरा स्टक</value>
+  </data>
+  <data name="Fiscal Year" xml:space="preserve">
+    <value>आर्थिक बर्ष</value>
+  </data>
+  <data name="fiscal year day" xml:space="preserve">
+    <value>वित्तीय वर्ष दिन</value>
+  </data>
+  <data name="fiscal year month" xml:space="preserve">
+    <value>वित्तीय वर्ष महिना</value>
+  </data>
+  <data name="Fiscal Year Close" xml:space="preserve">
+    <value>आर्थिक वर्ष अन्त्य</value>
+  </data>
+  <data name="For the year" xml:space="preserve">
+    <value>आर्थिक बर्ष</value>
+  </data>
+  <data name="For the year ended" xml:space="preserve">
+    <value>आर्थिक बर्ष</value>
+  </data>
+  <data name="From" xml:space="preserve">
+    <value>देखि</value>
+  </data>
+  <data name="Full Name" xml:space="preserve">
+    <value>पुरा नाम</value>
+  </data>
+  <data name="Golia No" xml:space="preserve">
+    <value>गोलिया नं</value>
+  </data>
+  <data name="Goliya No" xml:space="preserve">
+    <value>गोलिया नं</value>
+  </data>
+  <data name="Grade" xml:space="preserve">
+    <value>ग्रेड</value>
+  </data>
+  <data name="Group" xml:space="preserve">
+    <value>समूह</value>
+  </data>
+  <data name="Group Name" xml:space="preserve">
+    <value>समूहको नाम</value>
+  </data>
+  <data name="Group Type" xml:space="preserve">
+    <value>समूह प्रकार</value>
+  </data>
+  <data name="Hole Size" xml:space="preserve">
+    <value>ध्वज नापसाइज</value>
+  </data>
+  <data name="Hole Status" xml:space="preserve">
+    <value>धोद कट्टी</value>
+  </data>
+  <data name="Hole Total" xml:space="preserve">
+    <value>ध्वज परिणाम</value>
+  </data>
+  <data name="Image" xml:space="preserve">
+    <value>छवि</value>
+  </data>
+  <data name="Inactive" xml:space="preserve">
+    <value>निस्क्रिय</value>
+  </data>
+  <data name="Inventory" xml:space="preserve">
+    <value>इनभेनतेरी</value>
+  </data>
+  <data name="Item" xml:space="preserve">
+    <value>वस्तु</value>
+  </data>
+  <data name="Item Name" xml:space="preserve">
+    <value>वस्तुको नाम</value>
+  </data>
+  <data name="Journal Book" xml:space="preserve">
+    <value>जर्नल खाता</value>
+  </data>
+  <data name="Journal Entries" xml:space="preserve">
+    <value>जर्नल प्रविष्टि</value>
+  </data>
+  <data name="Journal Register" xml:space="preserve">
+    <value>जर्नल रजिस्टर</value>
+  </data>
+  <data name="lakadi sales" xml:space="preserve">
+    <value>लकडी बिक्री</value>
+  </data>
+  <data name="Ledger" xml:space="preserve">
+    <value>लेजर</value>
+  </data>
+  <data name="Ledger Name" xml:space="preserve">
+    <value>लेजरको नाम</value>
+  </data>
+  <data name="Ledger Setup" xml:space="preserve">
+    <value>लेजर सेटअप</value>
+  </data>
+  <data name="Length(Feet)" xml:space="preserve">
+    <value>लम्बाई (फिट)</value>
+  </data>
+  <data name="Liabilities" xml:space="preserve">
+    <value>दायित्व</value>
+  </data>
+  <data name="Load" xml:space="preserve">
+    <value>लोड</value>
+  </data>
+  <data name="Logout" xml:space="preserve">
+    <value>लगआउट</value>
+  </data>
+  <data name="Make a Journal Entries." xml:space="preserve">
+    <value>जर्नल प्रविष्टिहरू बनाउनुहोस्।</value>
+  </data>
+  <data name="Makes a Payment." xml:space="preserve">
+    <value>भुक्तानी गर्नुहोस्।</value>
+  </data>
+  <data name="Makes a Receipt." xml:space="preserve">
+    <value>रसिद बनाउनुहोस् </value>
+  </data>
+  <data name="Member" xml:space="preserve">
+    <value>सदस्य</value>
+  </data>
+  <data name="Member Code" xml:space="preserve">
+    <value>सदस्य कोड</value>
+  </data>
+  <data name="Member Name" xml:space="preserve">
+    <value>सदस्य नाम</value>
+  </data>
+  <data name="Member Transaction" xml:space="preserve">
+    <value>सदस्य लेनदेन</value>
+  </data>
+  <data name="Member Wood Transaction" xml:space="preserve">
+    <value>सदस्य काठ लेनदेन</value>
+  </data>
+  <data name="Members" xml:space="preserve">
+    <value>सदस्यहरू</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>नाम</value>
+  </data>
+  <data name="New Category" xml:space="preserve">
+    <value>नयाँ कोटी</value>
+  </data>
+  <data name="New Journal" xml:space="preserve">
+    <value>नयाँ जर्नल</value>
+  </data>
+  <data name="New Member" xml:space="preserve">
+    <value>नयाँ सदस्य</value>
+  </data>
+  <data name="New Payment" xml:space="preserve">
+    <value>नयाँ भुक्तानी</value>
+  </data>
+  <data name="New Receipt" xml:space="preserve">
+    <value>नयाँ रसिद</value>
+  </data>
+  <data name="New Role" xml:space="preserve">
+    <value>नयाँ भूमिका</value>
+  </data>
+  <data name="New Service" xml:space="preserve">
+    <value>नयाँ सेवा</value>
+  </data>
+  <data name="New Service Category" xml:space="preserve">
+    <value>नयाँ सेवा कोटि</value>
+  </data>
+  <data name="New Stock Unit" xml:space="preserve">
+    <value>नयाँ स्टक एकाई</value>
+  </data>
+  <data name="New Tole" xml:space="preserve">
+    <value>नयाँ टोल</value>
+  </data>
+  <data name="New Wood Type" xml:space="preserve">
+    <value>नयाँ काठ प्रकार</value>
+  </data>
+  <data name="No file chosen" xml:space="preserve">
+    <value>कुनै फाईल चयन गरिएको छैन</value>
+  </data>
+  <data name="Note" xml:space="preserve">
+    <value>नोट</value>
+  </data>
+  <data name="Particulars" xml:space="preserve">
+    <value>विवरण</value>
+  </data>
+  <data name="Payment" xml:space="preserve">
+    <value>भुक्तानी</value>
+  </data>
+  <data name="Payment Date" xml:space="preserve">
+    <value>भुक्तान मिति</value>
+  </data>
+  <data name="Payment From" xml:space="preserve">
+    <value>केबाट भुक्तानी</value>
+  </data>
+  <data name="Payment Mode" xml:space="preserve">
+    <value>भुक्तानी मोड</value>
+  </data>
+  <data name="Payment To" xml:space="preserve">
+    <value>बाट भुक्तानी</value>
+  </data>
+  <data name="Payments" xml:space="preserve">
+    <value>भुक्तानी</value>
+  </data>
+  <data name="Permissions" xml:space="preserve">
+    <value>अनुमतिहरू</value>
+  </data>
+  <data name="Person Name" xml:space="preserve">
+    <value>व्यक्तिको नाम</value>
+  </data>
+  <data name="Primary Contact" xml:space="preserve">
+    <value>प्राथमिक सम्पर्क</value>
+  </data>
+  <data name="Profile" xml:space="preserve">
+    <value>प्रोफाइल</value>
+  </data>
+  <data name="Profit And Loss" xml:space="preserve">
+    <value>नाफा/नोक्सान</value>
+  </data>
+  <data name="Profit And Loss Account" xml:space="preserve">
+    <value>नाफा/नोक्सान हिसाब</value>
+  </data>
+  <data name="Purpose" xml:space="preserve">
+    <value>प्रयोजन</value>
+  </data>
+  <data name="Purpose Category" xml:space="preserve">
+    <value>प्रयोजन वर्ग</value>
+  </data>
+  <data name="Purpose Name" xml:space="preserve">
+    <value>प्रयोजनको नाम</value>
+  </data>
+  <data name="Quantity" xml:space="preserve">
+    <value>मात्रा</value>
+  </data>
+  <data name="Rate" xml:space="preserve">
+    <value>दर</value>
+  </data>
+  <data name="Rate must be included with tax." xml:space="preserve">
+    <value>दर कर सहित समावेश गर्नु पर्छ।</value>
+  </data>
+  <data name="Receipt" xml:space="preserve">
+    <value>रसीद</value>
+  </data>
+  <data name="Receipt Date" xml:space="preserve">
+    <value>रसिद मिति</value>
+  </data>
+  <data name="Receipt From" xml:space="preserve">
+    <value>बाट रसिद</value>
+  </data>
+  <data name="Receipt Mode" xml:space="preserve">
+    <value>रसिद मोड</value>
+  </data>
+  <data name="Receipt To" xml:space="preserve">
+    <value>रसिद कसलाई</value>
+  </data>
+  <data name="Receipts" xml:space="preserve">
+    <value>रसिद</value>
+  </data>
+  <data name="Remarks" xml:space="preserve">
+    <value>टिप्पणीहरू</value>
+  </data>
+  <data name="Reports" xml:space="preserve">
+    <value>रिपोर्टहरू</value>
+  </data>
+  <data name="Role" xml:space="preserve">
+    <value>भूमिका</value>
+  </data>
+  <data name="Role Name" xml:space="preserve">
+    <value>भूमिका नाम</value>
+  </data>
+  <data name="Roles" xml:space="preserve">
+    <value>भूमिका</value>
+  </data>
+  <data name="S.N" xml:space="preserve">
+    <value>क्र.सं</value>
+  </data>
+  <data name="Sales Date" xml:space="preserve">
+    <value>बिक्री मिति</value>
+  </data>
+  <data name="Sales Rate(default)" xml:space="preserve">
+    <value>बिक्री दर (पूर्वनिर्धारित)</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>सेब</value>
+  </data>
+  <data name="Secondary Contact" xml:space="preserve">
+    <value>माध्यमिक सम्पर्क</value>
+  </data>
+  <data name="Select Purpose" xml:space="preserve">
+    <value>उद्देश्य चयन गर्नुहोस्</value>
+  </data>
+  <data name="Select Stock Type" xml:space="preserve">
+    <value>स्टक प्रकार चयन गर्नुहोस्</value>
+  </data>
+  <data name="Service" xml:space="preserve">
+    <value>सेवा</value>
+  </data>
+  <data name="Service Category" xml:space="preserve">
+    <value>सेवा वर्ग</value>
+  </data>
+  <data name="Service Category Name" xml:space="preserve">
+    <value>सेवा कोटि नाम</value>
+  </data>
+  <data name="Service Name" xml:space="preserve">
+    <value>सेवा नाम</value>
+  </data>
+  <data name="Service Title" xml:space="preserve">
+    <value>सेवा शीर्षक</value>
+  </data>
+  <data name="Services" xml:space="preserve">
+    <value>सेवाहरु</value>
+  </data>
+  <data name="Setup" xml:space="preserve">
+    <value>सेटअप</value>
+  </data>
+  <data name="Short Name" xml:space="preserve">
+    <value>छोटो नाम</value>
+  </data>
+  <data name="Sn" xml:space="preserve">
+    <value>क्र.सं</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>स्थिति</value>
+  </data>
+  <data name="Stock Type" xml:space="preserve">
+    <value>स्टक प्रकार</value>
+  </data>
+  <data name="Stock Unit" xml:space="preserve">
+    <value>स्तोक युनीट</value>
+  </data>
+  <data name="Stock Unit Name" xml:space="preserve">
+    <value>स्टक एकाइको नाम</value>
+  </data>
+  <data name="Tax" xml:space="preserve">
+    <value>कर</value>
+  </data>
+  <data name="Tax Amount" xml:space="preserve">
+    <value>कर रकम</value>
+  </data>
+  <data name="Tax Percent" xml:space="preserve">
+    <value>कर प्रतिशत</value>
+  </data>
+  <data name="Threshold" xml:space="preserve">
+    <value>थ्रेसोल्ड</value>
+  </data>
+  <data name="To" xml:space="preserve">
+    <value>सम्म</value>
+  </data>
+  <data name="Tole" xml:space="preserve">
+    <value>टोल</value>
+  </data>
+  <data name="Tole No" xml:space="preserve">
+    <value>टोल नं</value>
+  </data>
+  <data name="Total" xml:space="preserve">
+    <value>कुल</value>
+  </data>
+  <data name="Total Amount" xml:space="preserve">
+    <value>कुल रकम</value>
+  </data>
+  <data name="Total Size" xml:space="preserve">
+    <value>जम्मा आयतन</value>
+  </data>
+  <data name="Transaction Date" xml:space="preserve">
+    <value>लेनदेन मिति</value>
+  </data>
+  <data name="Trial Balance" xml:space="preserve">
+    <value>परीक्षण रकम</value>
+  </data>
+  <data name="Unit Name" xml:space="preserve">
+    <value>एकाइको नाम</value>
+  </data>
+  <data name="Update a Firewood." xml:space="preserve">
+    <value>फायरवुड अपडेट गर्नुहोस्।</value>
+  </data>
+  <data name="Update Category" xml:space="preserve">
+    <value>श्रेणी अपडेट गर्नुहोस्</value>
+  </data>
+  <data name="Update Firewood" xml:space="preserve">
+    <value>अपडेट फायरवुड</value>
+  </data>
+  <data name="Update Stock" xml:space="preserve">
+    <value>अपडेट स्टक</value>
+  </data>
+  <data name="Update Stock Unit" xml:space="preserve">
+    <value>स्टक युनिट अपडेट गर्नुहोस्</value>
+  </data>
+  <data name="Update User" xml:space="preserve">
+    <value>प्रयोगकर्ता अपडेट गर्नुहोस्</value>
+  </data>
+  <data name="Update Wood Type" xml:space="preserve">
+    <value>लकड़ी प्रकार अपडेट गर्नुहोस्</value>
+  </data>
+  <data name="Updates a Category." xml:space="preserve">
+    <value>श्रेणी अपडेट गर्नुहोस् ।</value>
+  </data>
+  <data name="Updates a Stock Unit." xml:space="preserve">
+    <value>एक स्टक एकाई अपडेट गर्दछ।</value>
+  </data>
+  <data name="Updates a user and assign roles." xml:space="preserve">
+    <value>प्रयोगकर्ता अपडेट गर्नुहोस् र भूमिका निर्दिष्ट गर्नुहोस्।</value>
+  </data>
+  <data name="Updates a Wood Type." xml:space="preserve">
+    <value>एक लकड़ी प्रकार अपडेट गर्दछ।</value>
+  </data>
+  <data name="User Name" xml:space="preserve">
+    <value>प्रयोगकर्ता को नाम</value>
+  </data>
+  <data name="Username" xml:space="preserve">
+    <value>प्रयोगकर्ता नाम</value>
+  </data>
+  <data name="Users" xml:space="preserve">
+    <value>प्रयोगकर्ता</value>
+  </data>
+  <data name="Utilities" xml:space="preserve">
+    <value>बिभिद</value>
+  </data>
+  <data name="Wood" xml:space="preserve">
+    <value>काठ</value>
+  </data>
+  <data name="Wood Bill" xml:space="preserve">
+    <value>काठ बिल</value>
+  </data>
+  <data name="Wood Bill Report" xml:space="preserve">
+    <value>काठ बिल रिपोर्ट</value>
+  </data>
+  <data name="Wood Details" xml:space="preserve">
+    <value>काठ विवरण</value>
+  </data>
+  <data name="Wood Report" xml:space="preserve">
+    <value>काठ रिपोर्ट</value>
+  </data>
+  <data name="Wood Size" xml:space="preserve">
+    <value>नापसाइज</value>
+  </data>
+  <data name="Wood Type" xml:space="preserve">
+    <value>काठको जात</value>
+  </data>
+  <data name="Wood Type Name" xml:space="preserve">
+    <value>काठ प्रकार नाम</value>
+  </data>
+  <data name="Language" xml:space="preserve">
+    <value>भाषा</value>
+  </data>
+  <data name="Member Transaction Report" xml:space="preserve">
+    <value>सदस्य लेनदेन रिपोर्ट</value>
+  </data>
+  <data name="Group Wise Ledger Report" xml:space="preserve">
+    <value>समूह अनुसार लेजर रिपोर्ट</value>
+  </data>
+  <data name="Total Wood Size" xml:space="preserve">
+    <value>आयतन(घन फि)</value>
+  </data>
+  <data name="Account Group" xml:space="preserve">
+    <value>खाता समूह</value>
+  </data>
+  <data name="Account Statement On" xml:space="preserve">
+    <value>खाता विवरण </value>
+  </data>
+  <data name="Balance Type" xml:space="preserve">
+    <value>ब्यालेन्स प्रकार</value>
+  </data>
+  <data name="Creates a Account Group." xml:space="preserve">
+    <value>खाता समूह बनाउनुहोस्।</value>
+  </data>
+  <data name="Creates a Ledger." xml:space="preserve">
+    <value>लेजर बनाउनुहोस्।</value>
+  </data>
+  <data name="Day Book Report" xml:space="preserve">
+    <value>डे बूक रिपोर्ट</value>
+  </data>
+  <data name="Edit a Ledger." xml:space="preserve">
+    <value>लेजर सम्पादन गर्नुहोस्।</value>
+  </data>
+  <data name="Edit Ledger" xml:space="preserve">
+    <value>लेजर सम्पादन गर्नुहोस्</value>
+  </data>
+  <data name="For CASH ACCOUNT" xml:space="preserve">
+    <value>नगद खाताको लागि</value>
+  </data>
+  <data name="Journal Report" xml:space="preserve">
+    <value>जर्नल रिपोर्ट</value>
+  </data>
+  <data name="New Account Group" xml:space="preserve">
+    <value>नयाँ खाता समूह</value>
+  </data>
+  <data name="New Ledger" xml:space="preserve">
+    <value>नयाँ लेजर</value>
+  </data>
+  <data name="On" xml:space="preserve">
+    <value>मा</value>
+  </data>
+  <data name="Opening Balance" xml:space="preserve">
+    <value>ब्यालेन्स खोल्दै</value>
+  </data>
+  <data name="Trial Balance Report" xml:space="preserve">
+    <value>परीक्षण शेष रकम</value>
+  </data>
+  <data name="Update a Account Group." xml:space="preserve">
+    <value>खाता समूह अपडेट गर्नुहोस् ।</value>
+  </data>
+  <data name="Update Account Group" xml:space="preserve">
+    <value>खाता समूह अपडेट गर्नुहोस्</value>
+  </data>
+  <data name="For" xml:space="preserve">
+    <value>को लागी</value>
+  </data>
+  <data name="Update" xml:space="preserve">
+    <value>सम्पादन</value>
+  </data>
+  <data name="Confirm Password" xml:space="preserve">
+    <value>पासवर्ड सुनिश्चित गर्नुहोस</value>
+  </data>
+  <data name="Creates a user and assign roles." xml:space="preserve">
+    <value>प्रयोगकर्ता सिर्जना गर्नुहोस् र भूमिका तोक्नुहोस्।</value>
+  </data>
+  <data name="Edit Role" xml:space="preserve">
+    <value>भूमिका सम्पादन गर्नुहोस्</value>
+  </data>
+  <data name="Edits a role, assign permissions to role" xml:space="preserve">
+    <value>भूमिका सम्पादन गर्नुहोस्, भूमिकालाई अनुमति दिनुहोस्</value>
+  </data>
+  <data name="New User" xml:space="preserve">
+    <value>नयाँ प्रयोगकर्ता</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>पासवर्ड</value>
+  </data>
+  <data name="New Password" xml:space="preserve">
+    <value>नया पासवर्ड</value>
+  </data>
+  <data name="Old Password" xml:space="preserve">
+    <value>पुरानो पासवर्ड</value>
+  </data>
+  <data name="Update Password" xml:space="preserve">
+    <value>पासवर्ड अपडेट गर्नुहोस्</value>
+  </data>
+  <data name="Updates password of a user." xml:space="preserve">
+    <value>प्रयोगकर्ताको पासवर्ड अपडेट गर्नुहोस्।</value>
+  </data>
+  <data name="Bank Report" xml:space="preserve">
+    <value>बैंक रिपोर्ट</value>
+  </data>
+  <data name="Cash Report" xml:space="preserve">
+    <value>नगद रिपोर्ट</value>
+  </data>
+  <data name="Counter" xml:space="preserve">
+    <value>काउन्टर</value>
+  </data>
+  <data name="Counter Report" xml:space="preserve">
+    <value>काउन्टर रिपोर्ट</value>
+  </data>
+  <data name="Good Afternoon" xml:space="preserve">
+    <value>शुभ दिउँसो</value>
+  </data>
+  <data name="Good Morning" xml:space="preserve">
+    <value>शुभ - प्रभात</value>
+  </data>
+  <data name="Good Night" xml:space="preserve">
+    <value>शुभ रात्री</value>
+  </data>
+  <data name="Adds a Stock" xml:space="preserve">
+    <value>स्टक थप्नुहोस्।</value>
+  </data>
+  <data name="Creates a Firewood." xml:space="preserve">
+    <value>दाउरा सिर्जना गर्नुहोस्।</value>
+  </data>
+  <data name="Creates a Wood Item." xml:space="preserve">
+    <value>काठ वस्तु सिर्जना गर्नुहोस्।</value>
+  </data>
+  <data name="New Firewood" xml:space="preserve">
+    <value>नयाँ दाउरा</value>
+  </data>
+  <data name="New Wood Item" xml:space="preserve">
+    <value>नयाँ काठ वस्तु</value>
+  </data>
+  <data name="Update Member" xml:space="preserve">
+    <value>अद्यावधिक सदस्य</value>
+  </data>
+  <data name="Update Service" xml:space="preserve">
+    <value>अपडेट सेवा</value>
+  </data>
+  <data name="Update Service Category" xml:space="preserve">
+    <value>सेवा श्रेणी अपडेट गर्नुहोस्</value>
+  </data>
+  <data name="Update Tole" xml:space="preserve">
+    <value>टोल अपडेट गर्नुहोस्</value>
+  </data>
+  <data name="Updates  Service." xml:space="preserve">
+    <value>अपडेट सेवा।</value>
+  </data>
+  <data name="Updates a Firewood." xml:space="preserve">
+    <value>दाउरा अपडेट गर्नुहोस्।</value>
+  </data>
+  <data name="Updates a Member." xml:space="preserve">
+    <value>अद्यावधिक सदस्य।</value>
+  </data>
+  <data name="Updates a Tole" xml:space="preserve">
+    <value>टोल अपडेट गर्नुहोस्।</value>
+  </data>
+  <data name="Updates a Service Category." xml:space="preserve">
+    <value>सेवा कोटि अपडेट गर्नुहोस्।</value>
+  </data>
+  <data name="Updates a Service." xml:space="preserve">
+    <value>सेवा अपडेट गर्नुहोस्</value>
+  </data>
+  <data name="By gross Profit b/d" xml:space="preserve">
+    <value>सकल नाफा द्वारा b / d</value>
+  </data>
+  <data name="By Net Loss c/d" xml:space="preserve">
+    <value>नेट घाटा द्वारा c / d</value>
+  </data>
+  <data name="Damaged Part" xml:space="preserve">
+    <value>बिग्रिएको भाग</value>
+  </data>
+  <data name="Fixed Assets" xml:space="preserve">
+    <value>स्थिर सम्पत्ति</value>
+  </data>
+  <data name="Net Loss" xml:space="preserve">
+    <value>नेट घाटा</value>
+  </data>
+  <data name="Net Profit" xml:space="preserve">
+    <value>कुल नाफा</value>
+  </data>
+  <data name="To gross Loss b/d" xml:space="preserve">
+    <value>कुल घाटा b / d मा</value>
+  </data>
+  <data name="To Net Profit c/d" xml:space="preserve">
+    <value>कुल नेट लाभ c / d</value>
+  </data>
+  <data name="Voucher No" xml:space="preserve">
+    <value>भाउचर नं</value>
+  </data>
+  <data name="BANK ACCOUNT" xml:space="preserve">
+    <value>बैंक खाता</value>
+  </data>
+  <data name="CASH ACCOUNT" xml:space="preserve">
+    <value>नगद खाता</value>
+  </data>
+  <data name="User" xml:space="preserve">
+    <value>प्रयोगकर्ता</value>
+  </data>
+  <data name="Breadth" xml:space="preserve">
+    <value>चौड़ाई</value>
+  </data>
+  <data name="Chiran Bill" xml:space="preserve">
+    <value>चिरान बिल</value>
+  </data>
+  <data name="Chiran Bill Report" xml:space="preserve">
+    <value>चिरान बिल रिपोर्ट</value>
+  </data>
+  <data name="Circle Size" xml:space="preserve">
+    <value>गोलाकार आकार</value>
+  </data>
+  <data name="Length" xml:space="preserve">
+    <value>लम्बाइ</value>
+  </data>
+  <data name="Account" xml:space="preserve">
+    <value>खाता</value>
+  </data>
+  <data name="Accounting Voucher" xml:space="preserve">
+    <value>लेखा वाउचर</value>
+  </data>
+  <data name="Accounts Info" xml:space="preserve">
+    <value>खाता जानकारी</value>
+  </data>
+  <data name="Groups" xml:space="preserve">
+    <value>समूहहरू</value>
+  </data>
+  <data name="Ledgers" xml:space="preserve">
+    <value>लेजरहरू</value>
+  </data>
+  <data name="Payment Report" xml:space="preserve">
+    <value>भुक्तानी रिपोर्ट</value>
+  </data>
+  <data name="Profit &amp; Loss" xml:space="preserve">
+    <value>नाफा/नोक्सान</value>
+  </data>
+  <data name="Receipt Report" xml:space="preserve">
+    <value>रसीद रिपोर्ट</value>
+  </data>
+  <data name="Ballaballi Bill" xml:space="preserve">
+    <value>बल्लाबल्ली बिल</value>
+  </data>
+  <data name="Ladkadi Bill" xml:space="preserve">
+    <value>लकडी बिल</value>
+  </data>
+  <data name="Disabled" xml:space="preserve">
+    <value>निष्क्रिय</value>
+  </data>
+  <data name="Enabled" xml:space="preserve">
+    <value>सक्रिय</value>
+  </data>
+  <data name="Member Details" xml:space="preserve">
+    <value>सदस्य विवरण</value>
+  </data>
+  <data name="Year" xml:space="preserve">
+    <value>वर्ष</value>
+  </data>
+  <data name="Print" xml:space="preserve">
+    <value>प्रिन्ट</value>
+  </data>
+  <data name="Display All" xml:space="preserve">
+    <value>सबै</value>
+  </data>
+  <data name="From Date" xml:space="preserve">
+    <value>मिति देखि</value>
+  </data>
+  <data name="Is Cancelled?" xml:space="preserve">
+    <value>रद्द गरिएको छ?</value>
+  </data>
+  <data name="Is Custom?" xml:space="preserve">
+    <value>अनुकूलन हो?</value>
+  </data>
+  <data name="No of Ledgers" xml:space="preserve">
+    <value>लेजरहरूको संख्या</value>
+  </data>
+  <data name="Profit &amp; Loss A/C" xml:space="preserve">
+    <value>नाफा/नोक्सान हिसाब</value>
+  </data>
+  <data name="To Date" xml:space="preserve">
+    <value>मिति सम्म</value>
+  </data>
+  <data name="Voucher Type" xml:space="preserve">
+    <value>भाउचर प्रकार</value>
+  </data>
+  <data name="Closing Stock" xml:space="preserve">
+    <value>अन्तिम स्टक</value>
+  </data>
+  <data name="L.F" xml:space="preserve">
+    <value>ल. फ.</value>
+  </data>
+  <data name="Opening Stock" xml:space="preserve">
+    <value>प्रारम्भिक स्टक</value>
+  </data>
+  <data name="Particular" xml:space="preserve">
+    <value>विवरण</value>
+  </data>
+  <data name="Previous Year" xml:space="preserve">
+    <value>गत वर्ष</value>
+  </data>
+  <data name="Day Book" xml:space="preserve">
+    <value>डे बूक</value>
+  </data>
+  <data name="Expenses" xml:space="preserve">
+    <value>खर्च</value>
+  </data>
+  <data name="Income" xml:space="preserve">
+    <value>आय</value>
+  </data>
+  <data name="Vch no." xml:space="preserve">
+    <value>भाउचर नं</value>
+  </data>
+  <data name="Vch Type" xml:space="preserve">
+    <value>भाउचर प्रकार</value>
+  </data>
+  <data name="Community Forest Consumer Comittee" xml:space="preserve">
+    <value>सामुदायिक वन उपभोक्ता समुह</value>
+  </data>
+  <data name="Tuna / Goliya No" xml:space="preserve">
+    <value>टुना / गोलिया नं</value>
+  </data>
+  <data name="Ghatgaddhi Goliya No" xml:space="preserve">
+    <value>घाटगद्धि गोलिया नं</value>
+  </data>
+  <data name="Piling" xml:space="preserve">
+    <value>पाईलिङ्</value>
+  </data>
+  <data name="Wood Stock" xml:space="preserve">
+    <value>काठ स्टक</value>
+  </data>
+  <data name="Wood Stock Report" xml:space="preserve">
+    <value>काठ स्टक रिपोर्ट</value>
+  </data>
+  <data name="Wood Sales Report" xml:space="preserve">
+    <value>काठ बिक्री रिपोर्ट</value>
+  </data>
+  <data name="Piling Wise Stock Report" xml:space="preserve">
+    <value>पाइलिङ अनुसार स्टक रिपोर्ट</value>
+  </data>
+  <data name="Ballaballi Bill Report" xml:space="preserve">
+    <value>बल्लाबल्ली बिल रिपोर्ट</value>
+  </data>
+  <data name="Furniture" xml:space="preserve">
+    <value>फर्निचर</value>
+  </data>
+  <data name="Furniture Bill" xml:space="preserve">
+    <value>फर्निचर बिल</value>
+  </data>
+  <data name="Furniture Bill Report" xml:space="preserve">
+    <value>फर्निचर बिल रिपोर्ट</value>
+  </data>
+  <data name="Furniture Category" xml:space="preserve">
+    <value>फर्निचर वर्ग</value>
+  </data>
+  <data name="Ladkadi Bill Report" xml:space="preserve">
+    <value>लकडी बिल रिपोर्ट</value>
+  </data>
+  <data name="Member Punishment" xml:space="preserve">
+    <value>सदस्य कारबाही</value>
+  </data>
+  <data name="Tuna No" xml:space="preserve">
+    <value>टुना नं</value>
+  </data>
+  <data name="Add Member Punishment" xml:space="preserve">
+    <value>नयाँ सदस्य कारबाही बनाउनुहोस्</value>
+  </data>
+  <data name="Add New Furniture" xml:space="preserve">
+    <value>नयाँ फर्निचर बनाउनुहोस्</value>
+  </data>
+  <data name="Add New Furniture Category" xml:space="preserve">
+    <value>नयाँ फर्निचर वर्ग बनाउनुहोस्</value>
+  </data>
+  <data name="In case of member not found. Make sure member is active and membership not expired." xml:space="preserve">
+    <value>सदस्य नभेटेको अवस्थामा। सुनिश्चित गर्नुहोस् कि सदस्य सक्रिय छ र सदस्यता समाप्त भएको छैन।</value>
+  </data>
+  <data name="Membership" xml:space="preserve">
+    <value>सदस्यता</value>
+  </data>
+  <data name="Search by code or name" xml:space="preserve">
+    <value>कोड वा नाम द्वारा खोज्नुहोस्</value>
+  </data>
+</root>

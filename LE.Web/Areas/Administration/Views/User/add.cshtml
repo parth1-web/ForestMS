@@ -1,0 +1,164 @@
+﻿@model UserModel
+@{
+    ViewData["Title"] = "New User";
+}
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="m-t-0 header-title"><b>New User</b></h4>
+                <p class="text-muted m-b-30">
+                    Creates a user and assign roles.
+                </p>
+                <form class="" method="post" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-lg-4">
+                            @Html.ValidationSummary(true)
+                            @Html.AntiForgeryToken()
+
+                            <div class="form-group">
+                                @Html.LabelFor(a => a.full_name, new { @class = "col-md-12 control-label asterik" })
+                                <div class="col-md-12">
+                                    @Html.TextBoxFor(a => a.full_name, new { @class = "form-control" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.full_name)</p>
+                            </div>
+
+                            <div class="form-group ">
+                                @Html.LabelFor(a => a.address_line_1, new { @class = "col-md-12 control-label asterik" })
+                                <div class="col-md-12">
+                                    @Html.TextBoxFor(a => a.address_line_1, new { @class = "form-control" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.address_line_1)</p>
+                            </div>
+
+                            <div class="form-group ">
+                                @Html.LabelFor(a => a.address_line_2, new { @class = "col-md-12 control-label" })
+                                <div class="col-md-12">
+                                    @Html.TextBoxFor(a => a.address_line_2, new { @class = "form-control" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.address_line_2)</p>
+                            </div>
+
+                            <div class="form-group ">
+                                @Html.LabelFor(a => a.primary_contact, new { @class = "col-md-12 control-label asterik" })
+                                <div class="col-md-12">
+                                    @Html.TextBoxFor(a => a.primary_contact, new { @class = "form-control" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.primary_contact)</p>
+                            </div>
+
+                            <div class="form-group ">
+                                @Html.LabelFor(a => a.secondary_contact, new { @class = "col-md-12 control-label" })
+                                <div class="col-md-12">
+                                    @Html.TextBoxFor(a => a.secondary_contact, new { @class = "form-control" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.secondary_contact)</p>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <div class="form-group ">
+                                @Html.LabelFor(a => a.email, new { @class = "col-md-12 control-label", @type = "email" })
+                                <div class="col-md-12">
+                                    @Html.TextBoxFor(a => a.email, new { @class = "form-control" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.email)</p>
+                            </div>
+
+                            <div class="form-group ">
+                                @Html.LabelFor(a => a.username, new { @class = "col-md-12 control-label" })
+                                <div class="col-md-12">
+                                    @Html.TextBoxFor(a => a.username, new { @class = "form-control asterik" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.username)</p>
+                            </div>
+
+                            <div class="form-group ">
+                                @Html.LabelFor(a => a.password, new { @class = "col-md-12 control-label asterik" })
+                                <div class="col-md-12">
+                                    @Html.PasswordFor(a => a.password, new { @class = "form-control pass" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.password)</p>
+                            </div>
+
+                            <div class="form-group ">
+                                @Html.LabelFor(a => a.confirm_paswword, new { @class = "col-md-12 control-label asterik" })
+                                <div class="col-md-12">
+                                    @Html.PasswordFor(a => a.confirm_paswword, new { @class = "form-control pass" })
+                                    <input type='checkbox' id='check' />
+                                    <label for="check">Show password</label>
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.confirm_paswword)</p>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <div class="form-group ">
+                                @Html.LabelFor(a => a.roles, "Roles", new { @class = "col-md-12 control-label asterik" })
+                                <div class="col-md-12">
+                                    @{
+                                        int i = 0;
+                                        foreach (var role in (List<AssignedRole>)ViewBag.roles)
+                                        {
+                                            <label>
+                                                @Html.CheckBox("roles[" + i + "].is_checked", role.is_checked)<text>&nbsp;&nbsp;&nbsp;<input name="roles[@i].role_id" value="@role.role_id" type="hidden" />@role.role_name </text>
+                                            </label>
+                                            i++;
+                                            <br />
+                                        }
+                                    }
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.roles)</p>
+                            </div>
+
+                            <div class="form-group ">
+                                <div class="col-md-12">
+                                    Image
+                                </div>
+                                <div class="col-md-12">
+                                    <input type="file" value="Choose Image" name="file" id="file" />
+                                </div>
+                            </div>
+
+                            <div class="form-group ">
+                                <div class="col-md-8 images-list" id="previewImg">
+                                    <img id="image" class="image-preview" src="#" alt="" />
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <button type="submit" class="btn btn-primary waves-effect w-md waves-light btn-lg pull-right"><i class="fa fa-floppy-o"></i> Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        $("#file").change(function () {
+            readURL(this);
+        });
+        function readURL(input) {
+
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    $('#image').attr('src', e.target.result);
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        $(document).ready(function () {
+            $('#check').click(function () {
+                $(this).is(':checked') ? $('.pass').attr('type', 'text') : $('.pass').attr('type', 'password');
+            });
+        });
+    </script>
+}
+

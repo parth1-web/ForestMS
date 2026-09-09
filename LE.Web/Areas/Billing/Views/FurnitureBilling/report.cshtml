@@ -1,0 +1,103 @@
+﻿@model FurnitureBillReportIndexViewModel;
+@{
+    ViewData["Title"] = Localizer["Furniture Bill Report"];
+    var list = new List<SelectListItem>() {
+        new SelectListItem { Text = "Billed", Value = "false"},
+        new SelectListItem { Text = "Cancelled", Value = "true" }
+    };
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="m-t-0 header-title"><b>@Localizer["Furniture Bill Report"]</b></h4>
+                <div class="row">
+                    <form method="get" class="col-md-11 form-inline mb-2">
+                        @Html.LabelFor(a => a.start_date, new { @class = "control-label", style = "margin-right:10px;" })
+                        @Html.TextBoxFor(a => a.start_date, new { @class = "form-control nepali-calendar", id = "start_date" })
+
+                        @Html.LabelFor(a => a.end_date, new { @class = "control-label", style = "margin-left:15px; margin-right:10px;" })
+                        @Html.TextBoxFor(a => a.end_date, new { @class = "form-control nepali-calendar", id = "end_date" })
+
+                        @Html.DropDownListFor(a=>a.is_cancelled, list, new {@class = "form-control", style = "margin-right:5px; margin-left:15px;" })
+
+                        <button type="submit" class="btn btn-primary waves-effect w-md waves-light pull-right" style="margin-left:5px;">@Localizer["Load"] <i class="fa fa-spinner "></i></button>
+
+                        <div class="pull-right">
+                            <button type="submit" formtarget="_blank" formaction="/billing/furniture-billing/report-print" class="btn btn-success waves-effect w-md waves-light pull-right" style="margin-left:5px;"> <i class="fa fa-print "></i></button>
+                        </div>
+                    </form>
+
+                </div>
+                <div class="table-responsive">
+                    <table class="table m-0">
+                        <thead class="bg-custom text-white">
+                            <tr>
+                                <th>@Localizer["S.N"]</th>
+                                <th>@Localizer["Sales Date"]</th>
+                                <th>@Localizer["Customer"]</th>
+                                <th>@Localizer["Amount"]</th>
+                                <th>@Localizer["Status"]</th>
+                                <th>@Localizer["Remarks"]</th>
+                                <th>@Localizer["Action"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{ var sn = 1;
+                                decimal totalAmount = 0;
+                                foreach (var detail in Model.furniture_bill_datas)
+                                {
+                                    string status = "Billed";
+                                    if (detail.is_cancelled)
+                                    {
+                                        status = "Cancelled";
+                                    }
+                                    <tr>
+                                        <td>@sn</td>
+                                        <td>@detail.nep_sales_date</td>
+
+
+                                        <td>@detail.others_name</td>
+                                        <td>@detail.total_amount</td>
+                                        <td><label class="badge badge-info font-14">@status</label></td>
+                                        <td>@detail.remarks</td>
+                                        <td>
+                                            <a href="/billing/furniture-billing/bill?furniture_sales_id=@detail.furniture_sales_id"
+                                               target="_blank"
+                                               class="btn btn-primary">
+                                                <i class="fa fa-print"></i>
+                                            </a>
+                                            <a href="/billing/furniture-billing/cancel/@detail.furniture_sales_id"
+                                               class="btn btn-danger cancel">
+                                                <i class="fa fa-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    totalAmount += detail.total_amount;
+                                    sn++;
+
+                                }
+                            }
+                            <tr>
+                                <td colspan="2"></td>
+                                <td>@Localizer["Total Amount"]</td>
+                                <td>@totalAmount</td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts{
+    <script>
+        $(document).ready(function () {
+
+            
+
+        });
+    </script>
+}

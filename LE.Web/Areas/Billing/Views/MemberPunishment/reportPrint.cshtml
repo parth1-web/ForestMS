@@ -1,0 +1,68 @@
+﻿@model MemberPunishmentReportIndexViewModel;
+@{
+    ViewData["Title"] = "Member Punishment Report";
+    Layout = null;
+
+}
+<link href="~/css/bootstrap.min.css" rel="stylesheet" />
+<link href="~/css/print.css" rel="stylesheet" />
+
+<center>
+    <page>
+        <center style="font-size:20px; font-weight:600;"> @ViewBag.OrganizationName<br /> @ViewBag.Address <br /> @Localizer["Member Punishment Report"]<br />@Localizer["From"]  @Model.start_date.ConvertNumerals()  @Localizer["To"]  @Model.end_date.ConvertNumerals()</center>
+        <table>
+            <thead>
+                <tr>
+                    <th>@Localizer["S.N"]</th>
+                    <th>@Localizer["MemberName"]</th>
+                    <th>@Localizer["MemberShipCode"]</th>
+                    <th>@Localizer["IllegalActivity"]</th>
+                    <th>@Localizer["IssueDate"]</th>
+                    <th>@Localizer["PunishmentValidity"]</th>
+                    <th>@Localizer["Remarks"]</th>
+                    <th>@Localizer["Status"]</th>
+@*                     <th>@Localizer["Action"]</th>
+ *@                </tr>
+            </thead>
+			<tbody>
+				@{
+					var sn = 1;
+
+					foreach (var detail in Model.member_punishment_report)
+					{
+						<tr>
+							<td>@sn</td>
+							<td>@detail.Membership.MemberDetails.Where(a=>a.IsGharmuli).FirstOrDefault().FullName</td>
+							<td>@detail.Membership.MembershipCode</td>
+							<td>@detail.IllegalActivity</td>
+							<td>@detail.NepIssueDate</td>
+							<td>@detail.NepPunishmentValidity</td>
+							<td>@detail.Remarks</td>
+							<td>
+								@if (@detail.IsCancelled)
+								{
+									<span class="badge badge-danger">Cancelled</span>
+								}
+								else if (@detail.PunishmentValidity < DateTime.Now)
+								{
+									<span class="badge badge-secondary">Completed</span>
+								}
+								else
+								{
+									<span class="badge badge-success">Active</span>
+								}
+							</td>
+						</tr>
+						sn++;
+					}
+				}
+			</tbody>
+		</table>
+    </page>
+</center>
+<script src="~/js/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+         window.print();
+    });
+</script>

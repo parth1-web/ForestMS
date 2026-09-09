@@ -1,0 +1,159 @@
+﻿@model  LedgerDashboardModel
+
+@{
+    ViewData["Title"] = Localizer["Home Page"];
+    string greeting = "";
+
+    if (DateTime.UtcNow.AddHours(5.5).Hour < 12)
+    {
+        greeting = "Good Morning";
+
+    }
+    else if (DateTime.UtcNow.AddHours(5.5).Hour < 17)
+    {
+        greeting = "Good Afternoon";
+
+    }
+    else
+    {
+        greeting = "Good Evening";
+      
+    }
+
+}
+
+<div class="row" >
+    <div class="col-sm-12">
+        <h4>@Localizer[greeting]   <i><b>@ViewBag.LoggedInUserName</b></i></h4>
+    </div>
+</div>
+<br/>
+
+<div class="row">
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header bg-info">
+                <h4 class="card-title text-white mb-0">@Localizer["Bank Report"]</h4>
+            </div>
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>@Localizer["S.N"]</th>
+                        <th>@Localizer["Ledger Name"]</th>
+                        <th>@Localizer["Amount"]</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int sn = 1;
+                        foreach (var bank in Model.bank_ledger_details)
+                        {
+                            <tr>
+                                <th scope="row">@sn</th>
+                                <td>@bank.name</td>
+                                <td>@bank.amount</td>
+                            </tr>
+                            sn++;
+                        }
+
+                    }
+
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header bg-purple">
+                <h4 class="card-title text-white mb-0">@Localizer["Cash Report"]</h4>
+            </div>
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>@Localizer["S.N"]</th>
+                        <th>@Localizer["Ledger Name"]</th>
+                        <th>@Localizer["Amount"]</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int snc = 1;
+                        foreach (var cash in Model.cash_ledger_details)
+                        {
+                            <tr>
+                                <th scope="row">@snc</th>
+                                <td>@cash.name</td>
+                                <td>@cash.amount</td>
+                            </tr>
+                            snc++;
+                        }
+
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header bg-pink">
+                <h4 class="card-title text-white mb-0">@Localizer["Counter Report"]</h4>
+            </div>
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>@Localizer["S.N"]</th>
+                        <th>@Localizer["Counter"]</th>
+                        <th>@Localizer["Amount"]</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int sncc = 1;
+                        foreach (var counter in Model.counter_sales_data)
+                        {
+                            <tr>
+                                <th scope="row">@sncc</th>
+                                <td>@counter.user</td>
+                                <td>@counter.amount</td>
+                            </tr>
+                            sncc++;
+                        }
+
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<footer class="footer" style="width:100%">
+    <div class="container-fluid" style="height:25px;">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="copyright pull-none">
+                    2018-@DateTime.Now.Year © Leading Edge Software
+                </div>
+            </div>
+            <div class="col-sm-4 text-right">
+
+            </div>
+            <div class="col-md-4">
+                <ul class="float-right list-inline m-b-0 pull-none">
+                    <li class="list-inline-item">
+                        <a target="_blank" href="//leadingedgesoft.com">About</a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a target="_blank" href="//leadingedgesoft.com">Help</a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a target="_blank" href="//leadingedgesoft.com">Contact</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</footer>

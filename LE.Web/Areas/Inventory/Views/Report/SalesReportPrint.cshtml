@@ -1,0 +1,93 @@
+﻿@model WoodDetailsIndexViewModel;
+@{
+    ViewData["Title"] = "Wood Sales Report";
+    Layout = null;
+
+}
+<link href="~/css/bootstrap.min.css" rel="stylesheet" />
+<link href="~/css/print.css" rel="stylesheet" />
+<style>
+    td, th {
+        border: 1px solid #000000;
+    }
+</style>
+<center>
+    <page>
+        <center style="font-size:20px; font-weight:600;"> @ViewBag.organizationName <br />@ViewBag.Address<br /> @Localizer["Wood Sales Report"]<br /></center>
+        <table>
+            <thead>
+                <tr>
+                    <th rowspan="2">@Localizer["S.N"]</th>
+                    <th rowspan="2">@Localizer["Year"]</th>
+                    <th rowspan="2">@Localizer["Piling"]</th>
+                    <th rowspan="2">@Localizer["Ghatgaddhi Goliya No"]</th>
+                    <th rowspan="2">@Localizer["Tuna / Goliya No"]</th>
+                    <th rowspan="2">@Localizer["Wood Type"]</th>
+                    <th rowspan="2">@Localizer["Purpose"]</th>
+                    <th rowspan="2">@Localizer["Stock Type"]</th>
+                    <th colspan="2" class="text-center">@Localizer["Wood Size"]</th>
+                    <th rowspan="2">@Localizer["Total Wood Size"]</th>
+                    <th colspan="2" class="text-center">@Localizer["Hole Status"]</th>
+                    <th rowspan="2">@Localizer["Total Size"]</th>
+                    <th rowspan="2">@Localizer["Grade"]</th>
+                </tr>
+                <tr>
+                    <th>@Localizer["Circle(inch)"]</th>
+                    <th>@Localizer["Length(Feet)"]</th>
+                    <th>@Localizer["Hole Size"]</th>
+                    <th>@Localizer["Hole Total"]</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    var sn = 1;
+                    decimal totalWoodSize = 0;
+                    foreach (var item in Model.wood_details)
+                    {
+                        totalWoodSize += item.getNetTotal();
+                        <tr>
+                            <td>@sn.ToString().ConvertNumerals()</td>
+                            <td>@item.year.ConvertNumerals()</td>
+                            <td>@item.piling.title.ConvertNumerals()</td>
+                            <td>@item.goliya_number.ToString().ConvertNumerals()</td>
+                            <td>@item.tuna_no.ToString().ConvertNumerals()</td>
+                            <td>@item.wood_type.name</td>
+                            <td>@item.category_purpose.name</td>
+                            <td>@Enum.GetName(typeof(LE.Inventory.Common.Enums.StockTypes), item.stock_type_id)</td>
+                            <td>@item.circle_size.ToString().ConvertNumerals()</td>
+                            <td>@item.length.ToString().ConvertNumerals()</td>
+                            <td>@item.fresh_total_size.ToString().ConvertNumerals()</td>
+                            <td>
+                                @{
+                                    foreach (var damage in item.DamagedWoodDetails)
+                                    {
+                                        <i>@damage.damaged_first_size.ToString().ConvertNumerals() + @damage.damaged_second_size.ToString().ConvertNumerals() + @damage.damaged_third_size.ToString().ConvertNumerals() + @damage.damaged_fourth_size.ToString().ConvertNumerals() + @damage.damaged_fifth_size.ToString().ConvertNumerals() X @damage.damaged_feet_size.ToString().ConvertNumerals()</i>
+
+                                        <br />
+                                    }
+                                }
+                            </td>
+                            <td>@item.getDamagedsize().ToString().ConvertNumerals()</td>
+                            <td>@item.getNetTotal().ToString().ConvertNumerals()</td>
+                            <td>@item.grade.ToString().ConvertNumerals()</td>
+                        </tr>
+                        sn++;
+                    }
+                    <tr>
+                        <td colspan="13" class="text-right"><b>@Localizer["Total"]</b></td>
+                        <td><b> @totalWoodSize.ToString().ConvertNumerals() </b></td>
+                        <td></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+    </page>
+</center>
+<script src="~/js/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        //   window.print();
+
+    });
+</script>

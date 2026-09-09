@@ -1,0 +1,66 @@
+﻿@model FurnitureModel
+@{
+    ViewData["Title"] = Localizer["New Furniture"];
+
+}
+
+
+<div class="row">
+    <div class="col-sm-12">
+
+        <div class="card">
+            <div class="card-body">
+                <h4 class="m-t-0 header-title"><b>@Localizer["New Furniture"]</b></h4>
+                <p class="text-muted m-b-30">
+                    @Localizer["Creates a Furniture."]
+                </p>
+                <div class="row">
+                    <div class="col-lg-6">
+                        <form class="form-horizontal" method="post">
+                            @Html.ValidationSummary(true)
+
+                            @Html.AntiForgeryToken()
+
+
+                            <div class="form-group row">
+                                @Html.LabelFor(a => a.name, new { @class = "col-md-4 control-label asterik" })
+
+                                <div class="col-md-8">
+                                    @Html.TextBoxFor(a => a.name, new { @class = "form-control name" })
+
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.name)</p>
+                            </div>
+
+                            <div class=" form-group row">
+                                @Html.LabelFor(a => a.furniture_category_id, new { @class = "col-md-4 control-label asterik" })
+                                <div class="col-md-8">
+                                    @Html.DropDownList("furniture_category_id", (SelectList)ViewBag.furnitureCategories, new { @class = "form-control" })
+
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.furniture_category_id)</p>
+
+                            </div>
+
+                            <div class="col-md-12">
+                                <button type="submit" class="btn btn-primary waves-effect w-md waves-light pull-right"><i class="fa fa-save fa-lg"> @Localizer["Save"]</i></button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-md-12">
+                        <p>@Localizer["Note"]: <span class="asterik"></span> @Localizer["Fields are mandatory"].</p>
+                    </div>
+                </div>
+                <!-- end row -->
+            </div>
+        </div>
+    </div><!-- end col -->
+</div>
+
+@section scripts{
+    <script>
+        $(document).ready(function () {
+            $(".name").focus();
+        });
+    </script>
+}

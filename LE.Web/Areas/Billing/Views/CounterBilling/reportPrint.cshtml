@@ -1,0 +1,66 @@
+﻿@model CounterBillIndexViewModel;
+@{
+    ViewData["Title"] = Localizer["Counter Bill Report"];
+    Layout = null;
+}
+<link href="~/css/bootstrap.min.css" rel="stylesheet" />
+<link href="~/css/print.css" rel="stylesheet" />
+
+<page>
+    <center style="font-size:20px;"> @ViewBag.organizationName <br /> @Localizer["Counter Bill Report"]<br /> @Localizer["From"]  @Model.start_date.ConvertNumerals()  @Localizer["To"]  @Model.end_date.ConvertNumerals()</center>
+
+    <table class="table table-bordered">
+        <thead class="bg-custom">
+            <tr>
+                <th>@Localizer["S.N"]</th>
+                <th>@Localizer["Sales Date"]</th>
+                <th>@Localizer["Discount"]</th>
+                <th>@Localizer["Tax"]</th>
+                <th>@Localizer["Amount"]</th>
+                <th>@Localizer["Remarks"]</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{ var sn = 1;
+                decimal totalAmount = 0;
+                decimal discountTotal = 0;
+                decimal taxTotal = 0;
+                foreach (var detail in Model.counter_bill_details)
+                {
+
+                    <tr>
+                        <td>@sn.ToString().ConvertNumerals()</td>
+                        <td>@detail.nep_sales_date.ToString().ConvertNumerals()</td>
+
+
+                        <td>@detail.discount_amount.ToString().ConvertNumerals()</td>
+                        <td>@detail.tax_amount.ToString().ConvertNumerals()</td>
+                        <td>@detail.bill_amount.ToString().ConvertNumerals()</td>
+                        <td>@detail.remarks</td>
+
+                    </tr>
+                    totalAmount += detail.bill_amount;
+                    discountTotal += detail.discount_amount;
+                    taxTotal += detail.tax_amount;
+                    sn++;
+
+                }
+            }
+            <tr>
+                <td colspan="1"></td>
+                <td>@Localizer["Total Amount"]</td>
+                <td>@discountTotal.ToString().ConvertNumerals()</td>
+                <td>@taxTotal.ToString().ConvertNumerals()</td>
+                <td>@totalAmount.ToString().ConvertNumerals()</td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+</page>
+
+<script src="~/js/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+       // window.print();
+    });
+</script>

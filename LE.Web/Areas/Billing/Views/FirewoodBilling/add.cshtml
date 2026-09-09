@@ -1,0 +1,487 @@
+﻿@model FireWoodBillModel
+
+@{
+    ViewData["Title"] = "दाहुरा बिल";
+}
+
+<div id="loading">
+    <img id="loading-image" src="~/images/loader.gif" alt="Loading..." />
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="m-t-0 header-title"><b>दाहुरा बिल</b></h4>
+                <p class="text-muted m-b-30"></p>
+                <div class="row" style="margin-top:-25px">
+                    <form method="post" class="w-100">
+                        <div class="col-lg-12">
+                            @Html.ValidationSummary(true)
+                            @Html.AntiForgeryToken()
+                            <div class="form-group row">
+                                <div class="col-md-4">
+                                    <div class="form-group row">
+                                        <div class="col-md-4">
+                                            मिति
+                                        </div>
+                                        <div class="col-md-8">
+                                            @Html.TextBoxFor(a => a.nep_sales_date, new { @class = "input-sm form-control nepali-calendar ", id = "nep_sales_date" })
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row" style="margin-top:-10px">
+                                        <div class="col-md-4">
+                                            बिक्री किसिम
+                                        </div>
+                                        <div class="col-md-8">
+                                            @Html.DropDownList("sales_type", Html.GetEnumSelectList<LE.Billing.Common.Enums.FirewoodSalesType>(), new { @class = "form-control input-sm sales_type", @name = "sales_type", @id = "sales_type" })
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row member-row" style="margin-top:-10px">
+                                        <div class="col-md-4">
+                                            सदस्य
+                                        </div>
+                                        <div class="col-md-8">
+                                            @Html.DropDownList("MemberId", (SelectList)ViewBag.members, "--सदस्य छान्नुहोस--", new { @class = "form-control chosen member" })
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row customer-row" style="margin-top:-10px">
+                                        <div class="col-md-4">
+                                            ग्राहक
+                                        </div>
+                                        <div class="col-md-8">
+                                            <input type="text" class="form-control input-sm" name="other_customer" id="other_customer" />
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row address-row" style="margin-top:-10px">
+                                        <div class="col-md-4">
+                                            ठेगाना
+                                        </div>
+                                        <div class="col-md-8">
+                                            <input type="text" class="form-control input-sm" name="address" id="address" />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <em style="color: #ba6262;font-size: 13px;"><span class="asterik"></span>@Localizer["Note"]: @Localizer["In case of member not found. Make sure member is active and membership not expired."]</em>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <table class="table table-striped item-container" id="invoice_item_table">
+                                        <thead>
+                                            <tr style="line-height:15px">
+                                                <th width="30">क्र.सं</th>
+                                                <th width="130">विवरण</th>
+                                                <th width="150">परिणाम</th>
+                                                <th width="120">दररेट</th>
+                                                <th width="150">रकम</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tr style="line-height:5px" id="item-1" data-rowid="1">
+                                            <td><span id="sr_no"></span></td>
+                                            <td width="200">
+                                                @Html.DropDownList("stock_item_id", (SelectList)ViewBag.firewoodItems, "--दाहुरा छान्नुहोस--", new { @class = "form-control chosen stock_item_id", @id = "stock_item_id" })
+                                            </td>
+                                            <td width="160">
+                                                <input type="number" class="quantity form-control input-sm text-left" name="quantity" id="quantity" data-srno="1" />
+                                            </td>
+                                            <td width="160">
+                                                <input type="number" class="rate form-control input-sm text-left" id="rate" data-srno="1" />
+                                            </td>
+                                            <td width="160"> <input type="number" class="amount form-control input-sm text-left" readonly name="amount" id="amount" data-srno="1" /></td>
+                                            <td width="100"><button type="button" name="add-item" id="add-item" class="form-control btn btn-md btn-success add-item-row"><span class="fa fa-plus "></span></button></td>
+                                        </tr>
+                                    </table>
+                                    <table class="table table-striped table-info items-bag"></table>
+                                </div>
+                            </div>
+                            <br />
+                            <div class="row" style="margin-top:-20px">
+                                <div class="col-md-12">
+                                    <div class="form-group row">
+                                        <div class="col-md-8">
+                                            टिप्पणीहरू <textArea rows="5" id="remarks" name="remarks" class="w-100"></textArea>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group row">
+                                                <div class="col-md-4">
+                                                    जम्मा
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <input tabindex="-1" type="number" readonly id="final_total_amt" class="form-control input-sm" name="final_total_amt" />
+                                                </div>
+                                            </div>
+
+                                            @* <div class="form-group row">
+                                                <div class="col-md-4">
+                                                    न.पा.कर %
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <input type="number" id="tax_percentage" class="form-control input-sm" name="tax_percentage" />
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group row">
+                                                <div class="col-md-4">
+                                                    न.पा.कर
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <input tabindex="-1" type="number" readonly id="tax_amount" class="form-control input-sm" name="tax_amount" />
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group row">
+                                                <div class="col-md-4">
+                                                    कुल जम्मा
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <input tabindex="-1" type="number" readonly id="net_final_total_amt" class="form-control input-sm" name="net_final_total_amt" />
+                                                </div>
+                                            </div> *@
+
+                                            <div class="form-group row">
+                                                <div class="col-md-4">
+                                                    निविदा रकम
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <input type="number" value="0" id="paid_amt" class="form-control input-sm" name="paid_amt" />
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group row">
+                                                <div class="col-md-4">
+                                                    फिर्ती रकम
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <input tabindex="-1" type="number" value="0" readonly id="return_amt" class="form-control input-sm return_amt" name="return_amt" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <button type="submit" formtarget="_blank" id="save" name="save" class="btn btn-primary waves-effect w-md waves-light pull-right"><i class="fa fa-calculator"></i> @Localizer["Bill"]</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+
+    <script src="~/js/num2str.js"></script>
+    <script src="~/pages/jquery.toast.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            var count = 1;
+            $('.member').select2();
+            $('.chosen').select2();
+
+            $(".member-row").hide();
+            $(".customer-row").hide();
+            $(".address-row").hide();
+
+            $(".sales_type").change(function () {
+                $('#loading').show();
+                var salesTypeId = $(".sales_type").val();
+                if (salesTypeId == @((int)LE.Billing.Common.Enums.FirewoodSalesType.Member)) {
+                    $(".member-row").show();
+                    $(".customer-row").hide();
+                    $(".address-row").hide();
+                    $("#other_customer").val("");
+                }
+                else {
+                    $(".member-row").hide();
+                    $(".customer-row").show();
+                    $(".address-row").show();
+
+                    $('.member').val(null).trigger('change');
+                }
+                $('#loading').hide();
+            });
+            $(".sales_type").change();
+            $woodTypes = [];
+
+            $.ajax({
+                method: 'Get',
+                url: '/billing/api/wood-type',
+                success: function (data) {
+                    $woodTypes = data;
+                },
+                error: function () {
+                    alert("Error in loading wood types.");
+                }
+            })
+
+            var wood_type_name = "";
+            var i;
+            function getWoodTypeById($id) {
+                for (i = 0; i < $woodTypes.length; i++) {
+
+                    if ($woodTypes[i].wood_type_id == $id) {
+                        wood_type_name = $woodTypes[i].name;
+                    }
+                }
+                return wood_type_name;
+            }
+
+            $(document).on("keyup keydown", "#tax_percentage", function () {
+                getTotalAmount();
+            });
+
+            $(".stock_item_id").change(function () {
+                $(".rate").val("");
+                $(".amount").val("");
+                var woodId = parseInt($(".stock_item_id").val());
+                $(".rate").attr("disabled", "disabled");
+                $('#loading').show();
+                $.ajax({
+                    method: 'Get',
+                    url: '/billing/api/fire-wood-detail/' + woodId,
+                    success: function (data) {
+                        $detail = data[0];
+
+                        $(".rate").val($detail.default_sales_rate);
+                        $(".rate").removeAttr("disabled");
+                        $('#loading').hide();
+                    },
+                    error: function () {
+                        alert("Error in loading wood details.");
+                    }
+                });
+            });
+
+            $(document).on("keyup change keydown", ".quantity,.rate", function () {
+                $('#loading').show();
+                $rate = $(".rate").val();
+                $quantity = $(".quantity").val();
+                $totalRowAmount = parseFloat($rate * $quantity, 2);
+                $(".amount").val($totalRowAmount.toFixed(2));
+                $('#loading').hide();
+            });
+
+            $(document).on("keypress", "form", function (event) {
+                return event.keyCode != 13;
+            });
+
+            $(document).on('keypress mousedown', '.add-item-row', function (e) {
+                var woodName = $(".stock_item_id option:selected").text();
+                var woodId = $(".stock_item_id").val();
+                var rate = $(".rate").val();
+                var quantity = $(".quantity").val();
+
+                if (woodId <= 0) {
+                    showMessage("Please Select Wood.")
+                    e.preventDefault();
+                }
+                else if (rate < 0 || rate == "") {
+                    showMessage("Rate cannot be empty or negative");
+                    e.preventDefault();
+                }
+                else {
+                    var found = 0;
+                    var rowNo = 1;
+
+                    $(".items-bag tr").each(function (i, row) {
+                        var $row = $(row);
+                        rowNo++;
+                        $objId = $row.find('input[name*="hdnObjectId"]').val();
+
+                        if ($objId == woodId) {
+                            found = 1;
+                        }
+                    });
+
+                    if (found == 0) {
+                        var amount = $(".amount").val();
+                        var tableRow = '<tr row-id="' + rowNo + '" ><td id="sno" width="50">#</td><td width="320">' + woodName + '<input type="hidden" name="hdnObjectId" class="form-control" readonly value="' + woodId + '"/></td><td width="260">' + quantity + '</td><td width="250">' + rate + '</td><td width="260">' + amount + '<input type="hidden" name="hdnAmount" class="form-control" readonly value="' + amount + '"/></td><td><button class="btn btn-sm btn-danger delete-row"><i class="fa fa-trash"><i></button></td>';
+
+                        $(".items-bag").append(tableRow);
+                        var amtTot = getTotalAmount();
+                        $("#final_total_amt").val(amtTot);
+                        var num_word = num2str(amtTot);
+                        $("#num_to_words").val(num_word);
+                        clearRow();
+                    }
+                    else {
+                        showMessage("Wood Already Selected.")
+                        e.preventDefault();
+                    }
+                }
+            });
+
+            $(document).on("keyup keydown", "#paid_amt", function (e) {
+                $('#loading').show();
+
+                var totAmt = parseFloat($("#final_total_amt").val());
+                var tenderAmt = parseFloat($("#paid_amt").val());
+                if (tenderAmt > totAmt) {
+                    var diff = tenderAmt - totAmt;
+                    $("#return_amt").val(diff.toFixed(2));
+                } else {
+                    $("#return_amt").val(0);
+                }
+                $('#loading').hide();
+
+            });
+
+            $(document).on("click", ".delete-row", function (e) {
+                if (confirm("Are you sure to remove the item?")) {
+                    $(this).closest("tr").remove();
+                    $("#final_total_amt").val(getTotalAmount());
+                    showMessage("Wood Removed from list.");
+                }
+                e.preventDefault();
+            });
+
+            function getTotalAmount() {
+                var netFinalAmt = 0;
+
+                $(".items-bag tr").each(function (i, row) {
+                    var $row = $(row);
+                    netFinalAmt = netFinalAmt + parseFloat($row.find('input[name*="hdnAmount"]').val());
+                });
+
+                $("#final_total_amt").val(netFinalAmt.toFixed(2));
+
+                var taxAmt = 0;
+                var taxPer = parseFloat($("#tax_percentage").val());
+                if (taxPer > 0) {
+                    taxAmt = parseFloat((taxPer * netFinalAmt) / 100);
+                }
+                $("#tax_amount").val(taxAmt.toFixed(2));
+                $("#net_final_total_amt").val(parseFloat(netFinalAmt + taxAmt).toFixed(2));
+                return netFinalAmt.toFixed(2);
+            }
+
+            function clearRow() {
+                $(".rate").val(0);
+                $(".amount").val(0);
+                $(".quantity").val(0);
+            }
+
+            $(document).on("click", "#save", function (e) {
+                $tenderAmt = parseFloat($("#paid_amt").val());
+                $totAmt = parseFloat($("#final_total_amt").val());
+                var saleTypeId = $(".sales_type").val();
+                debugger;
+
+                if (saleTypeId == @((int)LE.Billing.Common.Enums.FirewoodSalesType.Member)) {
+                    let memVal = parseInt($("#MemberId").val());
+                    if (isNaN(memVal)) {
+                        showMessage("Member Not Selected.");
+                        e.preventDefault();
+                        return;
+                    }
+                }
+
+                if (saleTypeId == @((int)LE.Billing.Common.Enums.FirewoodSalesType.Others)) {
+                    let otherCustomerVal = $("#other_customer").val();
+                    if (otherCustomerVal == "" || otherCustomerVal == null) {
+                        showMessage("Customer is Required.");
+                        e.preventDefault();
+                        return;
+                    }
+                }
+
+                if ($tenderAmt < 0 || $totAmt < 0 || $tenderAmt < $totAmt) {
+                    showMessage("Invalid Paid amount or Paid Amount is less than billed amount.");
+                    e.preventDefault();
+                }
+                else {
+                    var items = {};
+                    items.nep_sales_date = $("#nep_sales_date").val();
+                    items.sales_type = $("#sales_type").val();
+                    items.type_id = $("#MemberId").val();
+                    items.MemberId = $("#MemberId").val();
+                    items.others_name = $("#other_customer").val();
+                    items.address = $("#address").val();
+                    items.total_amount = parseFloat($("#final_total_amt").val());
+                    items.tender_amount = parseFloat($("#paid_amt").val());
+                    items.return_amount = parseFloat($("#return_amt").val());
+                    items.remarks = $("#remarks").val();
+                    items.tax_percentage = parseFloat($("#tax_percentage").val());
+
+                    var item = [];
+                    $(".items-bag tr").each(function (i, row) {
+                        var data = {};
+                        var $row = $(row);
+                        data.stock_item_id = parseInt($row.find('input[name*="hdnObjectId"]').val());
+                        data.rate = parseFloat($row.find("td").eq(3).text());
+                        data.quantity = parseFloat($row.find("td").eq(2).text());
+                        item.push(data);
+                    });
+                    items["items"] = item;
+
+                    if (item.length > 0) {
+                        $('#loading').show();
+                        $.ajax({
+                            contentType: 'application/json; charset=utf-8',
+                            type: "POST",
+                            beforeSend: function (xhr) {
+                                xhr.setRequestHeader("XSRF-TOKEN",
+                                    $('input:hidden[name="__RequestVerificationToken"]').val());
+                            },
+                            url: "/billing/fire-wood-billing/new",
+                            dataType: "json",
+                            data: JSON.stringify(items),
+                            success: function (response) {
+                                if (response == null) {
+                                    alert("Something went wrong");
+                                }
+                                else if (response.error == true) {
+                                    showMessage(response.responseText);
+                                }
+                                else {
+                                    window.focus();
+                                    window.open(
+                                        '/billing/fire-wood-billing/bill?firewood_sales_id=' + response,
+                                        '_blank'
+                                    );
+                                    window.setTimeout(function () {
+                                        window.location.reload();
+                                    }, 200);
+                                }
+                                $('#loading').hide();
+                            },
+                            error: function (response) {
+                                showMessage(response.responseText)
+                                $('#loading').hide();
+                            }
+                        });
+                    }
+                    else {
+                        showMessage("Items Not Selected.");
+                        e.preventDefault();
+                    }
+                }
+                e.preventDefault();
+            });
+
+            function showMessage($message) {
+                $.toast({
+                    heading: 'Message!',
+                    text: $message,
+                    position: 'top-right',
+                    loaderBg: '#45bbe0',
+                    icon: 'info',
+                    hideAfter: 3000,
+                    stack: 1
+                });
+            }
+        });
+    </script>
+}

@@ -1,0 +1,139 @@
+﻿@using LE.Account.Common.Enums
+@using LE.Web.Areas.Accounting.ViewModels
+@model TransactionIndexViewModel;
+@{
+    ViewData["Title"] = "Transaction";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<link href="~/css/print.css" rel="stylesheet" />
+<link href="~/css/bootstrap.min.css" rel="stylesheet" />
+
+<style>
+    table {
+        border-collapse: collapse;
+    }
+
+    table, th, td {
+        border: 1px solid black;
+        padding: 5px;
+    }
+</style>
+<center>
+    <page size="A4">
+        <center class="header"> @Model.organization_name <br /> @Model.address <br /> @Localizer["Journal Report"] <br />@Localizer["From Date"] : @Model.start_date.ConvertNumerals() &nbsp;&nbsp;-&nbsp;&nbsp; @Localizer["To Date"] : @Model.end_date.ConvertNumerals()</center>
+        <table>
+            <thead>
+                <tr>
+                    <th>@Localizer["Sn"]</th>
+                    <th width="100">@Localizer["Entry Date"]</th>
+                    <th width="100">@Localizer["Transaction Date"]</th>
+                    <th width="80">@Localizer["Voucher Type"]</th>
+                    <th>@Localizer["Voucher No"]</th>
+                    <th>@Localizer["Particulars"]</th>
+                    <th width="100">@Localizer["Debit Amount"]</th>
+                    <th width="100">@Localizer["Credit Amount"]</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    var sln = 1;
+                    decimal totalDrAmount = 0; decimal totalCrAmount = 0;
+                    foreach (var trans in Model.transaction.OrderBy(a => a.transaction_date))
+                    {
+                        var flag = 0;
+                        var transactionDetails = trans.transactionDetail.GroupBy(a => a.ledger_id).Select(g => new { nep_entry_date = g.First().transaction_date, cr_amount = g.Sum(x => x.cr_amount), dr_amount = g.Sum(x => x.dr_amount), ledger_id = g.First().ledger_id, ref_ledger_id = g.First().ref_ledger_id, name = g.First().name }).OrderByDescending(a => a.ledger_id).OrderByDescending(a => a.dr_amount);
+                        var rowCount = transactionDetails.Count() + 1;
+                        int cnt = 1;
+                        @foreach (var transDetail in transactionDetails)
+                        {
+                            <tr>
+                                @{
+                                    if (flag == 0)
+                                    {
+                                        <td rowspan=@rowCount>@sln.ToString().ConvertNumerals()</td>
+                                        <td rowspan=@rowCount>@trans.nep_entry_date.ConvertNumerals()</td>
+                                        <td rowspan=@rowCount>@trans.nep_transaction_date.ConvertNumerals()</td>
+                                        <td rowspan=@rowCount><badge class="badge">@Enum.GetName(typeof(VoucherType), trans.voucher_type)</badge></td>
+                                        <td rowspan=@rowCount>@trans.voucher_no.ToString().ConvertNumerals()</td>
+                                        sln = sln + 1;
+                                    }
+
+                                    string prefix = "";
+                                    if (transDetail.cr_amount > 0)
+                                    {
+                                        prefix = "-";
+                                    }
+                                    if (transDetail.dr_amount > 0)
+                                    {
+                                        prefix = "";
+                                    }
+
+                                    <td>@prefix @transDetail.name</td>
+                                    <td>
+                                        @{
+                                            if (transDetail.dr_amount > 0)
+                                            {
+                                                @transDetail.dr_amount.ToString().ConvertNumerals()
+                                            }
+                                        }
+                                    </td>
+                                    <td>
+                                        @{
+                                            if (transDetail.cr_amount > 0)
+                                            {
+                                                @transDetail.cr_amount.ToString().ConvertNumerals()
+                                            }
+                                        }
+                                    </td>
+                                    cnt++;
+                                    if (rowCount == cnt)
+                                    {
+                                    <tr>
+                                        <td>[ @trans.remarks ]</td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    }
+
+                                }
+                            </tr>
+
+                            totalDrAmount += transDetail.dr_amount;
+                            totalCrAmount += transDetail.cr_amount;
+                            flag = 1;
+                        }
+                    }
+                }
+                <tr>
+                    <td colspan="5"></td>
+                    <td><b>@Localizer["Total"]</b></td>
+                    <td><b>@totalDrAmount.ToString().ConvertNumerals()</b></td>
+                    <td><b>@totalCrAmount.ToString().ConvertNumerals()</b></td>
+                </tr>
+            </tbody>
+        </table>
+        <br />
+        <br />
+        <table style="text-align:center; border:hidden; width:100%">
+            <tr>
+                <td colspan="5">......................................................</td>
+                <td colspan="5">......................................................</td>
+                <td colspan="5">................................</td>
+            </tr>
+            <tr>
+                <td colspan="5"><b>हिसाब तयार पार्ने</b></td>
+                <td colspan="5"><b>हिसाब जाच गर्ने</b></td>
+                <td colspan="5"><b>अधक्ष्य</b></td>
+            </tr>
+        </table>
+    </page>
+</center>
+<script src="~/js/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        //  window.print();
+    });
+</script>

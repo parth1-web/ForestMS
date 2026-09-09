@@ -1,0 +1,81 @@
+﻿@model CounterBillIndexViewModel;
+@{
+    ViewData["Title"] = Localizer["Counter Bill Report"];
+    Layout = null;
+}
+<link href="~/css/bootstrap.min.css" rel="stylesheet" />
+<link href="~/css/print.css" rel="stylesheet" />
+
+<center>
+    <page>
+        <center style="font-size:20px; font-weight:600;"> @ViewBag.organizationName <br />@ViewBag.Address<br /> @Localizer["Counter Bill Report"]<br />@Localizer["From"]  @Model.start_date.ConvertNumerals()  @Localizer["To"]  @Model.end_date.ConvertNumerals()</center>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>@Localizer["S.N"]</th>
+                    <th>@Localizer["Sales Date"]</th>
+                    <th>@Localizer["Counter"]</th>
+                    @*<th>@Localizer["Discount"]</th>*@
+                    <th>@Localizer["Tax"]</th>
+                    <th>@Localizer["Amount"]</th>
+                    <th>@Localizer["Remarks"]</th>
+                    <th>@Localizer["Status"]</th>
+
+                </tr>
+            </thead>
+            <tbody>
+                @{ var sn = 1;
+                    decimal totalAmount = 0;
+                    decimal discountTotal = 0;
+                    decimal taxTotal = 0;
+                    foreach (var detail in Model.counter_bill_details)
+                    {
+                        string status = "Billed";
+                        if (detail.is_cancelled)
+                        {
+                            status = "Cancelled";
+                        }
+                        var nepDate = detail.nep_sales_date.Split("-");
+                        var year = nepDate[0].ToString().ConvertNumerals();
+                        var month = nepDate[1].ToString().ConvertNumerals();
+                        var day = nepDate[2].ToString().ConvertNumerals();
+                        <tr>
+                            <td>@sn.ToString().ConvertNumerals()</td>
+                            <td>@year-@month-@day (@detail.sales_date.ToLongTimeString())</td>
+
+                            @*<td>@detail.discount_amount.ToString().ConvertNumerals()</td>*@
+                            <td>@detail.user.full_name</td>
+                            <td>@detail.tax_amount.ToString().ConvertNumerals()</td>
+                            <td>@detail.bill_amount.ToString().ConvertNumerals()</td>
+                            <td>@detail.remarks</td>
+                            <td>@status</td>
+
+                        </tr>
+                        totalAmount += detail.bill_amount;
+                        discountTotal += detail.discount_amount;
+                        taxTotal += detail.tax_amount;
+                        sn++;
+
+                    }
+                }
+                <tr>
+                    <td colspan="1"></td>
+                    <th>@Localizer["Total Amount"]</th>
+                    <th></th>
+                    <th>@taxTotal.ToString().ConvertNumerals()</th>
+                    <th>@totalAmount.ToString().ConvertNumerals()</th>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </page>
+</center>
+
+<script src="~/js/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // window.print();
+    });
+</script>

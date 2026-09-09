@@ -1,0 +1,168 @@
+﻿@using LE.Account.Infrastructure.Reports.Reporter.ValueObjects
+@using LE.Web.Areas.Accounting.ViewModels
+@model AccountingReportDecoratorVm
+
+@{
+    var totalDr = Model.Report.Sum(x => x.Dr);
+    var totalCr = Model.Report.Sum(x => x.Cr);
+    var balanceDiff = totalDr - totalCr;
+    if (balanceDiff != 0 && Model.ReportType == AccountingReportType.Normal)
+    {
+        Model.Report.Add(new AccountingReportVo
+                {
+                    Id = 0,
+                    ParentId = 0,
+                    Name = "P/L Adjustment",
+                    Code = null,
+                    Dr = balanceDiff > 0 ? balanceDiff : 0,
+                    Cr = balanceDiff < 0 ? balanceDiff * -1 : 0,
+                    Balance = 0,
+                    PreviousBalance = 0,
+                    Total = 0,
+                    Children = new List<AccountingReportVo>()
+                });
+    }
+}
+<table class="table table-bordered table-sm">
+    <thead>
+        @if (Model.ReportType == AccountingReportType.Split)
+        {
+            <tr>
+                <th width="50%" class="text-left">@Localizer["Particular"]</th>
+                <th width="10%" class="text-left">@Localizer["L.F"]</th>
+                <th width="20%" class="text-left">@Localizer["Amount"]</th>
+                <th width="20%" class="text-left">@Localizer["Previous Year"]</th>
+            </tr>
+        }
+        else if (Model.ReportType == AccountingReportType.Normal)
+        {
+            <tr>
+                <th width="45%" class="text-left">@Localizer["Particular"]</th>
+                <th width="10%" class="text-left">@Localizer["L.F"]</th>
+                <th width="15%" class="text-left">@Localizer["Debit"]</th>
+                <th width="15%" class="text-left">@Localizer["Credit"]</th>
+                <th width="15%" class="text-left">@Localizer["Previous Year"]</th>
+            </tr>
+        }
+        else if (Model.ReportType == AccountingReportType.DrCrWise)
+        {
+            <tr>
+                <th width="50%" class="text-left">@Localizer["Particular"]</th>
+                <th width="10%" class="text-left">@Localizer["L.F"]</th>
+                <th width="20%" class="text-left">@Localizer["Debit"]</th>
+                <th width="20%" class="text-left">@Localizer["Credit"]</th>
+            </tr>
+        }
+    </thead>
+    <tbody>
+        @{
+            foreach (var item in Model.Report)
+            {
+                await PrepareRow(item, Model.ReportType);
+            }
+        }
+    </tbody>
+    @if (Model.ReportType != AccountingReportType.Split)
+    {
+        <tfoot>
+            <tr>
+                <th colspan="@(Model.ReportType == AccountingReportType.Split ? 1 : 2)" class="text-center">
+                    Total
+                </th>
+                <th class="text-left">
+                    @Model.Report.Sum(x => x.Dr)
+                </th>
+                <th class="text-left">
+                    @Model.Report.Sum(x => x.Cr)
+                </th>
+                @if (Model.ReportType != AccountingReportType.Split && Model.ReportType != AccountingReportType.DrCrWise)
+                {
+                    <th class="text-left">
+                        @Model.Report.Sum(x => x.PreviousBalance)
+                    </th>
+                }
+            </tr>
+        </tfoot>
+    }
+</table>
+<style>
+    thead {
+        border-bottom: 2px solid #000;
+    }
+</style>
+
+@functions
+{
+    private async Task PrepareRow(AccountingReportVo item, AccountingReportType reportType, int level = 1)
+    {
+        <tr class='@(level > 2 ? "hide" : "") @(level == 2 ? "expandable" : "") @(Model.HideTopLevel && level == 1 ? "d-none" : "")'
+        @(level == 1 ? "" : $"data-parent-id={item.ParentId}") @(item.HasChildren ? "data-self-id=" + item.Id : "")
+            style="@(item.HasChildren ? "cursor :pointer; background: #f6f6f6;" : ""); font-weight: @((8 - level) * 100)" data-level="@level">
+            <td class="text-left">
+                <span class=" @(item.HasChildren && level != 1 ? "text-bold" : "")">
+                    @for (int i = 0; i < level; i++)
+                    {
+                        <span class="pl-3"></span>
+                    }
+                    @Localizer[item.Name]
+                </span>
+                @if (level == 2)
+                {
+                    <i class="fas fa-chevron-up pull-right float-right dropdownIcon d-print-none"></i>
+                }
+            </td>
+            <td>
+                @item.Code
+            </td>
+            @if (reportType == AccountingReportType.Split)
+            {
+                <td class="text-left">
+                    @item.Balance
+                </td>
+                <td class="text-left">
+                    @item.PreviousBalance
+                </td>
+            }
+            else if (reportType == AccountingReportType.Normal)
+            {
+                var diff = item.Dr - item.Cr;
+                var positiveDiff = (diff >= 0) ? diff : 0;
+                var negativeDiff = (diff < 0) ? diff * -1 : 0;
+
+                <td class="text-left">@positiveDiff</td>
+                <td class="text-left">@negativeDiff</td>
+                <td class="text-left">@item.PreviousBalance</td>
+            }
+            else if (reportType == AccountingReportType.DrCrWise)
+            {
+                <td class="text-left">@(item.Dr)</td>
+                <td class="text-left">@(item.Cr)</td>
+            }
+        </tr>
+        for (var index = 0; index < item.Children.Count; index++)
+        {
+            var child = item.Children[index];
+            if (reportType == AccountingReportType.Split)
+            {
+                if (child.Balance > 0)
+                {
+                    await PrepareRow(child, reportType, level + 1);
+                }
+            }
+            else if (reportType == AccountingReportType.DrCrWise)
+            {
+                if (child.Dr > 0 || child.Cr > 0)
+                {
+                    await PrepareRow(child, reportType, level + 1);
+                }
+            }
+            else
+            {
+                if ((child.Dr - child.Cr != 0) || child.PreviousBalance > 0)
+                {
+                    await PrepareRow(child, reportType, level + 1);
+                }
+            }
+        }
+    }
+}

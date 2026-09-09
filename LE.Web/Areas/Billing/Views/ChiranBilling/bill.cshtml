@@ -1,0 +1,298 @@
+﻿@model ChiranBillIndexViewModel
+@{
+    ViewData["Title"] = Localizer["Chiran Bill"];
+    Layout = null;
+}
+
+<style>
+    #invoice-POS {
+        width: 297mm;
+        margin: 0 auto;
+        background: #FFF;
+    }
+
+    moz-selection {
+        background: #f31544;
+        color: #FFF;
+    }
+
+    h1 {
+        font-size: 1em;
+        color: #222;
+    }
+
+    h2 {
+        font-size: 1.3em;
+    }
+
+    .num2words {
+        font-size: 0.9em;
+    }
+
+    .head {
+        font-size: 1.2em;
+        font-weight: bold;
+    }
+
+    .head-1 {
+        font-size: 1em;
+        font-weight: bold;
+        line-height: 14px;
+    }
+
+    p {
+        font-size: 0.8em;
+        color: #666;
+    }
+
+    #top, #mid, #bot {
+        border-bottom: 1px solid #EEE;
+    }
+
+    #top {
+        min-height: 0px;
+    }
+
+    #mid {
+        min-height: 30px;
+    }
+
+    #bot {
+        min-height: 30px;
+    }
+
+    .clientlogo {
+        float: left;
+        height: 60px;
+        width: 60px;
+        background-size: 60px 60px;
+        border-radius: 50px;
+    }
+
+    .info {
+        display: block;
+        margin-left: 0;
+    }
+
+    .title {
+        float: right;
+    }
+
+        .title p {
+            text-align: right;
+        }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    td {
+        padding: 5px !important;
+    }
+
+    .tabletitle {
+        text-transform: uppercase;
+        font-size: 1em;
+        font-weight: bold;
+        background: #EEE;
+    }
+
+    .item {
+        width: 24mm;
+    }
+
+    .itemtext {
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    #legalcopy {
+        margin-top: 5mm;
+    }
+
+    .logo img {
+        height: 75px;
+        object-fit: cover;
+        width: auto;
+    }
+
+    div.date {
+        position: absolute;
+        top: 130px;
+        right: 50px;
+        width: 200px;
+        height: 150px;
+    }
+
+    .Hours {
+        line-height: 18px;
+    }
+
+    .padding-top-20 {
+        padding-top: 20px;
+    }
+</style>
+
+<link href="~/lib/fontawesome-free/css/all.min.css" rel="stylesheet" />
+<link href="~/css/bootstrap.min.css" rel="stylesheet" />
+
+<div id="invoice-POS">
+    <br />
+    <div class="row">
+        <div class="logo col-md-4">
+            <img src="~/images/custom/@Model.logo" alt="logo" style="">
+        </div>
+        <div class="info col-md-4 text-center">
+            <h3 class="head">@ViewBag.OrganizationName </h3>
+            <h3 class="head">@ViewBag.Address </h3>
+            <h3 class="head">नगद बिक्री रसिद </h3>
+        </div>
+        <div class="d-print-none col-md-4 text-right">
+            <a href="javascript:window.print()" class="btn btn-primary waves-effect waves-light"><i class="fa fa-print m-r-5"></i> @Localizer["Print"]</a>
+        </div>
+    </div>
+
+    <div class="mt-4 mb-3">
+        @{
+            var nepDate = Model.nep_sales_date.Split("-");
+            var year = nepDate[0].ToString().ConvertNumerals();
+            var month = nepDate[1].ToString().ConvertNumerals();
+            var day = nepDate[2].ToString().ConvertNumerals();
+        }
+
+        <div class="row">
+            <div class="col-md-6 text-left">
+                <h3 class="head-1">बिल नम्बर : @Model.chiran_sales_id.ToString().ConvertNumerals()</h3>
+            </div>
+            <div class="col-md-6 text-right">
+                <h3 class="head-1">मिति : @year-@month-@day</h3>
+            </div>
+        </div>
+
+        @{
+            string mem = Model.member;
+            string add = Model.address;
+            string tole = Model.tole_no;
+        }
+        <h3 class="head-1">नाम , थर : @mem</h3>
+        <h3 class="head-1"><span>ठेगाना : @add &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;टोल: @tole</span></h3>
+    </div>
+    <div id="bot">
+        <div id="table">
+            <table class="table table-bordered ">
+                <tr class="tabletitle">
+                    <td width="80" class="Hours text-uppercase">क्र.सं</td>
+                    <td width="110" class="Hours text-uppercase">काठको जात</td>
+                    <td width="200" class="text-uppercase Hours">साइज</td>
+                    <td width="130" class="Hours text-uppercase">मात्रा</td>
+                    <td width="140" class="Hours text-uppercase">परिणाम</td>
+                    <td width="150" class="Hours text-uppercase">दर</td>
+                    <td class="text-uppercase Hours" width="100px">रकम</td>
+                </tr>
+
+                @{
+                    var sn = 1;
+                    decimal totalWoodsSize = 0;
+
+                    foreach (var item in Model.bill_details)
+                    {
+                        <tr>
+                            <td class="tableitem"><p class="itemtext text-uppercase">@sn.ToString().ConvertNumerals()</p></td>
+                            <td class="tableitem"><p class="itemtext text-uppercase">@item.wood_type.name</p></td>
+                            <td class="tableitem"><p class="itemtext text-uppercase">@item.circle_size.ToString().ConvertNumerals() X @item.length.ToString().ConvertNumerals() X @item.breadth.ToString().ConvertNumerals()</p></td>
+                            <td class="tableitem"><p class="itemtext text-uppercase">@item.quantity.ToString().ConvertNumerals()</p></td>
+                            @{
+                                var netTotalSize = Math.Round((item.circle_size * item.length * item.breadth * item.quantity) / 144, 2);
+                                var rowTotal = Math.Round((netTotalSize * item.rate), 2);
+                                totalWoodsSize += netTotalSize;
+                            }
+                            <td class="tableitem"><p class="itemtext text-uppercase">@netTotalSize.ToString().ConvertNumerals()</p></td>
+                            <td class="tableitem"><p class="itemtext text-uppercase">@item.rate.ToString().ConvertNumerals()</p></td>
+                            <td class="tableitem"><p class="itemtext text-uppercase">@rowTotal.ToString().ConvertNumerals()</p></td>
+                        </tr>
+                        sn++;
+                    }
+
+                    if (Model.bill_details.Count < 6)
+                    {
+                        for (var x = 0; x < 7 - Model.bill_details.Count; x++)
+                        {
+                            var sno = x + Model.bill_details.Count + 1;
+                            <tr class="service">
+                                <td class="tableitem"><p class="itemtext text-uppercase">&nbsp;</p></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        }
+                    }
+
+                    <tr class="tabletitle">
+                        <td colspan="4" class="text-right">कुल ठहर परिणाम</td>
+                        <td colspan="3">@totalWoodsSize.ToString().ConvertNumerals()</td>
+                    </tr>
+
+                    <tr class="tabletitle">
+                        <td colspan="4" rowspan="3" class="num2words">
+                            <b class="Rate">अक्षरेपी :  </b><span class="" id="num_to_words">@Model.numWords मात्र ।</span>
+                            @{
+                                if (Model.remarks != "")
+                                {
+                                    <br />
+                                    <br />
+                                    <br />
+                                    <br />
+                                    <br />
+                                    <br />
+                                    <span>टिप्पणी:</span>
+                                    @Model.remarks
+                                }
+                            }
+                        </td>
+                        <td colspan="2" align="left" class="Rate"> जम्मा</td>
+                        <td class="payment ">@Model.amount.ToString().ConvertNumerals()</td>
+                    </tr>
+                    var totalWithTax = Model.amount + Model.tax_amount;
+                    <tr class="tabletitle">
+                        <td colspan="2" align="left" class="Rate">न.पा.कर</td>
+                        <td class="payment ">@Model.tax_amount.ToString().ConvertNumerals()</td>
+                    </tr>
+                    <tr class="tabletitle">
+                        <td colspan="2" align="left" class="Rate">कुल जम्मा</td>
+                        <td class="payment ">@totalWithTax.ToString().ConvertNumerals()</td>
+                    </tr>
+                }
+            </table>
+            <br />
+            <br />
+            <table style="text-align:center;">
+                <tr>
+                    <td colspan="3">......................................................</td>
+                    <td colspan="3">......................................................</td>
+                    <td colspan="4">................................</td>
+                </tr>
+                <tr>
+                    <td class="padding-top-20" colspan="3"><b>हिसाब तयार पार्ने</b></td>
+                    <td class="padding-top-20" colspan="3"><b>हिसाब जाच गर्ने</b></td>
+                    <td class="padding-top-20" colspan="4"><b>अधक्ष्य</b></td>
+                </tr>
+            </table>
+        </div>
+
+        <div id="legalcopy">
+            <p class="legal">
+                <strong>तयार पार्ने : @Model.user</strong>&nbsp;&nbsp;
+                <strong class="float-right">
+                    मुद्रण मिति : <i class="print_date">@Model.print_date.ToString().ConvertNumerals() | @Model.print_time.ToString().ConvertNumerals() </i>
+                </strong>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script src="~/js/num2str.js"></script>
+<script src="~/js/jquery.min.js"></script>

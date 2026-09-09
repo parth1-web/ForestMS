@@ -1,0 +1,69 @@
+﻿@model RoleModel
+@{
+    ViewData["Title"] = "New Role";
+}
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="m-t-0 header-title"><b>New Role</b></h4>
+                <p class="text-muted m-b-30">
+                    Create a role, assign permissions to role
+                </p>
+                <div class="row">
+                    <div class="col-lg-6">
+                        <form class="form-horizontal" method="post" action="/administration/role/new">
+
+                            @Html.AntiForgeryToken()
+                            @Html.ValidationSummary(true)
+                            <div class="form-group row">
+                                @Html.LabelFor(a => a.name, "Role Name", new { @class = "col-md-3 control-label asterik" })
+                                <div class="col-md-9">
+                                    @Html.TextBoxFor(a => a.name, new { @class = "form-control" })
+                                    <p class="text-danger">@Html.ValidationMessageFor(a => a.name)</p>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                @Html.LabelFor(a => a.name, "Status", new { @class = "col-md-3 control-label asterik" })
+                                <div class="col-md-9">
+                                    <label class="m-auto">
+                                        @Html.RadioButtonFor(a => a.is_enabled, true, new { @class = "col-md-3 control-label m-0" })&nbsp;&nbsp; Active  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    </label>
+                                    <label class="m-auto">
+                                        @Html.RadioButtonFor(a => a.is_enabled, false, new { @class = "col-md-3 control-label m-0" })&nbsp;&nbsp; Inactive &nbsp;&nbsp;&nbsp;&nbsp;&nbsp
+                                    </label>
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.is_enabled)</p>
+                            </div>
+
+                            <div class="form-group row">
+                                @Html.LabelFor(a => a.permission_datas, "Permissions", new { @class = "col-md-3 control-label asterik" })
+                                <div class="col-md-9">
+                                    @{
+                                        int i = 0;
+                                        foreach (var permission in Model.permission_datas)
+                                        {
+                                            <label>
+                                                @Html.CheckBox("permission[" + i + "].is_checked", permission.is_checked)<text>&nbsp;&nbsp;&nbsp;<input name="permission[@i].module_id" value="@permission.module_id" type="hidden" />@permission.module_name </text>
+                                            </label>
+                                            <br />
+                                            i++;
+                                        }
+                                    }
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.permission_datas)</p>
+                            </div>
+
+                            <div class="col-md-12">
+                                <button type="submit" class="btn btn-primary waves-effect w-md waves-light pull-right">Save</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <!-- end row -->
+            </div>
+        </div>
+    </div><!-- end col -->
+</div>
+

@@ -1,0 +1,63 @@
+﻿@model ModuleDto
+@{
+    ViewData["Title"] = "Edit Module";
+}
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="m-t-0 header-title"><b>Edit Module</b></h4>
+                <p class="text-muted m-b-30">
+                    Updates a module
+                </p>
+                <div class="row">
+                    <div class="col-lg-6">
+                        <form class="form-horizontal" method="post" action="/setup/module/edit">
+
+                            @Html.AntiForgeryToken()
+                            @Html.ValidationSummary(true)
+
+                            @Html.HiddenFor(a => a.module_id)
+                            <div class="form-group row">
+                                @Html.LabelFor(a => a.module_name, "Module Name", new { @class = "col-md-3 control-label" })
+
+                                <div class="col-md-9">
+                                    @Html.TextBoxFor(a => a.module_name, new { @class = "form-control" })
+
+                                </div>
+
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.module_name)</p>
+                            </div>
+
+                            <div class="form-group row">
+                                @Html.LabelFor(a => a.module_code, "Module Code", new { @class = "col-md-3 control-label" })
+
+                                <div class="col-md-9">
+                                    @Html.TextBoxFor(a => a.module_code, new { @class = "form-control" })
+
+                                </div>
+
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.module_code)</p>
+                            </div>
+                            <div class="form-group row">
+                                @Html.LabelFor(a => a.display_icon, "Display Icon", new { @class = "col-md-3 control-label" })
+
+                                <div class="col-md-9">
+                                    @Html.TextBoxFor(a => a.display_icon, new { @class = "form-control" })
+
+                                </div>
+
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.display_icon)</p>
+                            </div>
+                            <div class="col-md-12">
+                                <button type="submit" class="btn btn-primary waves-effect w-md waves-light pull-right">Save</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <!-- end row -->
+            </div>
+        </div>
+    </div><!-- end col -->
+</div>
+

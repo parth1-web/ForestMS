@@ -1,0 +1,95 @@
+﻿@model ServiceIndexViewModel
+@{
+    ViewData["Title"] = Localizer["Service"];
+
+    var list = new List<SelectListItem>() {
+        new SelectListItem { Text = "10", Value = "10"},
+        new SelectListItem { Text = "20", Value = "20" },
+        new SelectListItem { Text = "30", Value = "30" },
+        new SelectListItem { Text = "40", Value = "40"},
+        new SelectListItem { Text = "50", Value = "50" }
+    };
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="m-t-0 header-title"><b>@Localizer["Service"]</b></h4>
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <a href="/billing/service/new" class="btn btn-icon waves-effect waves-light btn-success btn-sm"><i class="fa fa-plus"></i> @Localizer["Add New Service"]</a>
+                    </div>
+                    <form action="/billing/service" method="get" class="row col-sm-6">
+                        <div class="offset-sm-2 col-sm-6">
+                            @Html.TextBox("name", (string)ViewBag.name, new { @class = "form-control", placeholder = "Service Name" })
+                        </div>
+                        <div class="col-sm-2">
+                            @Html.DropDownList("number_of_rows", list, new { @class = "form-control" })
+                        </div>
+                        <div class="col-sm-2">
+                            <button type="submit" class="form-control btn btn-primary btn-sm"><i class="fa fa-refresh"></i></button>
+                        </div>
+                    </form>
+                </div>
+                <div class="table-responsive">
+                    <table class="table m-0 table-colored-bordered table-bordered-custom">
+                        <thead class="bg-custom text-white">
+                            <tr>
+                                <th>@Localizer["S.N"]</th>
+                                <th>@Localizer["Service Name"]</th>
+                                <th>@Localizer["Category"]</th>
+                                <th>@Localizer["Ledger"]</th>
+                                <th>@Localizer["Rate"]</th>
+                                <th>@Localizer["Tax Amount"]</th>
+                                <th>@Localizer["Created Date"]</th>
+                                <th>@Localizer["Status"]</th>
+                                <th>@Localizer["Actions"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                var sn = 1;
+                                foreach (var service in Model.services)
+                                {
+                                    string status = "Enabled";
+                                    string statusColor = "success";
+                                    if (service.is_enabled == false)
+                                    {
+                                        status = "Disabled";
+                                        statusColor = "danger";
+                                    }
+                                    var taxAmt = Math.Round((service.tax / 100) * service.rate, 2);
+                                    var rate = service.rate - taxAmt;
+                                    <tr>
+                                        <td>@sn</td>
+                                        <td>@service.name</td>
+                                        <td>@service.service_category.name</td>
+                                        <td>@service.ledger.name</td>
+                                        <td>@rate</td>
+                                        <td>@taxAmt</td>
+                                        <td>@service.created_date.Date</td>
+                                        <td><span class="badge badge-@statusColor">@status</span></td>
+                                        <td>
+                                            <a href="/billing/service/edit/@service.service_id" class="btn btn-icon waves-effect waves-light btn-primary btn-sm" title="Edit"><i class="fa fa-pencil"></i></a>
+                                            <a href="/billing/service/delete/@service.service_id" class="btn btn-icon waves-effect waves-light btn-danger btn-sm delete" title="Delete"><i class="fa fa-trash"></i></a>
+                                            @{
+                                                string actionName = service.is_enabled ? "Disable" : "Enable";
+                                                string icon = service.is_enabled ? "fa-thumbs-down" : "fa-thumbs-up";
+                                                string color = service.is_enabled ? "btn-danger" : "btn-success";
+                                            }
+                                            <a href="/billing/service/@actionName/@service.service_id" class="btn btn-icon waves-effect waves-light btn-sm @color" data-toggle="tooltip" title="@actionName service"><i class="fa @icon"></i></a>
+                                        </td>
+                                    </tr>
+                                    sn++;
+                                }
+                            }
+                        </tbody>
+                    </table>
+                    <br />
+                    <LeadingEdgePager info="@ViewBag.pagerInfo"></LeadingEdgePager>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

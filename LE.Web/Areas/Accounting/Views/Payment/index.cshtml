@@ -1,0 +1,84 @@
+﻿@using LE.Web.Areas.Accounting.ViewModels
+@model PaymentIndexViewModel;
+@{
+    var model = Model;
+    ViewData["Title"] = "Payments";
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="m-t-0 header-title">
+                    <b>
+                        @Localizer["Payments"]
+                    </b>
+                </h4>
+                <div class="row mb-2">
+                    <form method="get" class="col-md-12 form-inline">
+                        @Html.LabelFor(a => a.start_date, new { @class = "control-label", style = "margin-right:3px;" })
+                        @Html.TextBoxFor(a => a.start_date, new { @class = "form-control nepali-calendar" })
+
+                        @Html.LabelFor(a => a.end_date, new { @class = "control-label", style = "margin-right:5px; margin-left:5px;" })
+                        @Html.TextBoxFor(a => a.end_date, new { @class = "form-control nepali-calendar" })
+
+                        <div class="pull-right">
+                            <button type="submit" class="btn btn-primary waves-effect w-md waves-light" style="margin-left:5px;">@Localizer["Load"]<i class="fa fa-spinner "></i></button>
+                            <button type="submit" formtarget="_blank" formaction="/accounting/payment/report" class="btn btn-success waves-effect w-md waves-light" style="margin-left:5px;"> <i class="fa fa-print "></i></button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table m-0">
+                        <thead class="bg-custom text-white">
+                            <tr>
+                                <th>@Localizer["Sn"]</th>
+                                <th>@Localizer["Transaction Date"]</th>
+                                <th>@Localizer["Payment From"]</th>
+                                <th>@Localizer["Payment To"]</th>
+                                <th>@Localizer["Remarks"]</th>
+                                <th>@Localizer["Discount"]</th>
+                                <th>@Localizer["Amount"]</th>
+                                <th>@Localizer["Is Cancelled?"]</th>
+                                <th>@Localizer["Action"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                var sn = 1;
+                                decimal totalAmount = 0;
+                                foreach (var detail in Model.payments.OrderBy(a => a.nep_transaction_date))
+                                {
+                                    <tr>
+                                        <td>@sn</td>
+                                        <td>@detail.nep_transaction_date</td>
+                                        <td>@detail.payment_from_name</td>
+                                        <td>@detail.payment_to_name</td>
+                                        <td>@detail.remarks</td>
+                                        <td>@detail.discount</td>
+                                        <td>@detail.amount</td>
+                                        <td>@detail.is_cancelled</td>
+                                        <td>
+                                            <a href="/accounting/payment/cancel/@detail.payment_id"
+                                               class="btn btn-danger cancel">
+                                                <i class="fa fa-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    totalAmount += detail.amount;
+                                    sn++;
+                                }
+                            }
+                            <tr>
+                                <td colspan="5"></td>
+                                <td>@Localizer["Total"]</td>
+                                <td>@totalAmount</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

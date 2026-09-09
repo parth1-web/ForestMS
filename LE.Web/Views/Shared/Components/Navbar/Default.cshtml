@@ -1,0 +1,73 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SharedResource> Localizer
+@{
+    Layout = null;
+    List<LE.Entities.User.Module>
+    modules = (List<LE.Entities.User.Module>
+        )ViewBag.modules;
+    List<LE.Entities.User.DynamicMenu>
+        menus = (List<LE.Entities.User.DynamicMenu>
+            )ViewBag.menus;
+
+}
+<div class="navbar-custom">
+    <div class="container-fluid">
+        <div id="navigation">
+            <ul class="navigation-menu">
+                <li class="has-submenu">
+                    <a href="/"><i class="fi-air-play"></i> <span> @Localizer["Dashboard"] </span> </a>
+                </li>
+
+                @*loop through modules*@
+                @{
+                    foreach (var module in modules)
+                    {
+                        <li class="has-submenu">
+                            <a href="#"><i class="@module.display_icon"></i> <span>@Localizer[module.module_name] </span> </a>
+                            <ul class="submenu">
+                                @{
+                                    var parentMenusOfModule = menus.Where(a => a.module_id == module.module_id && !a.parent_menu_id.HasValue).OrderBy(a => a.display_order).ToList();
+                                }
+
+                                @foreach (var parentMenu in parentMenusOfModule)
+                                {
+                                    @*check if menus of module has submenu or not*@
+                                    if (parentMenu.hasSubMenus())
+                                    {
+                                        var subMenus = parentMenu.sub_menus.OrderBy(a => a.display_order).ToList();
+
+                                        <li class="has-submenu">
+                                            <a href="#">
+                                                <i class="@parentMenu.icon"></i> @Localizer[parentMenu.menu_name]
+                                            </a>
+                                            <ul class="submenu">
+                                                @foreach (var subMenu in subMenus)
+                                                {
+                                                    <li>
+                                                        <a href="@subMenu.web_url">
+                                                            <i class="@subMenu.icon"></i>
+                                                            @Localizer[subMenu.menu_name.ToString()]
+                                                        </a>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li>
+                                            <a href="@parentMenu.web_url">
+                                                <i class="@parentMenu.icon"></i>
+                                                @Localizer[parentMenu.menu_name.ToString()]
+                                            </a>
+                                        </li>
+                                    }
+                                }
+                            </ul>
+                        </li>
+                    }
+                }
+            </ul>
+        </div>
+    </div>
+</div>

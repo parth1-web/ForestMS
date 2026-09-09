@@ -1,0 +1,101 @@
+﻿@model StockItemModel
+@{
+    ViewData["Title"] = "Update Firewood";
+}
+
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="m-t-0 header-title"><b>@Localizer["Update Firewood"]</b></h4>
+                <p class="text-muted m-b-30">
+                    @Localizer["Updates a Firewood."]
+                </p>
+                <form class="form-horizontal" method="post" action="/inventory/stock-item/edit" enctype="multipart/form-data">
+
+                    <div class="row">
+                        <div class="col-lg-6">
+
+                            @Html.ValidationSummary(true)
+                            @Html.HiddenFor(a=>a.stock_item_id)
+                            @Html.AntiForgeryToken()
+                            <div class="form-group row">
+                                @Html.LabelFor(a => a.name, new { @class = "col-md-4 control-label asterik" })
+
+                                <div class="col-md-8">
+                                    @Html.TextBoxFor(a => a.name, new { @class = "form-control name" })
+
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.name)</p>
+                            </div>
+
+                            <div class=" form-group row">
+                                @Html.LabelFor(a => a.wood_type_id, new { @class = "col-md-4 control-label asterik" })
+                                <div class="col-md-8">
+                                    @Html.DropDownList("wood_type_id", (SelectList)ViewBag.woodType, new { @class = "form-control" })
+
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.wood_type_id)</p>
+
+                            </div>
+
+
+                            <div class=" form-group row">
+                                @Html.LabelFor(a => a.stock_unit_id, new { @class = "col-md-4 control-label asterik" })
+                                <div class="col-md-8">
+                                    @Html.DropDownList("stock_unit_id", (SelectList)ViewBag.stockUnit, new { @class = "form-control" })
+
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.stock_unit_id)</p>
+
+                            </div>
+
+
+                            <div class="form-group row">
+                                @Html.LabelFor(a => a.default_sales_rate, new { @class = "col-md-4 control-label " })
+
+                                <div class="col-md-8">
+                                    @Html.TextBoxFor(a => a.default_sales_rate, new { @class = "form-control " })
+
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.default_sales_rate)</p>
+                            </div>
+
+                            <div class="form-group row">
+                                @Html.LabelFor(a => a.threshold, new { @class = "col-md-4 control-label " })
+
+                                <div class="col-md-8">
+                                    @Html.TextBoxFor(a => a.threshold, new { @class = "form-control " })
+
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.threshold)</p>
+                            </div>
+
+
+
+                            <div class="col-md-12">
+                                <button type="submit" class="btn btn-primary waves-effect w-md waves-light pull-right"><i class="fa fa-save fa-lg"> @Localizer["Save"]</i></button>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12">
+                            <p>@Localizer["Note"]: <span class="asterik"></span> @Localizer["Fields are mandatory"].</p>
+                        </div>
+                    </div>
+                </form>
+                <!-- end row -->
+            </div>
+        </div>
+    </div><!-- end col -->
+</div>
+
+@section scripts{
+    <script>
+        $(document).ready(function () {
+            $(".name").focus();
+
+        });
+
+    </script>
+}

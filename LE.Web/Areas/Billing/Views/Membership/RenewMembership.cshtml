@@ -1,0 +1,144 @@
+﻿@using LE.Billing.Entities
+@using LE.Common.Enums
+@using LE.Service.Services.Interface
+@inject DateConverterService _dateConverter;
+@model Membership
+@{
+	ViewData["Title"] = Localizer["Renew Membership"];
+	var newDefaultValidity = _dateConverter.toBS(Model.MembershipValidity.ValidityDate.Date.AddYears(1));
+}
+
+<style>
+	.renew-section .card .card-body p span {
+		font-weight: 600;
+		color: black;
+	}
+
+	.renew-section .card .card-body p {
+		line-height: 25px;
+		margin-bottom: 5px;
+		font-size: 16px;
+	}
+
+	.renew-section .card .card-title {
+		box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+		width: fit-content;
+		padding: 5px 12px;
+		background-color: #3c8715;
+		color: white;
+		margin: 0;
+	}
+
+	.renew-section .membershipDetails {
+		box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+		margin: auto;
+		padding: 20px 25px;
+		height: 90%;
+	}
+</style>
+
+<div class="renew-section">
+	<div class="card">
+		<div class="card-body">
+			<h3 class="m-t-0 header-title"><b>@Localizer["Renew Membership"]</b></h3>
+			<hr />
+			<div class="row mb-4">
+				<div class="col-md-6">
+					<h4 class="card-title">Membership Details</h4>
+					<div class="row membershipDetails">
+						<p class="col-md-5">Membership Code : <span>@Model.MembershipCode</span></p>
+						<p class="offset-md-2 col-md-5">Area : <span>@(!string.IsNullOrEmpty(Model.Area) ? Model.Area : "N/A")</span></p>
+						<p class="col-md-5">Tole : <span>@(!string.IsNullOrEmpty(Model.ToleNo) ? Model.ToleNo : "N/A")</span></p>
+						<p class="offset-md-2 col-md-5">Religion : <span>@Model.Religion</span></p>
+						<p class="col-md-5">Has Bio Gas : <span>@Html.Raw(Model.HasBioGas ? "<i class='fa fa-check-circle' style='font-size:20px; color:#78c350;'></i>" : "<i class='fa fa-times-circle' style='font-size:20px; color:#f7531f;'></i>")</span></p>
+						<p class="offset-md-2 col-md-5">Has LPG : <span>@Html.Raw(Model.HasLPG ? "<i class='fa fa-check-circle' style='font-size:20px; color:#78c350;'></i>" : "<i class='fa fa-times-circle' style='font-size:20px; color:#f7531f;'></i>")</span></p>
+						<p class="col-md-5">Created Date : <span>@_dateConverter.toBS(Model.CreatedDate.Date)</span></p>
+						<p class="offset-md-2 col-md-5">Ledger No. : <span>@Model.ledger.code</span></p>
+						<p class="col-md-5">Valid Date : <span>@Model.MembershipValidity.NepValidityDate</span></p>
+					</div>
+				</div>
+				<div class="offset-md-1 col-md-4">
+					<h3 class="card-title">Renew Form</h3>
+					<form action="/billing/membership/renew" class="membershipDetails" method="post">
+						@Html.HiddenFor(a => a.MembershipId)
+						<div class="form-group row mt-3 mx-2">
+							@Html.Label("nepValidityDate", "New Validity Date", new { @class = "control-label asterik col-md-5 m-auto" })
+							@Html.TextBox("NepValidityDate", newDefaultValidity, new { @class = "form-control nepali-calendar offset-md-1 col-md-6", @readonly = "readonly", required = "required" })
+							<p class="text-danger">@Html.ValidationMessage("NepValidityDate")</p>
+						</div>
+						<div class="form-group mt-4">
+							<button type="submit" class="btn btn-md btn-primary w-100" style="font-size: 16px;font-weight: 600;letter-spacing: 1.2px;">
+								Submit
+							</button>
+						</div>
+						<div class="footer px-5">
+							<em><sup>*</sup><strong>Note</strong> : Please verify details. Once renewed cannot be reverted.</em>
+						</div>
+					</form>
+				</div>
+			</div>
+
+			<div class="mt-4">
+				<h4 class="card-title">Members Details</h4>
+				<table class="table">
+					<thead>
+						<tr>
+							<th>Member Name</th>
+							<th>Age</th>
+							<th>Family Role</th>
+							<th>Gender</th>
+							<th>Is Gharmuli</th>
+							<th>Image</th>
+							<th>Status</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var member in Model.MemberDetails)
+						{
+							<tr>
+								<td>@member.FullName</td>
+								<td>@member.Age</td>
+								<td>@Enum.GetName(typeof(RelationType), member.FamilyRole)</td>
+								<td>@Enum.GetName(typeof(GenderType), member.Gender)</td>
+								<td>@Html.Raw(member.IsGharmuli ? "<i class='fa fa-check-circle' style='font-size:24px; color:#78c350;'></i>" : "-")</td>
+								<td>
+									@{
+										if (!string.IsNullOrEmpty(member.ImageName))
+										{
+											<a href="~/images/custom/@member.ImageName">
+												<img class="img-fluid" src="~/images/custom/@member.ImageName" height="80" width="80" style="object-fit:cover;" alt="member image" />
+											</a>
+										}
+										else
+										{
+											<span>N/A</span>
+										}
+									}
+								</td>
+								<td>@Html.Raw(member.IsActive ? "<span class='badge badge-success'>Active</span>" : "<span class='badge badge-danger'>Inactive</span>")</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section scripts {
+	<script>
+		$(document).ready(function () {
+			let currentNepDate = NepaliFunctions.BS.GetCurrentDate('YYYY-MM-DD');
+
+			$(".nepali-calendar").removeClass("ndp-nepali-calendar");
+			$(".nepali-calendar").off("focus");
+			$(".nepali-calendar").nepaliDatePicker({
+				ndpYear: true,
+				ndpMonth: true,
+				ndpYearCount: 10,
+				readOnlyInput: true,
+				disableBefore: currentNepDate
+			})
+		});
+	</script>
+}

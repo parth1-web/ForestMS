@@ -1,0 +1,102 @@
+﻿@model LE.Account.Infrastructure.Dto.BalanceSheetDto
+
+@{
+    ViewData["Title"] = "Balance Sheet";
+    Layout = null;
+}
+
+<link href="~/css/print.css" rel="stylesheet" />
+<link href="~/css/bootstrap.min.css" rel="stylesheet" />
+<center>
+    <page>
+        <center class="header">
+            @Model.organization_name <br/>@Model.address <br /> @Localizer["Balance Sheet"] <br />@Localizer["For the year"] @Model.start_date.Split("-")[0].ConvertNumerals() / @Model.end_date.Split("-")[0].ConvertNumerals()
+        </center>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>@Localizer["Particulars"]</th>
+                    <th>@Localizer["Assets"]</th>
+                    <th>@Localizer["Liabilities"]</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    decimal drTotal = 0;
+                    decimal crTotal = 0;
+
+                    decimal netProfit = 0;
+                    decimal netLoss = 0;
+                    string text = "Net Loss";
+                    if (Model.profit_loss_amount > 0)
+                    {
+                        netProfit = Model.profit_loss_amount;
+                        crTotal += netProfit;
+                    }
+                    else
+                    {
+                        netProfit = Math.Abs(Model.profit_loss_amount);
+                        text = "Net Profit";
+                        crTotal -= netLoss;
+                    }
+
+                    <tr>
+                        <td>@Localizer[text]</td>
+                        <td></td>
+                        <td>@netProfit.ToString().ConvertNumerals()</td>
+                    </tr>
+
+
+                    foreach (var assetsLedgers in Model.getAssetsLedgerAmountDtos())
+                    {
+
+                        <tr>
+                            <td>
+                                @assetsLedgers.ledger.ledger_group.name
+                            </td>
+                            <td>@Math.Abs(assetsLedgers.amount).ToString().ConvertNumerals()</td>
+                            <td></td>
+                        </tr>
+                        drTotal += Math.Abs(assetsLedgers.amount);
+                    }
+                    foreach (var liabilityLedger in Model.getLiabilitiesLedgerAmountDtos())
+                    {
+
+                        <tr>
+                            <td>@liabilityLedger.ledger.ledger_group.name</td>
+                            <td></td>
+                            <td>@Math.Abs(liabilityLedger.amount).ToString().ConvertNumerals()</td>
+                        </tr>
+                        crTotal += Math.Abs(liabilityLedger.amount);
+                    }
+
+                    @*var closingBalance = Model.closing_balance;
+                        if (closingBalance > 0)
+                        {
+                            <tr>
+                                <td>Closing Balance</td>
+                                <td></td>
+                                <td>@closingBalance</td>
+                            </tr>
+                        }*@
+
+
+                    <tr>
+                        <td align="right" class="font-800"><b>@Localizer["Total"]</b></td>
+                        <td class="font-600"><b>@drTotal.ToString().ConvertNumerals()</b></td>
+                        <td class="font-600"><b>@crTotal.ToString().ConvertNumerals()</b></td>
+                    </tr>
+                }
+
+            </tbody>
+        </table>
+    </page>
+</center>
+<script src="~/js/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        //  window.print();
+
+    });
+</script>

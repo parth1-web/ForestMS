@@ -1,0 +1,267 @@
+﻿@model FurnitureBillIndexViewModel
+@{
+    ViewData["Title"] = Localizer["Furniture Bill"];
+    Layout = null;
+}
+
+<style>
+    #invoice-POS {
+        width: 297mm;
+        margin: 0 auto;
+        background: #FFF;
+    }
+
+    moz-selection {
+        background: #f31544;
+        color: #FFF;
+    }
+
+    h1 {
+        font-size: 1em;
+        color: #222;
+    }
+
+    h2 {
+        font-size: 1.3em;
+    }
+
+    .num2words {
+        font-size: 0.9em;
+    }
+
+    .head {
+        font-size: 1.2em;
+        font-weight: bold;
+    }
+
+    .head-1 {
+        font-size: 1em;
+        font-weight: bold;
+        line-height: 14px;
+    }
+
+    p {
+        font-size: 0.8em;
+        color: #666;
+    }
+
+    #top, #mid, #bot {
+        border-bottom: 1px solid #EEE;
+    }
+
+    #top {
+        min-height: 0px;
+    }
+
+    #mid {
+        min-height: 30px;
+    }
+
+    #bot {
+        min-height: 30px;
+    }
+
+    .clientlogo {
+        float: left;
+        height: 60px;
+        width: 60px;
+        background-size: 60px 60px;
+        border-radius: 50px;
+    }
+
+    .info {
+        display: block;
+        margin-left: 0;
+    }
+
+    .title {
+        float: right;
+    }
+
+        .title p {
+            text-align: right;
+        }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    td {
+        padding: 5px !important;
+    }
+
+    .tabletitle {
+        text-transform: uppercase;
+        font-size: 1em;
+        font-weight: bold;
+        background: #EEE;
+    }
+
+    .item {
+        width: 24mm;
+    }
+
+    .itemtext {
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    #legalcopy {
+        margin-top: 5mm;
+    }
+
+    .logo img {
+        height: 75px;
+        object-fit: cover;
+        width: auto;
+    }
+
+    div.date {
+        position: absolute;
+        top: 130px;
+        right: 50px;
+        width: 200px;
+        height: 150px;
+    }
+
+    .Hours {
+        line-height: 18px;
+    }
+
+    .padding-top-20 {
+        padding-top: 20px;
+    }
+
+    @@media print {
+        .col-md-4 {
+            width: 33.33%;
+            float: left;
+        }
+    }
+</style>
+<link href="~/css/bootstrap.min.css" rel="stylesheet" />
+<div id="invoice-POS">
+    <br />
+    <div class="row">
+        <div class="logo col-md-4">
+            <img src="~/images/custom/@Model.logo" alt="logo" style="">
+        </div>
+        <div class="info col-md-4 text-center">
+            <h3 class="head">@ViewBag.OrganizationName </h3>
+            <h3 class="head">@ViewBag.Address </h3>
+            <h3 class="head">नगद बिक्री रसिद </h3>
+        </div>
+        <div class="d-print-none col-md-4 text-right">
+            <a href="javascript:window.print()" class="btn btn-primary waves-effect waves-light"><i class="fa fa-print m-r-5"></i> @Localizer["Print"]</a>
+        </div>
+    </div>
+    <div class="mt-4 mb-3">
+        @{
+            var nepDate = Model.nep_sales_date.Split("-");
+            var year = nepDate[0].ToString().ConvertNumerals();
+            var month = nepDate[1].ToString().ConvertNumerals();
+            var day = nepDate[2].ToString().ConvertNumerals();
+        }
+        <div class="row">
+            <div class="col-md-6 text-left">
+                <h3 class="head-1">बिल नम्बर : @Model.furniture_sales_id.ToString().ConvertNumerals()</h3>
+            </div>
+            <div class="col-md-6 text-right">
+                <h3 class="head-1">मिति : @year-@month-@day</h3>
+            </div>
+        </div>
+
+        <h3 class="head-1">नाम , थर : @Model.customer</h3>
+        <h3 class="head-1"><span>ठेगाना : @Model.address &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@Model.tole_no</span></h3>
+    </div>
+    <div id="bot">
+        <div id="table">
+            <table class="table table-bordered text-center">
+                <tr class="tabletitle">
+                    <td width="40px" class="Hours">क्र.सं</td>
+                    <td class="Hours">विवरण </td>
+                    <td class="Hours">परिणाम </td>
+                    <td class="Hours">दर </td>
+                    <td class="Hours" width="200px">जम्मा रकम </td>
+                </tr>
+
+                @{
+                    var sn = 1;
+                    foreach (var item in Model.furniture_bill_details)
+                    {
+
+
+                        <tr class="service">
+                            <td class="tableitem"><p class="itemtext text-uppercase">@sn.ToString().ConvertNumerals()</p></td>
+                            <td class="tableitem"><p class="itemtext text-uppercase">@item.furniture.name</p></td>
+                            <td class="tableitem"><p class="itemtext text-uppercase">@item.quantity.ToString().ConvertNumerals()</p></td>
+                            <td class="tableitem"><p class="itemtext text-uppercase">@item.rate.ToString().ConvertNumerals()</p></td>
+                            <td class="tableitem"><p class="itemtext text-uppercase">@item.amount.ToString().ConvertNumerals()</p></td>
+                        </tr>
+                        sn++;
+                    }
+
+                    if (Model.furniture_bill_details.Count < 6)
+                    {
+                        for (var x = 0; x < 7 - Model.furniture_bill_details.Count; x++)
+                        {
+                            var sno = x + Model.furniture_bill_details.Count + 1;
+                            <tr>
+                                <td>&nbsp;</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        }
+                    }
+
+                    <tr class="tabletitle">
+                        <td colspan="3" class="num2words"><b>अक्षरेपी :  </b><span class="" id="num_to_words">@Model.numWords.ToString().ConvertNumerals()  मात्र ।</span> </td>
+                        <td align="left">कुल जम्मा</td>
+                        <td>@Model.amount.ToString().ConvertNumerals()</td>
+                    </tr>
+
+                    if (Model.remarks != "")
+                    {
+                        <tr class="tabletitle text-left">
+                            <td colspan="5" class="num2words"><b>टिप्पणी :  </b><span class="">@Model.remarks</span> </td>
+                        </tr>
+                    }
+                }
+            </table>
+            <br />
+            <br />
+
+            <table style="text-align:center;">
+                <tr>
+                    <td colspan="3">......................................................</td>
+                    <td colspan="3">......................................................</td>
+                    <td colspan="4">................................</td>
+                </tr>
+                <tr>
+                    <td class="padding-top-20" colspan="3"><b>हिसाब तयार पार्ने</b></td>
+                    <td class="padding-top-20" colspan="3"><b>हिसाब जाच गर्ने</b></td>
+                    <td class="padding-top-20" colspan="4"><b>अधक्ष्य</b></td>
+                </tr>
+            </table>
+        </div>
+
+        <div id="legalcopy">
+            <p class="legal">
+                <strong>तयार पार्ने : @Model.user</strong>&nbsp;&nbsp;
+                <strong class="float-right">
+                    मुद्रण मिति : <i class="print_date">@Model.print_date.ToString().ConvertNumerals() | @Model.print_time.ToString().ConvertNumerals() </i>
+                </strong>
+            </p>
+        </div>
+    </div>
+</div>
+<script src="~/js/num2str.js"></script>
+<script src="~/js/jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+
+    });
+</script>

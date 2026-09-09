@@ -1,0 +1,28 @@
+﻿@model AccountingReportVm;
+@{
+    ViewData["Title"] = "Day Book Print";
+    Layout = null;
+}
+
+<link href="~/css/print.css" rel="stylesheet" />
+<link href="~/css/bootstrap.min.css" rel="stylesheet" />
+
+<center>
+    <page>
+        <center class="header">
+            @Model.organization_name <br />@Model.address <br /> @Localizer["Day Book Report"] <br /> @Localizer["Date"] : @Model.FromDate.ConvertNumerals()
+        </center>
+        <div class="report-table">
+            @{
+                var model = new AccountingReportDecoratorVm { ReportType = AccountingReportType.DrCrWise, Report = Model.RightReport };
+            }
+            <partial name="Accounting/AccountingReportDecorator" model="model" />
+        </div>
+    </page>
+</center>
+<script src="~/js/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // window.print();
+    });
+</script>

@@ -1,0 +1,107 @@
+﻿@model ListLedgerIndexViewModel;
+@{
+
+    ViewData["Title"] = "Group Wise Ledger Report";
+}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="m-t-0 header-title">
+                    <b>
+                        @Localizer["Group Wise Ledger Report"]
+                    </b>
+                </h4>
+
+                <form method="get" class="row mb-2 form-inline data">
+                    <div class="col-md-3">
+                        @Html.DropDownList("ledger_group_id", (SelectList)ViewBag.ledgerGroups, "--Select Group--", new { @class = "form-control chosen" })
+                    </div>
+
+                    @Html.LabelFor(a => a.start_date, new { @class = "control-label", style = "margin-right:3px;" })
+                    @Html.TextBoxFor(a => a.start_date, new { @class = "form-control nepali-calendar" })
+
+                    @Html.LabelFor(a => a.end_date, new { @class = "control-label", style = "margin-right:5px; margin-left:5px;" })
+                    @Html.TextBoxFor(a => a.end_date, new { @class = "form-control nepali-calendar" })
+
+                    <div class="pull-right">
+                        <button type="submit" class="btn btn-primary waves-effect w-md waves-light" style="margin-left:5px;">@Localizer["Load"]<i class="fa fa-spinner "></i></button>
+                        <button type="submit" formaction="/accounting/report/ledger-group-report-print" class="btn btn-success" formtarget="_blank" title="Print" style="margin-left:5px;"> <i class="fa fa-print"></i></button>
+                        <button type="submit" formaction="/accounting/report/ledger-group-report-pdf" class="btn btn-danger" formtarget="_blank" title="Pdf" style="margin-left:5px;"> <i class="fa fa-file-pdf-o fa-lg"></i></button>
+                    </div>
+
+                    <div class="col-auto my-1">
+                        <div class="custom-control custom-checkbox mr-sm-2">
+                            <input type="checkbox" name="all" class="custom-control-input" id="all">
+                            <label class="custom-control-label" for="all">@Localizer["Display All"]</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-md-12">
+                <div class="table-responsive">
+                    @{
+                        foreach (var groups in Model.listLedgerindexVM)
+                        {
+                            if (groups.ledger_details.Count > 0)
+                            {
+                                <left>
+                                    <h4>@groups.group_name</h4>
+                                </left>
+                                <table class="table m-0">
+                                    <thead class="bg-custom text-white">
+                                        <tr>
+                                            <th width="50px">@Localizer["S.N"]</th>
+                                            <th>@Localizer["Ledger No."]</th>
+                                            <th>@Localizer["Particulars"]</th>
+                                            <th width="200px">@Localizer["Amount"]</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{
+                                            decimal total = 0;
+                                            int sn = 1;
+                                            foreach (var ledger in groups.ledger_details)
+                                            {
+                                                decimal balance = Math.Abs(ledger.balance);
+                                                if (balance > 0)
+                                                {
+                                                    <tr>
+                                                        <td>@sn</td>
+                                                        <td>@ledger.ledger_id</td>
+                                                        <td>@ledger.name</td>
+                                                        <td>@balance</td>
+                                                    </tr>
+                                                    sn++;
+                                                    total += balance;
+                                                }
+                                            }
+                                            <tr>
+                                                <td colspan="2" class="text-right font-800 font-14">@Localizer["Total Amount"]</td>
+                                                <td class="font-14 font-800">@total</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            $('.chosen').select2();
+            $("#all").click(function () {
+                $(".data").submit();
+            });
+            if ("@((string)Model.all)" == "on") {
+                $("#all").prop('checked', true);
+            }
+        });
+    </script>
+}

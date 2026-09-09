@@ -1,0 +1,71 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SharedResource> Localizer
+
+@{
+    var setups = (List<LE.Entities.OrganizationSetup.OrganizationSetup>)ViewBag.setup;
+    var orgName = setups.Where(a => a.key == LE.Web.Areas.Setup.Models.OrganizationSetupKeys.getOrganizationNameKey).SingleOrDefault()?.value;
+    var logo = setups.Where(a => a.key == LE.Web.Areas.Setup.Models.OrganizationSetupKeys.getLogoKey).SingleOrDefault()?.value;
+    var details = ViewBag.userDetail;
+}
+
+<div class="topbar-main navbar m-b-0 b-0">
+    <div class="container-fluid">
+        <div class="topbar-left">
+            <span>
+                <a href="/" class="logo">
+                    <img src="~/images/custom/@logo" alt="" height="35">
+                    <span style="font-size:20px; font-weight:bold; color:white;">@orgName</span>
+                </a>
+            </span>
+        </div>
+
+        <div class="menu-extras">
+            <ul class="nav navbar-right list-inline">
+                <li class="list-inline-item ">
+                    @await Html.PartialAsync("_SelectLanguagePartial")
+                </li>
+                <li class="list-inline-item">
+                    <div class="dropdown">
+                        <a href="~/files/Counter_Billing.zip" target="_blank" class="right-menu-item">
+                            <i class="dripicons-download"></i>
+                        </a>
+                    </div>
+                </li>
+                <li class="dropdown user-box list-inline-item">
+                    <a href="index.html" class="dropdown-toggle waves-effect user-link" data-toggle="dropdown" aria-expanded="true">
+                        @{
+                            var image = "user.png";
+                            if (details.image_path != null)
+                            {
+                                image = "/custom/" + details.image_path;
+                            }
+                        }
+                        <img src="~/images/@image" alt="user-img" class="rounded-circle user-img">
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-right arrow-dropdown-menu arrow-menu-right user-list notify-list">
+                        <li>
+                            <a href="/administration/user/edit/@details.user_id" class="dropdown-item">
+                                @Localizer["Profile"]
+                            </a>
+                        </li>
+                        <li><a href="/administration/user/change-password/@ViewBag.authenticationId" class="dropdown-item">@Localizer["Change Password"]</a></li>
+                        <li><a href="/setup/org-setup" class="dropdown-item">@Localizer["Setup"]</a></li>
+                        <li class="dropdown-divider"></li>
+                        <li><a href="/account/logout" class="dropdown-item">@Localizer["Logout"]</a></li>
+                    </ul>
+                </li>
+            </ul>
+
+            <div class="menu-item">
+                <a class="navbar-toggle">
+                    <div class="lines">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+

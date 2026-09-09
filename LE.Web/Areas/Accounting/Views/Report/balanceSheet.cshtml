@@ -1,0 +1,116 @@
+﻿@using LE.Account.Infrastructure.Reports.Reporter.ValueObjects
+
+@model AccountingReportVm
+@{
+    ViewData["Title"] = "Balance Sheet";
+}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="m-t-0 header-title">
+                    <b>
+                        @Localizer["Balance Sheet"]
+                    </b>
+                </h4>
+                <div>
+                    <form method="get" class="row mb-2 form-inline">
+                        <div class="col-sm-2">
+                            @Localizer["From Date"]
+                            @Html.TextBoxFor(a => a.FromDate, new { @class = "date-picker form-control nepali-calendar w-100", @autocomplete = "off" })
+                        </div>
+                        <div class="col-sm-2">
+                            @Localizer["To Date"]
+                            @Html.TextBoxFor(a => a.ToDate, new { @class = "date-picker form-control nepali-calendar w-100", @autocomplete = "off" })
+                        </div>
+                        <div class="col-sm-2">
+                            @Localizer["Closing Stock"] &nbsp;
+                            @Html.TextBoxFor(a => Model.ClosingBalance, new { @class = "form-control w-100", @autocomplete = "off" })
+                        </div>
+                        <div class="offset-sm-3 col-sm-3 mt-4">
+                            <button type="submit" class="btn btn-primary waves-effect w-md waves-light">
+                                @Localizer["Load"] <i class="fa fa-spinner "></i>
+                            </button>
+                            <button type="submit" formaction="/accounting/report/balance-sheet-print" formtarget="_blank" class="btn btn-success">
+                                <i class="fa fa-print "></i>
+                            </button>
+                            <button type="submit" formaction="/accounting/report/balance-sheet-pdf" class="btn btn-danger" formtarget="_blank" title="Pdf">
+                                <i class="fa fa-file-pdf-o fa-lg "></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="report-table">
+                    @{
+                        var leftReportVm = new AccountingReportDecoratorVm { ReportType = AccountingReportType.Split, Report = Model.LeftReport };
+                        var rightReportVm = new AccountingReportDecoratorVm { ReportType = AccountingReportType.Split, Report = Model.RightReport };
+
+                        decimal totalDr = 0, totalCr = 0;
+                        if (Model.LeftReport.Any())
+                        {
+                            totalDr = Model.LeftReport[0].Balance;
+                        }
+                        if (Model.RightReport.Any())
+                        {
+                            totalCr = Model.RightReport[0].Balance;
+                        }
+
+                        var diff = totalDr - totalCr;
+                        var positiveDiff = diff > 0 ? diff : diff * -1;
+
+                        if (totalDr < totalCr)
+                        {
+                            if (Model.LeftReport.Any())
+                            {
+                                leftReportVm.Report[0].Balance += positiveDiff;
+                            }
+                            leftReportVm.Report.Add(new AccountingReportVo
+                            {
+                                Id = 0,
+                                ParentId = 0,
+                                Name = "P/L Account",
+                                Code = null,
+                                Dr = 0,
+                                Cr = 0,
+                                Balance = positiveDiff,
+                                PreviousBalance = 0,
+                                Total = 0,
+                                Children = new List<AccountingReportVo>()
+                            });
+                        }
+                        else
+                        {
+                            if (Model.RightReport.Any())
+                            {
+                                rightReportVm.Report[0].Balance += positiveDiff;
+                            }
+                            rightReportVm.Report.Add(new AccountingReportVo
+                            {
+                                Id = 0,
+                                ParentId = 0,
+                                Name = "P/L Account",
+                                Code = null,
+                                Dr = 0,
+                                Cr = 0,
+                                Balance = positiveDiff,
+                                PreviousBalance = 0,
+                                Total = 0,
+                                Children = new List<AccountingReportVo>()
+                            });
+                        }
+                    }
+                    <div class="row p-2">
+                        <div class="col">
+                            <partial name="Accounting/AccountingReportDecorator" model="@leftReportVm" />
+                        </div>
+                        <div class="col">
+                            <partial name="Accounting/AccountingReportDecorator" model="@rightReportVm" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,94 @@
+﻿@model MemberTransactionIndexViewModel;
+@{
+    ViewData["Title"] = Localizer["Member Wood Transaction"];
+    var list = new List<SelectListItem>() {
+        new SelectListItem { Text = "Billed", Value = "false"},
+        new SelectListItem { Text = "Cancelled", Value = "true" }
+    };
+}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="m-t-0 header-title"><b>@Localizer["Member Wood Transaction"]</b></h4>
+                <div class="row">
+                    <form method="get" class="col-md-12 form-inline mb-2">
+                        @Html.LabelFor(a => a.start_date, new { @class = "control-label", style = "margin-right:10px;" })
+                        @Html.TextBoxFor(a => a.start_date, new { @class = "form-control nepali-calendar" })
+
+                        @Html.LabelFor(a => a.end_date, new { @class = "control-label", style = "margin-right:10px; margin-left:15px;" })
+                        @Html.TextBoxFor(a => a.end_date, new { @class = "form-control nepali-calendar" })
+
+                        @Html.DropDownListFor(a=>a.is_cancelled, list, new {@class = "form-control", style = "margin-left:15px;" })
+
+                        <div class="col-md-2">
+                            @Html.DropDownList("member_id", (SelectList)ViewBag.members, "All", new { @class = "form-control chosen" })
+                        </div>
+
+                        <button type="submit" class="btn btn-primary waves-effect w-md waves-light pull-right" style="margin-left:5px;">@Localizer["Load"] <i class="fa fa-spinner "></i></button>
+
+                        <div class="pull-right">
+                            <button type="submit" formtarget="_blank" formaction="/billing/member-transaction/report" class="btn btn-success waves-effect w-md waves-light pull-right" style="margin-left:5px;"> <i class="fa fa-print "></i></button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table m-0">
+                        <thead class="bg-custom text-white">
+                            <tr>
+                                <th>@Localizer["S.N"]</th>
+                                <th>@Localizer["Bill No"]</th>
+                                <th>@Localizer["Bill Date"]</th>
+                                <th>@Localizer["Member Name"]</th>
+                                <th>@Localizer["Golia No"]</th>
+                                <th>@Localizer["Quantity"]</th>
+                                <th>@Localizer["Rate"]</th>
+                                <th>@Localizer["Total"]</th>
+                                <th>@Localizer["Status"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{ var sn = 1;
+                                decimal totalAmount = 0;
+                                foreach (var detail in Model.member_transactions)
+                                {
+                                    string status = "Billed";
+                                    if (detail.is_cancelled)
+                                    {
+                                        status = "Cancelled";
+                                    }
+                                    
+                                    <tr>
+                                        <td>@sn</td>
+                                        <td>@detail.wood_bill_id</td>
+                                        <td>@detail.woodBill.nep_bill_date</td>
+                                        <td>@detail.member.FullName</td>
+                                        <td>@detail.woodDetail.goliya_number</td>
+                                        <td>@detail.quantity</td>
+                                        <td>@detail.rate</td>
+                                        <td>@detail.amount</td>
+                                        <td>@status</td>
+                                    </tr>
+                                    totalAmount += detail.amount;
+                                    sn++;
+                                }
+                            }
+                            <tr>
+                                <td colspan="6"></td>
+                                <td>@Localizer["Total Amount"]</td>
+                                <td>@totalAmount</td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts{
+    <script>
+        $('.chosen').select2();
+    </script>
+}

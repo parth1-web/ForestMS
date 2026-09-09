@@ -1,0 +1,87 @@
+﻿@using LE.Web.Areas.Accounting.ViewModels
+@model ReceiptIndexViewModel;
+@{
+    ViewData["Title"] = "Receipts";
+    var list = new List<SelectListItem>() {
+        new SelectListItem { Text = "Billed", Value = "false"},
+        new SelectListItem { Text = "Cancelled", Value = "true" }
+    };
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="m-t-0 header-title"><b>@Localizer["Receipts"]</b></h4>
+                <div class="row">
+                    <form method="get" class="col-md-12 form-inline mb-2">
+                        @Html.LabelFor(a => a.start_date, new { @class = "control-label", style = "margin-right:3px;" })
+                        @Html.TextBoxFor(a => a.start_date, new { @class = "form-control nepali-calendar" })
+
+                        @Html.LabelFor(a => a.end_date, new { @class = "control-label", style = "margin-right:5px; margin-left:5px;" })
+                        @Html.TextBoxFor(a => a.end_date, new { @class = "form-control nepali-calendar" })
+
+                        @Html.DropDownListFor(a => a.is_cancelled, list, new { @class = "form-control", style = "margin-right:10px; margin-left:15px;" })
+
+                        <button type="submit" class="btn btn-primary waves-effect w-md waves-light pull-right" style="margin-left:5px;">@Localizer["Load"] <i class="fa fa-spinner "></i></button>
+
+                        <div class="pull-right">
+                            <button type="submit" formtarget="_blank" formaction="/accounting/receipt/report" class="btn btn-success waves-effect w-md waves-light pull-right" style="margin-left:5px;"> <i class="fa fa-print "></i></button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table m-0">
+                        <thead class="bg-custom text-white">
+                            <tr>
+                                <th>@Localizer["Sn"]</th>
+                                <th>@Localizer["Bill No"]</th>
+                                <th>@Localizer["Transaction Date"]</th>
+                                <th>@Localizer["Receipt From"]</th>
+                                <th>@Localizer["Receipt To"]</th>
+                                <th>@Localizer["Remarks"]</th>
+                                <th>@Localizer["Amount"]</th>
+                                <th>@Localizer["Is Cancelled?"]</th>
+                                <th>@Localizer["Actions"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                var sn = 1;
+                                decimal totalAmount = 0;
+                                foreach (var detail in Model.receipts.OrderBy(a => a.nep_transaction_date))
+                                {
+                                    <tr>
+                                        <td>@sn</td>
+                                        <td>@detail.receipt_id</td>
+                                        <td>@detail.nep_transaction_date</td>
+                                        <td>@detail.receipt_from_name</td>
+                                        <td>@detail.receipt_to_name</td>
+                                        <td>@detail.remarks</td>
+                                        <td>@detail.amount</td>
+                                        <td>@detail.is_cancelled</td>
+                                        <td>
+                                            <a href="/accounting/receipt/bill/@detail.receipt_id" target="_blank" class="btn btn-primary"><i class="fa fa-eye"></i></a>
+                                            <a href="/accounting/receipt/cancel/@detail.receipt_id"
+                                               class="btn btn-danger cancel">
+                                                <i class="fa fa-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    totalAmount += detail.amount;
+                                    sn++;
+                                }
+                            }
+                            <tr>
+                                <td colspan="5"></td>
+                                <td>@Localizer["Total"]</td>
+                                <td>@totalAmount</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

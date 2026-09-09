@@ -1,0 +1,368 @@
+﻿@model WoodBillIndexViewModel
+@{
+    ViewData["Title"] = Localizer["Wood Bill"];
+    Layout = null;
+}
+
+<link href="~/lib/fontawesome-free/css/all.min.css" rel="stylesheet" />
+<link href="~/css/bootstrap.min.css" rel="stylesheet" />
+
+<style>
+    #invoice-POS {
+        width: 297mm;
+        margin: 0 auto;
+        background: #FFF;
+    }
+
+    moz-selection {
+        background: #f31544;
+        color: #FFF;
+    }
+
+    h1 {
+        font-size: 1em;
+        color: #222;
+    }
+
+    h2 {
+        font-size: 1.3em;
+    }
+
+    .num2words {
+        font-size: 0.9em;
+    }
+
+    .head {
+        font-size: 1.2em;
+        font-weight: bold;
+    }
+
+    .head-1 {
+        font-size: 1em;
+        font-weight: bold;
+        line-height: 14px;
+    }
+
+    p {
+        font-size: 0.8em;
+        color: #666;
+    }
+
+    #top, #mid, #bot {
+        border-bottom: 1px solid #EEE;
+    }
+
+    #top {
+        min-height: 0px;
+    }
+
+    #mid {
+        min-height: 30px;
+    }
+
+    #bot {
+        min-height: 30px;
+    }
+
+    .clientlogo {
+        float: left;
+        height: 60px;
+        width: 60px;
+        background-size: 60px 60px;
+        border-radius: 50px;
+    }
+
+    .info {
+        display: block;
+        margin-left: 0;
+    }
+
+    .title {
+        float: right;
+    }
+
+        .title p {
+            text-align: right;
+        }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    td {
+        padding: 5px !important;
+    }
+
+    .tabletitle {
+        text-transform: uppercase;
+        font-size: 1em;
+        font-weight: bold;
+        background: #EEE;
+    }
+
+    .item {
+        width: 24mm;
+    }
+
+    .itemtext {
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    #legalcopy {
+        margin-top: 5mm;
+    }
+
+    .logo img {
+        height: 75px;
+        object-fit: cover;
+        width: auto;
+    }
+
+    div.date {
+        position: absolute;
+        top: 130px;
+        right: 50px;
+        width: 200px;
+        height: 150px;
+    }
+
+    .Hours {
+        line-height: 18px;
+    }
+
+    .padding-top-20 {
+        padding-top: 20px;
+    }
+
+    @@media print {
+        .col-md-4 {
+            width: 33.33%;
+            float: left;
+        }
+    }
+</style>
+
+<div id="invoice-POS">
+    <br />
+    <div class="row">
+        <div class="logo col-md-4">
+            <img src="~/images/custom/@Model.logo" alt="logo" style="">
+        </div>
+        <div class="info col-md-4 text-center">
+            <h3 class="head">@ViewBag.OrganizationName </h3>
+            <h3 class="head">@ViewBag.Address </h3>
+            <h3 class="head">नगद बिक्री रसिद </h3>
+        </div>
+        <div class="d-print-none col-md-4 text-right">
+            <a href="javascript:window.print()" class="btn btn-primary waves-effect waves-light"><i class="fa fa-print m-r-5"></i> @Localizer["Print"]</a>
+        </div>
+    </div>
+
+    <div class="mt-4 mb-3">
+        @{
+            var nepDate = Model.nep_bill_date.Split("-");
+            var year = nepDate[0].ToString().ConvertNumerals();
+            var month = nepDate[1].ToString().ConvertNumerals();
+            var day = nepDate[2].ToString().ConvertNumerals();
+        }
+        <div class="row">
+            <div class="col-md-6 text-left">
+                <h3 class="head-1">बिल नम्बर : @Model.wood_bill_id.ToString().ConvertNumerals()</h3>
+            </div>
+            <div class="col-md-6 text-right">
+                <h3 class="head-1">मिति : @year-@month-@day</h3>
+            </div>
+        </div>
+
+        @{
+            string mem = "";
+            foreach (var member in Model.members)
+            {
+                if (mem != "")
+                {
+                    mem = mem + ", " + member;
+                }
+                else
+                {
+                    mem = member;
+                }
+            }
+
+            string add = "";
+            foreach (var addr in Model.address)
+            {
+                if (add != "")
+                {
+                    add = add + ", " + addr;
+                }
+                else
+                {
+                    add = addr;
+                }
+            }
+
+            string tole = "";
+            foreach (var tolen in Model.tole_no)
+            {
+                if (tole != "")
+                {
+                    tole = tole.ConvertNumerals() + ", " + tolen;
+
+                }
+                else
+                {
+                    tole = tolen;
+                }
+            }
+        }
+        <h3 class="head-1">नाम , थर : @mem</h3>
+        <h3 class="head-1"><span>ठेगाना : @add &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;टोल : @tole</span></h3>
+    </div>
+    <div id="bot">
+        <div id="table">
+            <table class="table table-bordered ">
+                <tr class="tabletitle">
+                    <td width="80" class="Hours text-uppercase">क्र.सं</td>
+                    <td width="110" class="Hours text-uppercase">काठको जात</td>
+                    <td width="90" class="text-uppercase Hours">गोलिया न</td>
+                    <td width="120" class="Hours text-uppercase">नापसाइज</td>
+                    <td width="80" class="Hours text-uppercase">परिणाम</td>
+                    <td width="200" class="Hours text-uppercase">रद्धिकट्टी   साइज</td>
+                    <td width="150" class="Hours text-uppercase">रद्धिकट्टी परिणाम</td>
+                    <td width="140" class="Hours text-uppercase">ठहर परिणाम</td>
+                    <td width="80" class="Hours text-uppercase">दररेट</td>
+                    <td class="text-uppercase Hours" width="100px">रकम</td>
+                    <td class="text-uppercase" width="100px">ग्रेडिङ</td>
+                </tr>
+
+                @{
+                    var sn = 1;
+                    decimal totalWoodSize = 0;
+
+                    foreach (var item in Model.bill_details)
+                    {
+                        totalWoodSize += item.woodDetails.getNetTotal();
+                        <tr>
+                            <td class="tableitem"><p class="itemtext text-uppercase">@sn.ToString().ConvertNumerals()</p></td>
+                            <td class="tableitem"><p class="itemtext text-uppercase">@item.woodDetails.wood_type.name</p></td>
+                            <td class="tableitem"><p class="itemtext text-uppercase">@item.woodDetails.goliya_number.ToString().ConvertNumerals()</p></td>
+                            <td class="tableitem"><p class="itemtext text-uppercase">@item.woodDetails.circle_size.ToString().ConvertNumerals() X @item.woodDetails.length.ToString().ConvertNumerals()</p></td>
+                            <td class="tableitem"><p class="itemtext text-uppercase">@item.woodDetails.fresh_total_size.ToString().ConvertNumerals()</p></td>
+                            <td class="tableitem">
+                                <p class="itemtext text-uppercase">
+                                    @{
+                                        foreach (var damage in item.woodDetails.DamagedWoodDetails)
+                                        {
+                                            <span><i class="fa fa-arrow-circle-right"> </i> @damage.damaged_first_size.ToString().ConvertNumerals() + @damage.damaged_second_size.ToString().ConvertNumerals() + @damage.damaged_third_size.ToString().ConvertNumerals() + @damage.damaged_fourth_size.ToString().ConvertNumerals() + @damage.damaged_fifth_size.ToString().ConvertNumerals() X @damage.damaged_feet_size.ToString().ConvertNumerals()</span>
+                                            <br />
+                                        }
+                                    }
+                                </p>
+                            </td>
+                            <td class="tableitem"><p class="itemtext text-uppercase">@item.woodDetails.getHoleTotalSize().ToString().ConvertNumerals()</p></td>
+                            <td class="tableitem"><p class="itemtext text-uppercase">@item.woodDetails.getNetTotal().ToString().ConvertNumerals()</p></td>
+                            <td class="tableitem"><p class="itemtext text-uppercase">@item.rate.ToString().ConvertNumerals()</p></td>
+                            @{
+                                var netTotalSize = item.woodDetails.getNetTotal();
+                                if (item.woodDetails.stock_type_id == Convert.ToInt32(LE.Inventory.Common.Enums.StockTypes.BallaBalli))
+                                {
+                                    if (item.woodDetails.balla_balli_category_id == Convert.ToInt32(LE.Inventory.Common.Enums.BallaBalliCategorys.KhabaKhutti))
+                                    {
+                                        netTotalSize = 1;
+                                    }
+                                }
+                                var rowTotal = Math.Round((netTotalSize * item.rate), 2);
+                            }
+                            <td class="tableitem"><p class="itemtext text-uppercase">@rowTotal.ToString().ConvertNumerals()</p></td>
+                            <td class="tableitem"><p class="itemtext text-uppercase">@item.woodDetails.grade</p></td>
+                        </tr>
+                        sn++;
+                    }
+
+                    if (Model.bill_details.Count < 6)
+                    {
+                        for (var x = 0; x < 7 - Model.bill_details.Count; x++)
+                        {
+                            var sno = x + Model.bill_details.Count + 1;
+                            <tr class="service">
+                                <td class="tableitem"><p class="itemtext text-uppercase">&nbsp;</p></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        }
+                    }
+                    <tr class="tabletitle">
+                        <td colspan="7" class="text-right">कुल ठहर परिणाम</td>
+                        <td colspan="4">@totalWoodSize.ToString().ConvertNumerals()</td>
+                    </tr>
+
+                    <tr class="tabletitle">
+                        <td colspan="7" rowspan="3" class="num2words">
+                            <b class="Rate">अक्षरेपी :  </b><span class="" id="num_to_words">@Model.numWords मात्र ।</span>
+                            @{
+                                if (Model.remarks != "")
+                                {
+                                    <br />
+                                    <br />
+                                    <br />
+                                    <br />
+                                    <br />
+                                    <br />
+                                    <span>टिप्पणी:</span>
+                                    @Model.remarks
+                                }
+                            }
+                        </td>
+                        <td colspan="2" align="left" class="Rate"> जम्मा</td>
+                        <td colspan="2" class="payment ">@Model.amount.ToString().ConvertNumerals()</td>
+                    </tr>
+                    var totalWithTax = Model.amount + Model.tax_amount;
+                    <tr class="tabletitle">
+                        <td colspan="2" align="left" class="Rate">न.पा.कर</td>
+                        <td colspan="2" class="payment ">@Model.tax_amount.ToString().ConvertNumerals()</td>
+                    </tr>
+                    <tr class="tabletitle">
+                        <td colspan="2" align="left" class="Rate">कुल जम्मा</td>
+                        <td colspan="2" class="payment ">@totalWithTax.ToString().ConvertNumerals()</td>
+                    </tr>
+                }
+            </table>
+            <br />
+            <br />
+            <table style="text-align:center;">
+                <tr>
+                    <td colspan="3">......................................................</td>
+                    <td colspan="3">......................................................</td>
+                    <td colspan="4">................................</td>
+                </tr>
+                <tr>
+                    <td class="padding-top-20" colspan="3"><b>हिसाब तयार पार्ने</b></td>
+                    <td class="padding-top-20" colspan="3"><b>हिसाब जाच गर्ने</b></td>
+                    <td class="padding-top-20" colspan="4"><b>अधक्ष्य</b></td>
+                </tr>
+            </table>
+        </div>
+
+        <div id="legalcopy">
+            <p class="legal">
+                <strong>तयार पार्ने : @Model.user</strong>&nbsp;&nbsp;
+                <strong class="float-right">
+                    मुद्रण मिति : <i class="print_date">@Model.print_date.ToString().ConvertNumerals() | @Model.print_time.ToString().ConvertNumerals() </i>
+                </strong>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script src="~/js/num2str.js"></script>
+<script src="~/js/jquery.min.js"></script>

@@ -1,0 +1,53 @@
+﻿@using LE.Account.Infrastructure.Dto
+@model TrialBalanceDto
+@{
+    ViewData["Title"] = "Trial Balance";
+    Layout = null;
+}
+
+<link href="~/css/print.css" rel="stylesheet" />
+<link href="~/css/bootstrap.min.css" rel="stylesheet" />
+<link href="~/Cafe/plugins/fontawesome-free/css/all.min.css" rel="stylesheet" />
+
+<style>
+    table {
+        border-collapse: collapse;
+    }
+
+    table, th, td {
+        border: 1px solid black;
+        padding: 5px;
+    }
+</style>
+<center>
+    <page size="A4">
+        <center class="header"> @Model.organization_name <br />@Model.address <br />  @Localizer["Trial Balance Report"] <br />@Localizer["From Date"] : @Model.start_date.ConvertNumerals() &nbsp;&nbsp;-&nbsp;&nbsp; @Localizer["From Date"] : @Model.end_date.ConvertNumerals()</center>
+        @{
+            var reportVm = new AccountingReportDecoratorVm() { Report = Model.Report, ReportType = AccountingReportType.Normal };
+        }
+        <partial name="Accounting/AccountingReportDecorator" model="@reportVm" />
+    </page>
+</center>
+
+<script src="~/js/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $(".expandable").click(function () {
+            $(this).toggleClass("is-expanded");
+            let selfId = $(this).attr("data-self-id");
+            let childElements = $("tr[data-parent-id=" + selfId + "]");
+            if ($(this).hasClass("is-expanded")) {
+                $(this).find(".dropdownIcon").removeClass("fa-chevron-up").addClass("fa-chevron-down");
+                childElements.each(function (i, e) {
+                    $(e).css("display", "none");
+                });
+            }
+            else {
+                $(this).find(".dropdownIcon").removeClass("fa-chevron-down").addClass("fa-chevron-up");
+                childElements.each(function (i, e) {
+                    $(e).css("display", "table-row");
+                });
+            }
+        })
+    });
+</script>

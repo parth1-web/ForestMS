@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LE.Account.Entities\LE.Account.Entities.csproj" />
+    <ProjectReference Include="..\LE.Account.Providers\LE.Account.Providers.csproj" />
+    <ProjectReference Include="..\LE.Account.Service\LE.Account.Service.csproj" />
+    <ProjectReference Include="..\LE.Common\LE.Common.csproj" />
+    <ProjectReference Include="..\LE.Context\LE.Context.csproj" />
+  </ItemGroup>
+
+</Project>

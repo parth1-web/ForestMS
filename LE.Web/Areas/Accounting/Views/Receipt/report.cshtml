@@ -1,0 +1,58 @@
+﻿@using LE.Web.Areas.Accounting.ViewModels
+@model ReceiptIndexViewModel;
+@{
+    Layout = null;
+}
+<title>@Localizer["Receipt Report"]</title>
+<link href="~/css/print.css" rel="stylesheet" />
+<link href="~/css/bootstrap.min.css" rel="stylesheet" />
+
+<center>
+    <page>
+        <center class="header"> @ViewBag.organizationName <br />  @ViewBag.Address  <br /> <b>@Localizer["Receipt Report"]</b><br /> @Localizer["From Date"] : @Model.start_date.ConvertNumerals() &nbsp;&nbsp;-&nbsp;&nbsp;@Localizer["To Date"] : @Model.end_date.ConvertNumerals()</center>
+        <table>
+            <thead>
+                <tr>
+                    <th width="20">@Localizer["Sn"]</th>
+                    <th width="110">@Localizer["Transaction Date"]</th>
+                    <th>@Localizer["Receipt From"]</th>
+                    <th>@Localizer["Receipt To"]</th>
+                    <th>@Localizer["Remarks"]</th>
+                    <th>@Localizer["Amount"]</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    var sn = 1;
+                    decimal totalAmount = 0;
+                    foreach (var detail in Model.receipts.OrderBy(a => a.nep_transaction_date))
+                    {
+                        <tr>
+                            <td>@sn.ToString().ConvertNumerals()</td>
+                            <td>@detail.nep_transaction_date.ConvertNumerals()</td>
+                            <td>@detail.receipt_from_name</td>
+                            <td>@detail.receipt_to_name</td>
+                            <td>@detail.remarks</td>
+                            <td>@detail.discount.ToString().ConvertNumerals()</td>
+                            <td>@detail.amount.ToString().ConvertNumerals()</td>
+                        </tr>
+                        totalAmount += detail.amount;
+                        sn++;
+                    }
+                }
+                <tr>
+                    <td colspan="4"></td>
+                    <td colspan="2"><b>@Localizer["Total"]</b></td>
+                    <td><b>@totalAmount.ToString().ConvertNumerals()</b></td>
+                </tr>
+            </tbody>
+        </table>
+    </page>
+</center>
+<script src="~/js/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        //  window.print();
+
+    });
+</script>

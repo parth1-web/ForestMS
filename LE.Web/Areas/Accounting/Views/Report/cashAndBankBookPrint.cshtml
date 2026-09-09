@@ -1,0 +1,111 @@
+﻿@using static LE.Common.Library.DateConverter.Entity.NepaliDate
+@model StatementOfLedgerIndexViewModel;
+@{
+
+    ViewData["Title"] = "Cash And Bank Book";
+
+    Layout = null;
+}
+
+<link href="~/css/print.css" rel="stylesheet" />
+<link href="~/css/bootstrap.min.css" rel="stylesheet" />
+
+<center>
+    <page>
+        <center class="header">
+            @Model.organization_name <br />@Model.address <br /> @Localizer["Cash And Bank Book Report"] (@Localizer[Model.ledger_type.Replace("_", " ")] )<br /> @Localizer["Date"] @Model.date.ConvertNumerals()
+        </center>
+        <table>
+            <thead>
+                <tr>
+                    <th width="50px">@Localizer["Sn"]</th>
+
+                    <th width="160px">@Localizer["Transaction Date"]</th>
+                    <th>@Localizer["Voucher Type"]</th>
+                    <th>@Localizer["Remarks"]</th>
+                    <th width="150px">@Localizer["Debit"]</th>
+                    <th width="150px">@Localizer["Credit"]</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    decimal drTotal = 0;
+                    decimal crTotal = 0;
+                    int sn = 1;
+                    if (Model.transactionDetail != null)
+                    {
+                        foreach (var transactionData in Model.transactionDetail)
+                        {
+                            var prefix = "By";
+                            if (transactionData.cr_amount > 0)
+                            {
+                                prefix = "To";
+                            }
+                            <tr>
+                                <td>@sn.ToString().ConvertNumerals()</td>
+                                <td>@DateConverter.Core.Service_Factory.DateConverterFactory.getDateConverterService().ToBS(transactionData.transaction_date.Date, DateFormats.yMd).getFormattedDate().ConvertNumerals()</td>
+                                <td>@transactionData.transaction.voucher_type</td>
+                                <td>@transactionData.transaction.remarks</td>
+                                <td>
+                                    @{
+                                        if (transactionData.cr_amount > 0)
+                                        {
+                                            @transactionData.cr_amount.ToString().ConvertNumerals()
+                                            ;
+                                        }
+                                    }
+                                </td>
+                                <td>
+                                    @{
+                                        if (transactionData.dr_amount > 0)
+                                        {
+                                            @transactionData.dr_amount.ToString().ConvertNumerals()
+                                            ;
+                                        }
+                                    }
+                                </td>
+                            </tr>
+                            drTotal += transactionData.dr_amount;
+                            crTotal += transactionData.cr_amount;
+                            sn++;
+                        }
+
+                        decimal drdifference = 0;
+                        decimal crdifference = 0;
+                        var label = @Localizer["Difference in Balance"];
+
+                        if (crTotal > drTotal)
+                        {
+                            drdifference = crTotal - drTotal;
+                            drTotal += drdifference;
+                        }
+                        else
+                        {
+                            crdifference = drTotal - crTotal;
+                            crTotal += crdifference;
+                        }
+                        <tr>
+                            <td colspan="4" class="text-center"><strong>@label</strong></td>
+
+                            <td><strong>@Math.Abs(crdifference)</strong></td>
+                            <td><strong>@Math.Abs(drdifference)</strong></td>
+
+                        </tr>
+                        <tr>
+                            <td colspan="4" class="font-600 text-center"><b>@Localizer["Total"]</b></td>
+                            <td class="font-600"><b>@crTotal.ToString().ConvertNumerals()</b></td>
+                            <td class="font-600"><b>@drTotal.ToString().ConvertNumerals()</b></td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </page>
+</center>
+<script src="~/js/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // window.print();
+
+    });
+</script>

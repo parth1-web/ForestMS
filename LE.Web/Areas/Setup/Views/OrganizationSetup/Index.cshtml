@@ -1,0 +1,98 @@
+﻿@model List<LE.Entities.OrganizationSetup.OrganizationSetup>
+@using System.Linq
+@{
+    ViewData["Title"] = "Index";
+
+    List<string> keys = LE.Web.Areas.Setup.Models.OrganizationSetupKeys.getKeys();
+    var OrgNameKey = LE.Web.Areas.Setup.Models.OrganizationSetupKeys.getOrganizationNameKey;
+    var address = LE.Web.Areas.Setup.Models.OrganizationSetupKeys.getAddressKey;
+    var mobileNo = LE.Web.Areas.Setup.Models.OrganizationSetupKeys.getMobileKey;
+    var phoneNo = LE.Web.Areas.Setup.Models.OrganizationSetupKeys.getPhoneKey;
+    var email = LE.Web.Areas.Setup.Models.OrganizationSetupKeys.getEmailKey;
+    var panNo = LE.Web.Areas.Setup.Models.OrganizationSetupKeys.getPanNoKey;
+    var logoKey = LE.Web.Areas.Setup.Models.OrganizationSetupKeys.getLogoKey;
+
+
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="m-t-0 header-title"><b>Organization Setup</b></h4>
+                <form action="/setup/org-setup/new" enctype="multipart/form-data" method="post" class="col-md-8">
+                    @Html.AntiForgeryToken()
+                    <div class="table-responsive">
+                        <table class="table m-0">
+
+                            <tbody>
+                                @{ int sn = 0; LE.Entities.OrganizationSetup.OrganizationSetup setup = new LE.Entities.OrganizationSetup.OrganizationSetup();
+                                    string logo = "";
+
+                                }
+                                @foreach (var key in keys)
+                                {
+                                    string value = "";
+                                    <tr>
+                                        @{
+                                            setup = Model.Where(a => a.key == key).SingleOrDefault();
+                                            if (setup != null)
+                                            {
+                                                value = setup.value;
+                                            }
+
+                                        }
+
+                                        <td><span> @key.Replace("_", " ") </span><input type="hidden" name="datas[@sn].key" value="@key" /></td>
+                                        <td> <input class="form-control" type="text" name="datas[@sn].value" value="@value" /></td>
+                                        <td></td>
+                                    </tr>
+                                    sn++;
+                                }
+                                <tr>
+                                    @{
+                                        var setups = Model.Where(a => a.key == logoKey).SingleOrDefault();
+                                    }
+                                    <td>Logo</td>
+                                    <td><input type="file" id="file" name="logo" class="form-control" /></td>
+                                    <td><img width="150" id="image" height="150" src="~/images/custom/@setups.value" /></td>
+                                </tr>
+
+
+
+                            </tbody>
+                        </table>
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-primary waves-effect w-md waves-light pull-right">Save</button>
+                        </div>
+
+
+                    </div>
+
+
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts{
+    <script>
+
+        $("#file").change(function () {
+            readURL(this);
+        });
+        function readURL(input) {
+
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    $('#image').attr('src', e.target.result);
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+    </script>
+}

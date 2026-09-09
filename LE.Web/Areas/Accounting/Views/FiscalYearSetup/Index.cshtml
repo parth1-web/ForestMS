@@ -1,0 +1,94 @@
+﻿@using System.Linq
+@using LE.Account.Entities
+@model List<AccountSettings>
+@{
+    ViewData["Title"] = "Index";
+
+    List<string> keys = SetupKeys.getFiscalKeys();
+    var fiscalYearMonthKey = SetupKeys.getFiscalYearMonthKey;
+    var fiscalYearDayKey = SetupKeys.getFiscalYearDayKey;
+    var Monthlist = new List<SelectListItem>() {
+        new SelectListItem { Text = "Baisakh", Value = "1"},
+        new SelectListItem { Text = "Jestha", Value = "2" },
+        new SelectListItem { Text = "Ashad", Value = "3" },
+        new SelectListItem { Text = "Shrawan", Value = "4"},
+        new SelectListItem { Text = "Bhadra", Value = "5" },
+        new SelectListItem { Text = "Ashoj", Value = "6" },
+        new SelectListItem { Text = "Kartik", Value = "7" },
+        new SelectListItem { Text = "Mangsir", Value = "8" },
+        new SelectListItem { Text = "Poush", Value = "9" },
+        new SelectListItem { Text = "Magh", Value = "10" },
+        new SelectListItem { Text = "Falgun", Value = "11"},
+        new SelectListItem { Text = "Chaitra", Value = "12" }
+    };
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="m-t-0 header-title"><b>@Localizer["Fiscal Year Setup"]</b></h4>
+                <form action="/accounting/fiscal-year-setup/new" method="post" class="col-md-6">
+                    @Html.AntiForgeryToken()
+                    <div class="table-responsive">
+                        <table class="table m-0">
+                            <tbody>
+                                @{
+                                    int sn = 0; AccountSettings setup = new AccountSettings();
+                                }
+                                @foreach (var key in keys)
+                                {
+                                    string value = "";
+                                    <tr>
+                                        @{
+                                            setup = Model.Where(a => a.key == key).SingleOrDefault();
+                                            if (setup != null)
+                                            {
+                                                value = setup.value.ToString();
+                                            }
+                                        }
+                                        <td><h5><span> @key.Replace("_", " ") </span></h5><input type="hidden" name="datas[@sn].key" value="@key" /></td>
+                                        <td>
+                                            <select name="datas[@sn].value" class="form-control">
+                                                <option> Select Value</option>
+                                                @{
+                                                    if (key == fiscalYearMonthKey)
+                                                    {
+                                                        foreach (var itm in Monthlist)
+                                                        {
+                                                            <option selected="@(value == itm.Value ? "selected" : null)" value="@itm.Value">@itm.Text</option>
+                                                        }
+                                                    }
+
+                                                    if (key == fiscalYearDayKey)
+                                                    {
+                                                        for (int i = 1; i <= 32; i++)
+                                                        {
+                                                            <option selected="@(value == i.ToString() ? "selected" : null)" value="@i">@i</option>
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    sn++;
+                                }
+                            </tbody>
+                        </table>
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-primary waves-effect w-md waves-light pull-right">@Localizer["Save"]</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        $('.datepicker').datepicker({
+            format: "mm/dd"
+        })`
+    </script>
+}

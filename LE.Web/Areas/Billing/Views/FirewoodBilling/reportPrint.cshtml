@@ -1,0 +1,67 @@
+﻿@model FireWoodBillReportIndexViewModel;
+@{
+    ViewData["Title"] = Localizer["Firewood Bill Report"];
+    Layout = null;
+
+}
+
+<link href="~/css/bootstrap.min.css" rel="stylesheet" />
+<link href="~/css/print.css" rel="stylesheet" />
+
+<center>
+    <page>
+
+
+        <center style="font-size:20px; font-weight:600;"> @ViewBag.OrganizationName <br /> @ViewBag.Address <br /> @Localizer["Firewood Bill Report"]<br /> @Localizer["From"]  @Model.start_date.ConvertNumerals()  @Localizer["To"]  @Model.end_date.ConvertNumerals()</center>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>@Localizer["S.N"]</th>
+                    <th>@Localizer["Sales Date"]</th>
+                    <th>@Localizer["Customer"]</th>
+                    <th>@Localizer["Amount"]</th>
+                    <th>@Localizer["Remarks"]</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{ var sn = 1;
+                    decimal totalAmount = 0;
+                    foreach (var detail in Model.firewood_bill_datas)
+                    {
+                        <tr>
+                            <td>@sn.ToString().ConvertNumerals()</td>
+                            @{
+                                var nepDate = detail.nep_sales_date.Split("-").ToString().ConvertNumerals();
+                                var year = nepDate[0].ToString().ConvertNumerals();
+                                var month = nepDate[1].ToString().ConvertNumerals();
+                                var day = nepDate[2].ToString().ConvertNumerals();
+
+                            }
+                            <td>@year-@month-@day</td>
+
+                            <td>@detail.others_name</td>
+                            <td>@detail.total_amount.ToString().ConvertNumerals()</td>
+                            <td>@detail.remarks</td>
+                        </tr>
+                        totalAmount += detail.total_amount;
+                        sn++;
+
+                    }
+                }
+                <tr>
+                    <th colspan="3" style="text-align:right;">@Localizer["Total Amount"]</th>
+                    <th>@totalAmount.ToString().ConvertNumerals()</th>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </page>
+</center>
+<script src="~/js/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // window.print();
+
+    });
+</script>

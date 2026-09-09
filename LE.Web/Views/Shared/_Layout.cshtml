@@ -1,0 +1,140 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>@ViewData["Title"] | Leading Edge Software</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<link rel="icon" type="image/x-icon" href="~/favicon.ico">
+	<link href="~/lib/fontawesome-free/css/all.min.css" rel="stylesheet" />
+	<link href="~/css/font-awesome.min.css" rel="stylesheet">
+	<link href="~/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+	<link href="~/css/icons.css" rel="stylesheet" type="text/css" />
+	<link href="~/css/style.css" rel="stylesheet" type="text/css" />
+	<link href="~/css/jquery.toast.min.css" rel="stylesheet" />
+	<link href="~/components/select2/dist/css/select2.min.css" rel="stylesheet" />
+	<link href="~/css/Custom.css" rel="stylesheet" asp-append-version="true" />
+	<link href="~/css/pagination.css" rel="stylesheet" asp-append-version="true" />
+	<link rel="stylesheet" href="~/css/nepali.datepicker.v4.0.5.min.css" />
+
+	<style>
+		.navbar {
+			height: 50px;
+		}
+
+		#topnav .topbar-main .navbar-right .notify-list {
+			margin-top: -12px;
+		}
+
+		.menu-extras {
+			margin-top: -10px;
+		}
+
+		#loading {
+			width: 100%;
+			height: 100%;
+			top: 0;
+			left: 0;
+			position: fixed;
+			display: block;
+			opacity: 0.7;
+			background-color: #fff;
+			z-index: 99;
+			text-align: center;
+		}
+
+		#loading-image {
+			position: absolute;
+			top: 200px;
+			left: 540px;
+			z-index: 100;
+		}
+
+		.form-control:disabled, .form-control[readonly] {
+			background-color: #f3f3f38a;
+		}
+
+		@@media (min-width: 992px) {
+			.modal-lg {
+				max-width: 1200px;
+			}
+		}
+	</style>
+</head>
+
+<body>
+	<div class="icon-bar d-print-none">
+		<a href="#" class="facebook" title="Sales"><i class="fa fa-money"></i></a>
+		<a href="#" class="twitter" title="Purchase"><i class="fa fa-shopping-basket"></i></a>
+	</div>
+
+	<header id="topnav">
+		@await Component.InvokeAsync("HeaderView")
+		@await Component.InvokeAsync("Navbar")
+	</header>
+
+	<div class="wrapper">
+		<div class="container-fluid">
+			@Html.Partial("message")
+			@RenderBody()
+		</div>
+	</div>
+
+	<script src="~/js/jquery.min.js"></script>
+	<script src="~/js/modernizr.min.js"></script>
+	<script src="~/js/bootstrap.bundle.min.js"></script>
+	<script src="~/js/waves.js"></script>
+	<script src="~/js/jquery.slimscroll.js"></script>
+	<script src="~/components/select2/dist/js/select2.min.js"></script>
+	<script src="~/js/jquery.app.js"></script>
+	<script src="~/js/pagination-helper.min.js" asp-append-version="true"></script>
+	<script src="~/js/custom.js" asp-append-version="true"></script>
+	<script src="~/js/nepali.datepicker.v4.0.5.min.js"></script>
+    <script src="~/js/num2str.js"></script>
+    <script src="~/pages/jquery.toast.min.js"></script>
+
+	<script>
+		$(document).ready(function () {
+			$('.asterik').append($('<span>').css({ 'color': "red", 'font-size': "20px" }).text("*"));
+
+			$(".cancel").click(function () {
+				if (!confirm("Are you sure to cancel bill?")) {
+					return false;
+				}
+			});
+
+			$("#selectLangOption").change(function () {
+				$("#selectLanguage").submit();
+			});
+
+			$(".expandable").click(function () {
+				$(this).toggleClass("is-expanded");
+				let selfId = $(this).attr("data-self-id");
+				let childElements = $("tr[data-parent-id=" + selfId + "]");
+				if ($(this).hasClass("is-expanded")) {
+					$(this).find(".dropdownIcon").removeClass("fa-chevron-up").addClass("fa-chevron-down");
+					childElements.each(function (i, e) {
+						$(e).css("display", "none");
+					});
+				}
+				else {
+					$(this).find(".dropdownIcon").removeClass("fa-chevron-down").addClass("fa-chevron-up");
+					childElements.each(function (i, e) {
+						$(e).css("display", "table-row");
+					});
+				}
+			});
+
+			$('.nepali-calendar').nepaliDatePicker({
+				ndpYear: true,
+				ndpMonth: true,
+				ndpYearCount: 10,
+				readOnlyInput: true
+			});
+		});
+
+	</script>
+	@RenderSection("Scripts", required: false)
+
+</body>
+</html>

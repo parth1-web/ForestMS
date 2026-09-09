@@ -1,0 +1,170 @@
+﻿@using LE.Service.Services.Interface
+@inject DateConverterService _dateConverter;
+@model LE.Web.Areas.Billing.ViewModels.MemberPunishmentSingleReportIndexViewModel
+
+@{
+    ViewData["Title"] = "Member Punishment Report";
+}
+<style>
+    .container {
+    padding-top: 20px;
+    background-color: white;
+    }
+
+    .table th, .table td {
+    padding: 8px;
+    }
+
+    .col-12 {
+    color: black;
+    }
+
+    @@media print {
+    .row {
+    display: flex;
+    }
+
+    .col-lg-6 {
+    width: 50%;
+    }
+    }
+</style>
+
+<div class="container">
+    <div class="row">
+        <div class="logo col-md-4">
+            <img src="~/images/custom/@Model.logo" alt="logo" style="">
+        </div>
+        <div class="col-12 text-center">
+            <h3>@ViewBag.OrganizationName</h3>
+            <p>@ViewBag.Address</p>
+            <hr />
+            <h4>Membership Punishment Report</h4>
+            <p>Report Date: @Model.print_date </p>
+        </div>
+        <div class="d-print-none col-md-4 text-right">
+            <a href="javascript:window.print()" class="btn btn-primary waves-effect waves-light" style="margin-left: 295%; margin-top: -316px;">
+                <i class="fa fa-print m-r-5"></i> @Localizer["Print"]
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="row">
+                <div class="col-lg-6">
+                    <h4><strong>Membership Information : </strong></h4>
+                    <p><strong>Membership Code: @Model.MemPunishmentReportDetail.Membership.MembershipCode</strong></p>
+                    <p><strong>Area: @Model.MemPunishmentReportDetail.Membership.Area</strong></p>
+                    <p><strong>Tole No.: @Model.MemPunishmentReportDetail.Membership.ToleNo</strong></p>
+                    <p><strong>Religion.: @Model.MemPunishmentReportDetail.Membership.Religion</strong></p>
+                    <p>
+                        <strong>
+                            Has Bio-Gas:
+                            @{
+                                if (Model.MemPunishmentReportDetail.Membership.HasBioGas)
+                                {
+                                    <i class='fa fa-check' style='color: green;'></i>
+                                }
+                                else
+                                {
+                                    <i class='fa fa-times' style='color: red; '></i>
+                                }
+                            }
+                        </strong>
+                    </p>
+                    <p>
+                        <strong>
+                            Has LPG:
+                            @{
+                                if (Model.MemPunishmentReportDetail.Membership.HasLPG)
+                                {
+                                    <i class='fa fa-check' style='color: green;'></i>
+                                }
+                                else
+                                {
+                                    <i class='fa fa-times' style='color: red; '></i>
+                                }
+                            }
+                        </strong>
+                    </p>
+                </div>
+                <div class="col-lg-6">
+                    <h4><strong>Membership Punishment Information : </strong></h4>
+                    <p><strong>Illegal Activity: @Model.MemPunishmentReportDetail.IllegalActivity</strong></p>
+                    <p><strong>Issue Date: @Model.MemPunishmentReportDetail.NepIssueDate</strong></p>
+                    <p><strong>Punishment Validity: @Model.MemPunishmentReportDetail.NepPunishmentValidity</strong></p>
+                    <p><strong>Remarks: @Model.MemPunishmentReportDetail.Remarks</strong></p>
+                    <p><strong>Status: @(Model.MemPunishmentReportDetail.IsCancelled ? "Cancelled" : "Active")</strong></p>
+                    @if (Model.MemPunishmentReportDetail.IsCancelled)
+                    {
+                        <p><strong>Cancellation Remarks: @Model.MemPunishmentReportDetail.IsCancelledRemarks</strong></p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <hr />
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="col-lg-6">
+                <h4><strong>Member Details :</strong></h4>
+            </div>
+        </div>
+    </div>
+    <!-- Ensuring the table is rendered after the row is completed -->
+    <div class="table-responsive">
+        <table class="table m-0">
+            <thead class="text-black" style="color:black;background-color:#ededed !important;">
+                <tr>
+                    <th>@Localizer["S.N"]</th>
+                    <th>@Localizer["FullName"]</th>
+                    <th>@Localizer["Is Gharmuli"]</th>
+                    <th>@Localizer["Citizenship"]</th>
+                    <th>@Localizer["Age"]</th>
+                    <th>@Localizer["Gender"]</th>
+                    <th>@Localizer["Address"]</th>
+                    <th>@Localizer["Contact"]</th>
+                    <th>@Localizer["FamilyRole"]</th>
+            </thead>
+            <tbody>
+                @{
+                    var sn = 1;
+                    foreach (var member in Model.MemPunishmentReportDetail.Membership.MemberDetails)
+                    {
+                        <tr>
+                            <td>@sn</td>
+                            <td>@member.FullName</td>
+                            <td>
+                                @if (member.IsGharmuli)
+                                {
+                                    <i class="fa fa-check" style="color: green;"></i>
+                                }
+                                else
+                                {
+                                    <i class="fa fa-times" style="color: red;"></i>
+                                }
+                            </td>
+                            <td>@member.MemberCitizenship</td>
+                            <td>@member.Age</td>
+                            <td>@member.Gender</td>
+                            <td>
+                                @member.Address
+                            </td>
+                            <td>
+                                @member.ContactNo
+                            </td>
+                            <td>
+                                @member.FamilyRole
+                            </td>
+                        </tr>
+                        sn++;
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="~/js/num2str.js"></script>
+<script src="~/js/jquery.min.js"></script>

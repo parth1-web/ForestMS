@@ -1,0 +1,178 @@
+﻿@using LE.Web.Areas.Accounting.ViewModels
+@using static LE.Common.Library.DateConverter.Entity.NepaliDate
+@model StatementOfLedgerIndexViewModel;
+@{
+    ViewData["Title"] = "Account Statement";
+}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="m-t-0 header-title"><b>@Localizer["Account Statement"]</b></h4>
+                <div>
+                    <form method="get" class="row mb-2 form-inline">
+                        <div class="col-sm-3 mt-4">
+                            @Html.DropDownListFor(a => a.ledger_id, (SelectList)ViewBag.ledgers, "--Select Ledger--", new { @class = "form-control select2" })
+                        </div>
+
+                        <div class="col-sm-2">
+                            @Html.LabelFor(a => a.start_date, new { @class = "control-label" })
+                            @Html.TextBoxFor(a => a.start_date, new { @class = "date-picker form-control nepali-calendar w-100", @autocomplete = "off" })
+                        </div>
+
+                        <div class="col-sm-2">
+                            @Html.LabelFor(a => a.end_date, new { @class = "control-label" })
+                            @Html.TextBoxFor(a => a.end_date, new { @class = "date-picker form-control nepali-calendar w-100", @autocomplete = "off" })
+                        </div>
+
+                        <div class="col-sm-3 mt-4">
+                            <button type="submit" class="btn btn-primary waves-effect w-md waves-light" style="margin-left:5px;">@Localizer["Load"] <i class="fa fa-spinner "></i></button>
+                            <button type="submit" formaction="/accounting/report/account-statement-print" class="btn btn-success" formtarget="_blank" title="Print"> <i class="fa fa-print"></i></button>
+                            <button type="submit" formaction="/accounting/report/account-statement-pdf" class="btn btn-danger" formtarget="_blank" title="Pdf"> <i class="fa fa-file-pdf-o fa-lg"></i></button>
+                        </div>
+                    </form>
+                </div>
+
+                <center>
+                    <h3>@Model.name <br /> @Localizer["Account Statement"]</h3>
+                </center>
+
+                <div class="table-responsive">
+                    <table class="table m-0">
+                        <thead class="bg-custom text-white">
+                            <tr>
+                                <th>@Localizer["Date"]</th>
+                                <th width="300">@Localizer["Particulars"]</th>
+                                <th>@Localizer["Vch Type"]</th>
+                                <th>@Localizer["Vch no."]</th>
+                                <th width="150">@Localizer["Debit"]</th>
+                                <th width="150">@Localizer["Credit"]</th>
+                                <th width="150">@Localizer["Balance Amount"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                decimal drTotal = 0;
+                                decimal crTotal = 0;
+                                decimal openingBalance = Model.old_balance;
+                                decimal lastBalance = 0;
+                                decimal crAmt = 0;
+                                decimal drAmt = 0;
+                                string opBalanceText = "CR";
+
+                                if (openingBalance >= 0)
+                                {
+                                    drAmt = Math.Abs(openingBalance);
+                                    crAmt = 0;
+                                    drTotal += Math.Abs(openingBalance);
+                                }
+                                else
+                                {
+                                    crAmt = Math.Abs(openingBalance);
+                                    drAmt = 0;
+                                    crTotal += Math.Abs(openingBalance);
+                                    opBalanceText = "DR";
+                                }
+
+                                <tr>
+                                    <td></td>
+                                    <td align="right" class="font-600"><b> @Localizer["Balance"] c/d</b></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td class="font-600">@crAmt</td>
+                                    <td class="font-600">@drAmt</td>
+                                    <td>@Math.Abs(openingBalance) (@opBalanceText)</td>
+                                </tr>
+
+                                if (Model.transactionDetail != null)
+                                {
+                                    foreach (var transactionData in Model.transactionDetail)
+                                    {
+                                        string prefix = "To ";
+                                        string balanceText = "CR";
+
+                                        if (transactionData.dr_amount > 0)
+                                        {
+                                            prefix = "By ";
+                                        }
+
+                                        drTotal += transactionData.dr_amount;
+                                        crTotal += transactionData.cr_amount;
+                                        decimal totBalance = drTotal - crTotal;
+
+                                        lastBalance = totBalance;
+
+                                        if (lastBalance < 0)
+                                        {
+                                            balanceText = "DR";
+                                        }
+
+                                        <tr>
+                                            <td>@DateConverter.Core.Service_Factory.DateConverterFactory.getDateConverterService().ToBS(transactionData.transaction_date.Date, LE.Common.Library.DateConverter.Entity.NepaliDate.DateFormats.yMd).getFormattedDate()</td>
+                                            <td>@prefix @transactionData.name</td>
+                                            <td>@transactionData.transaction.voucher_type</td>
+                                            <td>@transactionData.transaction.voucher_no</td>
+                                            <td>
+                                                @{
+                                                    if (transactionData.cr_amount > 0)
+                                                    {
+                                                        @transactionData.cr_amount
+                                                    }
+                                                }
+                                            </td>
+                                            <td>
+                                                @{
+                                                    if (transactionData.dr_amount > 0)
+                                                    {
+                                                        @transactionData.dr_amount
+                                                    }
+                                                }
+                                            </td>
+                                            <td>@Math.Abs(lastBalance) (@balanceText)</td>
+                                        </tr>
+                                    }
+                                }
+
+                                if (lastBalance >= 0)
+                                {
+                                    drAmt = 0;
+                                    crAmt = Math.Abs(lastBalance);
+                                    crTotal += crAmt;
+                                }
+                                else
+                                {
+                                    crAmt = 0;
+                                    drAmt = Math.Abs(lastBalance);
+                                    drTotal += drAmt;
+                                }
+
+                                <tr>
+                                    <td></td>
+                                    <td align="right" class="font-600"><b>@Localizer["Balance"] b/d</b></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td class="font-600">@crAmt</td>
+                                    <td class="font-600">@drAmt</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3"></td>
+                                    <td class="font-600">@Localizer["Total"]</td>
+                                    <td class="font-600">@crTotal</td>
+                                    <td class="font-600">@drTotal</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            $('.select2').select2();
+        });
+    </script>
+}

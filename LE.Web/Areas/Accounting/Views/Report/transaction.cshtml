@@ -1,0 +1,125 @@
+﻿@using LE.Account.Common.Enums
+@model TransactionIndexViewModel;
+@{
+    ViewData["Title"] = "Journal Register";
+}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="m-t-0 header-title"><b>@Localizer["Journal Register"]</b></h4>
+                <div>
+                    <form method="get" class="row mb-2 form-inline">
+                        <div class="col-sm-2">
+                            @Html.LabelFor(a => a.start_date, new { @class = "control-label" })
+                            @Html.TextBoxFor(a => a.start_date, new { @class = "date-picker form-control nepali-calendar w-100 text-center", @autocomplete = "off" })
+                        </div>
+                        <div class="col-sm-2">
+                            @Html.LabelFor(a => a.end_date, new { @class = "control-label" })
+                            @Html.TextBoxFor(a => a.end_date, new { @class = "date-picker form-control nepali-calendar w-100 text-center", @autocomplete = "off" })
+                        </div>
+                        <div class="offset-sm-1 col-sm-3 mt-4">
+                            <button type="submit" class="btn btn-primary waves-effect w-md waves-light">@Localizer["Load"] <i class="fa fa-spinner "></i></button>
+                            <button type="submit" formtarget="_blank" formaction="/accounting/report/journal-register-print" class="btn btn-success waves-effect w-md waves-light"> <i class="fa fa-print fa-lg"></i></button>
+                            <button type="submit" formaction="/accounting/report/journal-pdf" class="btn btn-danger" formtarget="_blank" title="Pdf"> <i class="fa fa-file-pdf-o fa-lg"></i></button>
+                        </div>
+                    </form>
+                </div>
+                <br />
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="bg-custom text-white text-center">
+                            <tr>
+                                <th width="50">@Localizer["S.N"]</th>
+                                <th width="100">@Localizer["Entry Date"]</th>
+                                <th width="100">@Localizer["Transaction Date"]</th>
+                                <th width="80">@Localizer["Voucher Type"]</th>
+                                <th width="80">@Localizer["Voucher No"]</th>
+                                <th>@Localizer["Particulars"]</th>
+                                <th width="100">@Localizer["Debit Amount"]</th>
+                                <th width="100">@Localizer["Credit Amount"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                var sln = 1;
+                                decimal totalDrAmount = 0; decimal totalCrAmount = 0;
+                                foreach (var trans in Model.transaction.OrderByDescending(a => a.transaction_date))
+                                {
+                                    var flag = 0;
+                                    var transactionDetails = trans.transactionDetail.GroupBy(a => a.ledger_id).Select(g => new { nep_entry_date = g.First().transaction_date, cr_amount = g.Sum(x => x.cr_amount), dr_amount = g.Sum(x => x.dr_amount), ledger_id = g.First().ledger_id, ref_ledger_id = g.First().ref_ledger_id, name = g.First().name }).OrderByDescending(a => a.ledger_id).OrderByDescending(a => a.dr_amount);
+                                    var rowCount = transactionDetails.Count() + 1;
+                                    int cnt = 1;
+                                    @foreach (var transDetail in transactionDetails)
+                                    {
+                                        <tr>
+                                            @{
+                                                if (flag == 0)
+                                                {
+                                                    <td rowspan=@rowCount>@sln.ToString().ConvertNumerals()</td>
+                                                    <td rowspan=@rowCount>@trans.nep_entry_date.ConvertNumerals()</td>
+                                                    <td rowspan=@rowCount>@trans.nep_transaction_date.ConvertNumerals()</td>
+                                                    <td rowspan=@rowCount><badge class="badge">@Enum.GetName(typeof(VoucherType), trans.voucher_type)</badge></td>
+                                                    <td rowspan=@rowCount>@trans.voucher_no.ToString().ConvertNumerals()</td>
+                                                    sln = sln + 1;
+                                                }
+                                            }
+                                            @{
+                                                string prefix = "";
+                                                if (transDetail.cr_amount > 0)
+                                                {
+                                                    prefix = "-";
+                                                }
+                                                if (transDetail.dr_amount > 0)
+                                                {
+                                                    prefix = "";
+                                                }
+
+                                                <td>@prefix @transDetail.name</td>
+                                                <td>
+                                                    @{
+                                                        if (transDetail.dr_amount > 0)
+                                                        {
+                                                            @transDetail.dr_amount.ToString().ConvertNumerals()
+                                                        }
+                                                    }
+                                                </td>
+                                                <td>
+                                                    @{
+                                                        if (transDetail.cr_amount > 0)
+                                                        {
+                                                            @transDetail.cr_amount.ToString().ConvertNumerals()
+                                                        }
+                                                    }
+                                                </td>
+                                                cnt++;
+                                                if (rowCount == cnt)
+                                                {
+                                                <tr>
+                                                    <td>[ @trans.remarks ]</td>
+                                                    <td></td>
+                                                    <td></td>
+                                                </tr>
+                                                }
+                                            }
+                                        </tr>
+
+                                        totalDrAmount += transDetail.dr_amount;
+                                        totalCrAmount += transDetail.cr_amount;
+                                        flag = 1;
+                                    }
+                                }
+                            }
+                            <tr>
+                                <td colspan="5"></td>
+                                <td>@Localizer["Total"]</td>
+                                <td>@totalDrAmount.ToString().ConvertNumerals()</td>
+                                <td>@totalCrAmount.ToString().ConvertNumerals()</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

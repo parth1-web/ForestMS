@@ -1,0 +1,141 @@
+﻿@model UserModel
+@{
+    ViewData["Title"] = "Update User";
+}
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="m-t-0 header-title"><b>Update User</b></h4>
+                <p class="text-muted m-b-30">
+                    Updates a user and assign roles.
+                </p>
+                <form class="form-horizontal" method="post" action="/administration/user/edit" enctype="multipart/form-data">
+                    <div class="row">
+                        @Html.HiddenFor(a => a.user_id)
+                        @Html.ValidationSummary(true)
+                        @Html.AntiForgeryToken()
+
+                        <div class="col-lg-4">
+                            <div class="form-group ">
+                                @Html.LabelFor(a => a.full_name, new { @class = "col-md-12 control-label asterik" })
+                                <div class="col-md-12">
+                                    @Html.TextBoxFor(a => a.full_name, new { @class = "form-control" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.full_name)</p>
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(a => a.address_line_1, new { @class = "col-md-12 control-label asterik" })
+                                <div class="col-md-12">
+                                    @Html.TextBoxFor(a => a.address_line_1, new { @class = "form-control" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.address_line_1)</p>
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(a => a.address_line_2, new { @class = "col-md-12 control-label " })
+                                <div class="col-md-12">
+                                    @Html.TextBoxFor(a => a.address_line_2, new { @class = "form-control" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.address_line_2)</p>
+                            </div>
+
+                            <div class="form-group ">
+                                @Html.LabelFor(a => a.primary_contact, new { @class = "col-md-12 control-label asterik" })
+                                <div class="col-md-12">
+                                    @Html.TextBoxFor(a => a.primary_contact, new { @class = "form-control" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.primary_contact)</p>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <div class="form-group ">
+                                @Html.LabelFor(a => a.secondary_contact, new { @class = "col-md-12 control-label " })
+                                <div class="col-md-12">
+                                    @Html.TextBoxFor(a => a.secondary_contact, new { @class = "form-control" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.secondary_contact)</p>
+                            </div>
+
+                            <div class="form-group ">
+                                @Html.LabelFor(a => a.email, new { @class = "col-md-12 control-label", @type = "email" })
+                                <div class="col-md-12">
+                                    @Html.TextBoxFor(a => a.email, new { @class = "form-control" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.email)</p>
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(a => a.username, new { @class = "col-md-12 control-label asterik" })
+                                <div class="col-md-12">
+                                    @Html.TextBoxFor(a => a.username, new { @class = "form-control" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.username)</p>
+                            </div>
+
+                            <div class="form-group ">
+                                @Html.LabelFor(a => a.roles, "Roles", new { @class = "col-md-12 control-label asterik" })
+                                <div class="col-md-12">
+                                    @{
+                                        int i = 0;
+                                        foreach (var role in (List<AssignedRole>)ViewBag.roles)
+                                        {
+                                            <label>
+                                                @Html.CheckBox("roles[" + i + "].is_checked", role.is_checked)
+                                                <text>&nbsp;&nbsp;&nbsp;<input name="roles[@i].role_id" value="@role.role_id" type="hidden" />@role.role_name </text>
+                                            </label>
+                                            <br />
+                                            i++;
+                                        }
+                                    }
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.roles)</p>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <div class="form-group ">
+                                <div class="col-md-12">
+                                    Image
+                                </div>
+                                <div class="col-md-12">
+                                    <input type="file" value="Choose Image" name="file" id="file" />
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-8 images-list" id="previewImg">
+                                    <img id="image" class="image-preview" src="~/images/custom/@Model.image_path" alt="" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-primary waves-effect w-md waves-light pull-right"><i class="fa fa-edit"></i> Update</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        $("#file").change(function () {
+            readURL(this);
+        });
+        function readURL(input) {
+
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    $('#image').attr('src', e.target.result);
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+}

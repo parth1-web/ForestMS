@@ -1,0 +1,43 @@
+﻿@using LE.Account.Infrastructure.Dto
+@model TrialBalanceDto
+@{
+    ViewData["Title"] = "Trial Balance";
+}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="m-t-0 header-title"><b>@Localizer["Trial Balance"]</b></h4>
+                <div>
+                    <form method="get" class="row mb-2 form-inline">
+                        <div class="col-sm-2">
+                            @Localizer["From Date"]
+                            @Html.TextBoxFor(a => Model.start_date, new { @class = "date-picker form-control nepali-calendar w-100", @autocomplete = "off" })
+                        </div>
+                        <div class="col-sm-2">
+                            @Localizer["To Date"]
+                            @Html.TextBoxFor(a => Model.end_date, new { @class = "date-picker form-control nepali-calendar w-100", @autocomplete = "off" })
+                        </div>
+
+                        <div class="offset-sm-5 col-sm-3 mt-4">
+                            <button type="submit" class="btn btn-primary waves-effect w-md waves-light">
+                                Load <i class="fa fa-spinner"></i>
+                            </button>
+                            <button type="submit" formaction="/accounting/report/trial-balance-print" formtarget="_blank" class="btn btn-success">
+                                <i class="fa fa-print "></i>
+                            </button>
+                            <button type="submit" formaction="/accounting/report/trial-balance-pdf" class="btn btn-danger" formtarget="_blank" title="Pdf">
+                                <i class="fa fa-file-pdf-o fa-lg "></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                @{
+                    var reportVm = new AccountingReportDecoratorVm() { Report = Model.Report, ReportType = AccountingReportType.Normal };
+                }
+                <partial name="Accounting/AccountingReportDecorator" model="@reportVm" />
+            </div>
+        </div>
+    </div>
+</div>

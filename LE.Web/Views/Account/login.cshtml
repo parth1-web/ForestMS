@@ -1,0 +1,110 @@
+﻿@model LoginModel
+@{
+	Layout = null;
+
+	var str = ViewBag.organizationName;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Login-@str</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="keywords" content="Login Form" />
+	<link href="~/css/bootstrap.min.css" rel="stylesheet" />
+	<link href="~/css/font-awesome.min.css" rel="stylesheet" />
+	<link href="~/css/admin.css" rel="stylesheet" />
+	<link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,700" rel="stylesheet">
+</head>
+
+<body>
+	<style>
+		.alert-dismissible {
+			margin-left: 0 !important;
+		}
+
+		.showpass {
+			color: white;
+			font-size: 12px;
+		}
+	</style>
+	<br />
+	<br />
+	<div class="w3layouts-two-grids">
+		<div class="mid-class">
+			<div class="txt-left-side">
+				@Html.Partial("message")
+				<h2> Login Here </h2>
+				<p>Please provide your login credentials.</p>
+				@using (Html.BeginForm())
+				{
+					<div class="form-left-to-w3l">
+						<span class="fa fa-user m-auto" aria-hidden="true"></span>
+						@Html.TextBoxFor(a => a.username, new { @Placeholder = "Enter Your Username", @class = "uname" })
+						<p class="text-danger">@Html.ValidationMessageFor(a => a.username)</p>
+						<div class="clear"></div>
+					</div>
+					<div class="form-left-to-w3l">
+						<span class="fa fa-lock m-auto" aria-hidden="true"></span>
+						@Html.PasswordFor(a => a.password, new { @Placeholder = "Enter Your Password", @id = "pass" })
+						<p class="text-danger">@Html.ValidationMessageFor(a => a.password)</p>
+						<div class="clear"></div>
+					</div>
+					<div class="left-side-forget d-flex align-items-center">
+						<input type="checkbox" id="showPass" name="showPass">
+						<label for="showPass" class="showpass ml-3"> Show Password</label>
+					</div>
+					<br />
+					<div class="main-two-w3ls">
+						<div class="left-side-forget d-flex align-items-center">
+							@Html.CheckBoxFor(a => a.remember_me, new { @id = "remember" })
+							<label for="remember" class="showpass ml-3"> Remember me</label>
+						</div>
+						<div class="right-side-forget">
+							<a target="_blank" href="https://www.leadingedgesoft.com/contact" class="for">Forgot password...?</a>
+						</div>
+					</div>
+					<div class="btnn">
+						<button type="submit">Login </button>
+					</div>
+				}
+				<div class="w3layouts_more-buttn">
+					<h3>
+						Don't Have an account..?
+						<a target="_blank" href="https://www.leadingedgesoft.com/contact">
+							Contact Us
+						</a>
+					</h3>
+				</div>
+
+			</div>
+			<div class="img-right-side">
+				<h3>Welcome To Leading Edge Software</h3>
+				<p>We deal with different kinds of software. <br />    Contact Us for more details.</p>
+				<img src="~/images/leading_edge.jpg" class="img-responsive" alt="">
+			</div>
+		</div>
+	</div>
+
+	<script src="~/js/jquery.min.js"></script>
+	<script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+	<script>
+		$(document).ready(function () {
+			$('.uname').focus();
+			localStorage.removeItem("activeTab");
+		})
+
+		$('#showPass').change(function () {
+			var x = document.getElementById("pass");
+			if ($(this).is(":checked")) {
+				x.type = "text";
+			} else {
+				x.type = "password";
+			}
+		});
+	</script>
+</body>
+</html>

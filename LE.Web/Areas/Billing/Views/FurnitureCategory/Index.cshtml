@@ -1,0 +1,93 @@
+﻿@model FurnitureCategoryIndexViewModel;
+@{
+    ViewData["Title"] = Localizer["Furniture Category"];
+
+    var list = new List<SelectListItem>() {
+new SelectListItem { Text = "10", Value = "10"},
+new SelectListItem { Text = "20", Value = "20" },
+new SelectListItem { Text = "30", Value = "30" },
+new SelectListItem { Text = "40", Value = "40"},
+new SelectListItem { Text = "50", Value = "50" },
+new SelectListItem { Text = "100", Value = "100" },
+new SelectListItem { Text = "All", Value = "" }
+};
+}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="m-t-0 header-title"><b>@Localizer["Furniture Category"]</b></h4>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <a href="/billing/furniture-category/new" class="btn btn-icon waves-effect waves-light btn-success btn-sm"><i class="fa fa-plus"></i> @Localizer["Add New Furniture Category"]</a>
+                    </div>
+                    <form action="/billing/furniture-category" method="get" class="row col-sm-6">
+
+                        <div class="col-sm-6">
+                            @Html.TextBox("name", (string)ViewBag.name, new { @class = "form-control", placeholder = "Furniture Category Name" })
+                        </div>
+                        <div class="col-sm-3">
+                            @Html.DropDownList("number_of_rows", list, new { @class = "form-control" })
+                        </div>
+                        <div class="col-sm-3">
+                            <button type="submit" class="form-control no-padding btn btn-primary btn-lg"><i class="fa fa-refresh"></i></button>
+                        </div>
+
+                    </form>
+                </div>
+                <br />
+                <div class="table-responsive">
+                    <table class="table m-0 table-colored-bordered table-bordered-custom">
+                        <thead class="bg-custom text-white">
+                            <tr>
+                                <th>@Localizer["S.N"]</th>
+                                <th>@Localizer["Furniture Category"]</th>
+                                <th>@Localizer["Status"]</th>
+                                <th>@Localizer["Actions"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{ var sn = 1;
+                                foreach (var categories in Model.furniture_categories)
+                                {
+                                    string status = "Enabled";
+                                    string statusColor="success";
+                                    if (categories.is_enabled == false)
+                                    {
+                                        status = "Disabled";
+                                        statusColor="danger";
+                                    }
+                                <tr>
+
+                                    <td>@sn.ToString().ConvertNumerals()</td>
+                                    <td>@categories.name</td>
+                                    <td><span class="badge badge-@statusColor">@status</span></td>
+                                    <td>
+
+                                        <a href="/billing/furniture-category/edit/@categories.furniture_category_id" title="Edit" class="btn btn-icon waves-effect waves-light btn-primary btn-sm"><i class="fa fa-pencil"></i></a>
+                                        <a href="/billing/furniture-category/delete/@categories.furniture_category_id" title="Delete" class="btn btn-icon waves-effect waves-light btn-danger btn-sm delete"><i class="fa fa-trash"></i></a>
+
+
+                                        @{
+                                                string actionName = categories.is_enabled ? "Disable" : "Enable";
+                                                string icon = categories.is_enabled ? "fa-thumbs-down" : "fa-thumbs-up";
+                                        string color = categories.is_enabled ? "btn-danger" : "btn-success";
+                                        }
+
+                                        <a href="/billing/furniture-category/@actionName/@categories.furniture_category_id" class="btn btn-icon waves-effect waves-light @color btn-sm" data-toggle="tooltip" title="@actionName Category"><i class="fa @icon"></i></a>
+
+                                    </td>
+
+                                </tr>
+                                    sn++;
+                                }
+                            }
+                        </tbody>
+                    </table>
+                    <br />
+                    <LeadingEdgePager info="@ViewBag.pagerInfo"></LeadingEdgePager>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

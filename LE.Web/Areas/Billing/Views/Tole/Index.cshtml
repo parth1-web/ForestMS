@@ -1,0 +1,71 @@
+﻿@model ToleIndexViewModel;
+@{
+    ViewData["Title"] = Localizer["Tole"];
+
+    var list = new List<SelectListItem>() {
+        new SelectListItem { Text = "10", Value = "10"},
+        new SelectListItem { Text = "20", Value = "20" },
+        new SelectListItem { Text = "30", Value = "30" },
+        new SelectListItem { Text = "40", Value = "40"},
+        new SelectListItem { Text = "50", Value = "50" },
+        new SelectListItem { Text = "100", Value = "100" },
+        new SelectListItem { Text = "All", Value = "" }
+    };
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="m-t-0 header-title"><b>@Localizer["Tole"]</b></h4>
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <a href="/billing/tole/new" class="btn btn-icon waves-effect waves-light btn-success btn-sm"><i class="fa fa-plus"></i> @Localizer["Add New Tole"]</a>
+                    </div>
+                    <form action="/billing/tole" method="get" class="row col-sm-6">
+                        <div class="offset-sm-2 col-sm-6">
+                            @Html.TextBox("name", (string)ViewBag.name, new { @class = "form-control", placeholder = "Tole No" })
+                        </div>
+                        <div class="col-sm-2">
+                            @Html.DropDownList("number_of_rows", list, new { @class = "form-control" })
+                        </div>
+                        <div class="col-sm-2">
+                            <button type="submit" class="form-control btn btn-primary btn-sm"><i class="fa fa-refresh"></i></button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table m-0 table-colored-bordered table-bordered-custom">
+                        <thead class="bg-custom text-white">
+                            <tr>
+                                <th>@Localizer["S.N"]</th>
+                                <th>@Localizer["Tole No"]</th>
+                                <th>@Localizer["Actions"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                var sn = 1;
+                                foreach (var tole in Model.toles)
+                                {
+                                    <tr>
+                                        <td>@sn</td>
+                                        <td>@tole.tole_no</td>
+                                        <td>
+                                            <a href="/billing/tole/edit/@tole.tole_id" title="Edit" class="btn btn-icon waves-effect waves-light btn-primary btn-sm"><i class="fa fa-pencil"></i></a>
+                                            <a href="/billing/tole/delete/@tole.tole_id" title="Delete" class="btn btn-icon waves-effect waves-light btn-danger btn-sm delete"><i class="fa fa-trash"></i></a>
+                                        </td>
+                                    </tr>
+                                    sn++;
+                                }
+                            }
+                        </tbody>
+                    </table>
+                    <br />
+                    <LeadingEdgePager info="@ViewBag.pagerInfo"></LeadingEdgePager>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

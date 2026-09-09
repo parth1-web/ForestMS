@@ -1,0 +1,338 @@
+﻿@model List<MembershipDto>
+@{
+	ViewData["Title"] = Localizer["Membership"];
+
+	var list = new List<SelectListItem>() {
+		new SelectListItem { Text = "10", Value = "10"},
+		new SelectListItem { Text = "20", Value = "20" },
+		new SelectListItem { Text = "30", Value = "30" },
+		new SelectListItem { Text = "40", Value = "40"},
+		new SelectListItem { Text = "50", Value = "50" }
+	};
+}
+
+<style>
+	.modal-content {
+		background-color: #757575;
+	}
+
+	.close {
+		font-size: 1.8rem;
+		font-weight: 300;
+		color: #fff;
+		opacity: .8;
+	}
+
+		.close:hover {
+			color: red !important;
+		}
+
+	.modal.show .modal-dialog {
+		box-shadow: rgba(0, 0, 0, 0.35) 0px 7px 19px;
+	}
+
+	.modal-header {
+		border: none;
+	}
+
+	.modal-body p {
+		color: white;
+		font-size: 16px;
+		margin-bottom: 0.6em;
+	}
+
+	.label {
+		margin-right: 6px;
+		display: block;
+		float: left;
+		color: #222121;
+	}
+
+		.label::after {
+			content: ":";
+			font-size: 18px;
+		}
+
+	.modal-body img {
+		height: 50px;
+		width: 50px;
+		object-fit: cover;
+	}
+
+	.card {
+		box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+	}
+
+	.memDetails {
+		font-weight: 800;
+		color: #2a2a2a;
+		font-size: 16px;
+	}
+
+	.modal table tbody {
+		font-size: 14px;
+	}
+
+	.customInfoBtn {
+		border-radius: 16px;
+		padding: 3px 12px !important;
+		font-weight: 600;
+	}
+
+	.dropdownMenuIcon {
+		font-size: 22px;
+		color: #515151;
+		vertical-align: middle;
+		margin-left: 8px;
+	}
+</style>
+
+<div class="row">
+	<div class="col-lg-12">
+		<div class="card">
+			<div class="card-body">
+				<h4 class="m-t-0 header-title"><b>@Localizer["Membership"]</b></h4>
+				<div class="row">
+					<div class="col-sm-6">
+						<a href="/billing/membership/new" class="btn btn-icon waves-effect waves-light btn-success btn-sm"><i class="fa fa-plus"></i> @Localizer["Add Membership"]</a>
+					</div>
+					<form action="/billing/membership" method="get" class="row col-sm-6">
+						<div class="col-sm-6">
+							@Html.TextBox("name", "", new { @class = "form-control", placeholder = "Search by code or name" })
+
+						</div>
+						<div class="col-sm-2">
+							@Html.DropDownList("number_of_rows", list, new { @class = "form-control" })
+						</div>
+						<div class="col-sm-3">
+							<button type="submit" class="form-control btn btn-primary"><i class="fa fa-refresh"></i></button>
+						</div>
+					</form>
+				</div>
+				<br />
+				<div class="table-responsive">
+					<table class="table m-0 table-colored-bordered table-bordered-custom">
+						<thead class="bg-custom text-white">
+							<tr>
+								<th>@Localizer["S.N"]</th>
+								<th>@Localizer["Membership Code"]</th>
+								<th>@Localizer["Gharmuli"]</th>
+								<th>@Localizer["Area"]</th>
+								<th>@Localizer["Tole"]</th>
+								<th>@Localizer["Religion"]</th>
+								<th>@Localizer["Created Date"]</th>
+								<th>@Localizer["Validity Date"]</th>
+								<th>@Localizer["Status"]</th>
+								<th>@Localizer["Actions"]</th>
+							</tr>
+						</thead>
+						<tbody>
+							@{
+								var sn = 1;
+								foreach (var membership in Model)
+								{
+									string status = "Active";
+									string statusColor = "success";
+									string renewBtn = "";
+
+									if (@membership.MembershipValidity.ValidityDate.Date < DateTime.Now.Date)
+									{
+										status = "Expired";
+										statusColor = "danger";
+										renewBtn = $"<a href='/billing/membership/renew/{membership.MembershipId}' class='btn btn-sm btn-outline-primary customInfoBtn'>Renew</a>";
+									}
+
+									if (!membership.IsActive)
+									{
+										status = "Inactive";
+										statusColor = "danger";
+									}
+									if (membership.IsCancelled)
+									{
+										statusColor = "danger";
+										status = "Cancelled";
+									}
+
+									// if (member.IsPunished)
+									// {
+									//     statusColor = "danger";
+									//     status = $"Suspended: {member.NepPunishmentValidity}";
+									// }
+									<tr class="bg-white" data-index="@membership.MembershipId">
+										<td>@sn</td>
+										<td class="memCode">@membership.MembershipCode</td>
+										<td>
+											<span class="gharmuliName">@membership.MemberDetails.Where(a => a.IsGharmuli).FirstOrDefault().FullName</span>
+										</td>
+										<td class="area">@(!string.IsNullOrEmpty(membership.Area) ? membership.Area : "-")</td>
+										<td class="tole">@membership.ToleNo</td>
+										<td class="religion">@EnumExtensions.GetDisplayName(membership.Religion)</td>
+										<td class="validity">@membership.CreatedDate</td>
+										<td class="created">@membership.MembershipValidity.NepValidityDate</td>
+										<td><span class="badge badge-@statusColor status mr-2">@status</span> @Html.Raw(renewBtn)</td>
+										<td>
+											<button data-toggle="modal" data-target="#membershipDetail" data-index="@membership.MembershipId" class="btn btn-icon waves-effect waves-light btn-info btn-sm viewDetail" title="View Details"><i class="fa fa-eye"></i></button>
+											<a href="/billing/membership/edit/@membership.MembershipId" class="btn btn-icon waves-effect waves-light btn-primary btn-sm" title="Edit"><i class="fa fa-pencil"></i></a>
+											@{
+												string actionName = membership.IsActive ? "Disable" : "Enable";
+												string icon = membership.IsActive ? "fa-thumbs-down" : "fa-thumbs-up";
+												string color = membership.IsActive ? "btn-danger" : "btn-success";
+											}
+											<a href="/billing/membership/@actionName/@membership.MembershipId" class="btn btn-icon waves-effect waves-light btn-sm @color" data-toggle="tooltip" title="@actionName Member"><i class="fa @icon"></i></a>
+											<a href="/billing/membership/delete/@membership.MembershipId" class="btn btn-icon waves-effect waves-light btn-sm btn-danger delete" data-toggle="tooltip" title="Delete Member"><i class="fa fa-trash"></i></a>
+
+											@*<div class="btn-group">
+											<a href="javascript:void(0);" data-toggle="dropdown"><i class="fa fa-ellipsis-v dropdownMenuIcon" aria-hidden="true"></i></a>
+											<ul class="dropdown-menu">
+											<li><a href="billing/membership/members">View Members</a></li>
+											</ul>
+											</div>*@
+										</td>
+									</tr>
+									sn++;
+								}
+							}
+						</tbody>
+					</table>
+					<br />
+					<LeadingEdgePager info="@ViewBag.pagerInfo"></LeadingEdgePager>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="membershipDetail" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header p-0">
+				<h2 class="modal-title text-white font-weight-bold" id="exampleModalLabel">@Localizer["Membership Details"]</h2>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="row">
+					<div class="col-md-4">
+						<div class="card p-3">
+							<p><span class="label"> @Localizer["Membership Code"] </span> <span class="memDetails" id="membershipCode"></span></p>
+							<p><span class="label"> @Localizer["Religion"] </span> <span class="memDetails" id="religion"></span></p>
+							<p><span class="label"> @Localizer["Status"] </span> <span class="memDetails" id="status"></span></p>
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="card p-3">
+							<p><span class="label"> @Localizer["Area"] </span> <span class="memDetails" id="area"></span></p>
+							<p><span class="label"> @Localizer["Tole"] </span> <span class="memDetails" id="tole"></span></p>
+							<p><span class="label"> @Localizer["Has Bio Gas"] </span> : <span class="memDetails" id="hasBioGas"></span></p>
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="card p-3">
+							<p><span class="label"> @Localizer["Created Date"] </span> <span class="memDetails" id="createdDate"></span></p>
+							<p><span class="label"> @Localizer["Validity Date"] </span> <span class="memDetails" id="validityDate"></span></p>
+							<p><span class="label"> @Localizer["Has LPG"] </span> <span class="memDetails" id="hasLPG"></span></p>
+						</div>
+					</div>
+				</div>
+				<div>
+					<h3 class="modal-title pb-2 text-white" id="exampleModalLabel"><u>@Localizer["Members Details"]</u></h3>
+					<table class="table bg-white table-striped" id="memberDetailsTable">
+						<thead>
+							<tr>
+								<th>Full Name</th>
+								<th>Is Gharmuli</th>
+								<th>Citizenship</th>
+								<th>Age</th>
+								<th>Gender</th>
+								<th>Address</th>
+								<th>Contact</th>
+								<th>Family Role</th>
+								<th>Created Date</th>
+								<th>Status</th>
+								<th>Image</th>
+							</tr>
+						</thead>
+						<tbody></tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section scripts {
+	<script>
+		const rightIcon = `<i class="fa fa-check-circle" style="font-size:24px;color:#78c350;"></i>`;
+		const wrongIcon = `<i class="fa fa-times-circle" style="font-size:24px;color:#f7531f;"></i>`;
+		$(".viewDetail").click(function () {
+			let membershipId = $(this).data('index');
+			$("#memberDetailsTable tbody").empty();
+			$.ajax({
+				method: 'Get',
+				url: '/billing/membership/getMemberhipDetails/' + membershipId,
+				success: function (response) {
+					if (response.success) {
+						let data = response.data;
+						let status = "Active";
+						const currentDate = new Date();
+						if (!data.isActive) status = "Inactive";
+						if (new Date(data.membershipValidity.validityDate) < currentDate) {
+							status = "Expired";
+						}
+						if (data.isCancelled) status = "Cancelled";
+
+						$("#membershipCode").html(data.membershipCode);
+						$("#area").html(data.area);
+						$("#tole").html(data.toleNo);
+						$("#religion").html(data.religion);
+						$("#status").html(status);
+						$("#createdDate").html(data.createdDate);
+						$("#validityDate").html(data.membershipValidity.nepValidityDate);
+						$("#hasBioGas").html(data.hasBioGas ? rightIcon : wrongIcon);
+						$("#hasLPG").html(data.hasLPG ? rightIcon : wrongIcon);
+
+						let membersList = data.memberDetails;
+						let membersInTable = "";
+						if (Array.isArray(membersList)) {
+							if (!membersList || membersList.length === 0) {
+								membersInTable = '<tr><td colspan="11">No members available.</td></tr>';
+							}
+							else {
+								membersList.forEach(m => {
+									let gharmuliIcon = "-";
+									if (m.isGharmuli) {
+										gharmuliIcon = rightIcon;
+									}
+
+									membersInTable += `<tr> <td>${m.fullName}</td> <td>${gharmuliIcon}</td>
+															<td>${m.memberCitizenship}</td> <td>${m.age}</td> <td>${m.gender}</td>
+															<td>${m.address}</td> <td>${m.contactNo}</td> <td>${m.familyRole}</td>
+															<td>${m.createdDate}</td> <td>${m.status}</td>`;
+
+									if (m.imageName != null) {
+										membersInTable += `<td><a href="/images/custom/${m.imageName}" target="_blank" rel="noopener noreferrer">
+																<img src="/images/custom/${m.imageName}" alt="Member Image" /></td>`;
+									}
+									else {
+										membersInTable += `<td>-</td>`
+									}
+								});
+							}
+						} else {
+							membersInTable = '<tr><td colspan="11">No members found.</td></tr>';
+						}
+						$("#memberDetailsTable tbody").append(membersInTable);
+					} else {
+						if (response.message != null) {
+							alert(response.message);
+						}
+					}
+				},
+				error: function () {
+					alert("Error in loading member details.");
+				}
+			});
+		})
+	</script>
+}

@@ -1,0 +1,117 @@
+﻿@using LE.Account.Infrastructure.Reports.Reporter.ValueObjects
+@model AccountingReportVm
+
+@{
+    ViewData["Title"] = Model.title;
+    Layout = null;
+}
+
+<link href="~/css/print.css" rel="stylesheet" />
+<link href="~/lib/fontawesome-free/css/all.min.css" rel="stylesheet" />
+<link href="~/css/bootstrap.min.css" rel="stylesheet" />
+
+<style>
+    table {
+        border-collapse: collapse;
+    }
+
+    table, th, td {
+        border: 1px solid black;
+        padding: 5px;
+    }
+
+    .flexrow {
+        display: -webkit-box;
+        display: -webkit-flex;
+        display: flex !important;
+    }
+
+        .flexrow > div {
+            -webkit-box-flex: 1;
+            -webkit-flex: 1;
+            flex: 1;
+        }
+</style>
+<center>
+    <page size="A4">
+        <center class="header">
+            @Model.organization_name <br />@Model.address <br /> @Localizer[Model.title] <br />@Localizer["For the year"] @Model.fiscalYear.ToString().ConvertNumerals()
+        </center>
+
+        <div class="report-table">
+            @{
+                var leftReportVm = new AccountingReportDecoratorVm { ReportType = AccountingReportType.Split, Report = Model.LeftReport };
+                var rightReportVm = new AccountingReportDecoratorVm { ReportType = AccountingReportType.Split, Report = Model.RightReport };
+                var totalDr = Model.LeftReport[0].Balance;
+                var totalCr = Model.RightReport[0].Balance;
+                var diff = totalDr - totalCr;
+                var positiveDiff = diff > 0 ? diff : diff * -1;
+
+                if (totalDr < totalCr)
+                {
+                    leftReportVm.Report[0].Balance += positiveDiff;
+                    leftReportVm.Report.Add(new AccountingReportVo
+                {
+                    Id = 0,
+                    ParentId = 0,
+                    Name = "P/L Account",
+                    Code = null,
+                    Dr = 0,
+                    Cr = 0,
+                    Balance = positiveDiff,
+                    PreviousBalance = 0,
+                    Total = 0,
+                    Children = new List<AccountingReportVo>()
+                });
+                }
+                else
+                {
+                    rightReportVm.Report[0].Balance += positiveDiff;
+                    rightReportVm.Report.Add(new AccountingReportVo
+                {
+                    Id = 0,
+                    ParentId = 0,
+                    Name = "P/L Account",
+                    Code = null,
+                    Dr = 0,
+                    Cr = 0,
+                    Balance = positiveDiff,
+                    PreviousBalance = 0,
+                    Total = 0,
+                    Children = new List<AccountingReportVo>()
+                });
+                }
+            }
+            <div class="row flexrow p-2">
+                <div class="col-xs-6 m-2">
+                    <partial name="Accounting/AccountingReportDecorator" model="@leftReportVm" />
+                </div>
+                <div class="col-xs-6 m-2">
+                    <partial name="Accounting/AccountingReportDecorator" model="@rightReportVm" />
+                </div>
+            </div>
+        </div>
+    </page>
+</center>
+<script src="~/js/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $(".expandable").click(function () {
+            $(this).toggleClass("is-expanded");
+            let selfId = $(this).attr("data-self-id");
+            let childElements = $("tr[data-parent-id=" + selfId + "]");
+            if ($(this).hasClass("is-expanded")) {
+                $(this).find(".dropdownIcon").removeClass("fa-chevron-up").addClass("fa-chevron-down");
+                childElements.each(function (i, e) {
+                    $(e).css("display", "none");
+                });
+            }
+            else {
+                $(this).find(".dropdownIcon").removeClass("fa-chevron-down").addClass("fa-chevron-up");
+                childElements.each(function (i, e) {
+                    $(e).css("display", "table-row");
+                });
+            }
+        })
+    });
+</script>

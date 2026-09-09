@@ -1,0 +1,189 @@
+﻿@using LE.Web.Areas.Accounting.Models
+@model ReceiptModel
+@{
+    ViewData["Title"] = "Receipt Bill";
+    Layout = null;
+}
+
+<style>
+    body {
+        color: black !important;
+    }
+
+    #invoice-POS {
+        padding: 1%;
+        width: 1100px;
+        margin: 0 auto;
+        background: #FFF;
+    }
+
+    h1 {
+        font-size: 1em;
+        color: #222;
+    }
+
+    h2 {
+        font-size: 1.3em;
+    }
+
+    .num2words {
+        font-size: 1.2em;
+    }
+
+    .head {
+        font-size: 1.5em;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    .head-1 {
+        font-size: 1.2em;
+        margin-top: -8px;
+        text-transform: uppercase;
+    }
+
+    p {
+        font-size: 1em;
+        line-height: 1.2em;
+    }
+
+    #top {
+        min-height: 0px;
+    }
+
+    #mid {
+        min-height: 30px;
+    }
+
+    #bot {
+        min-height: 30px;
+    }
+
+    .clientlogo {
+        float: left;
+        height: 60px;
+        width: 60px;
+        background-size: 60px 60px;
+        border-radius: 50px;
+    }
+
+    .info {
+        display: block;
+        margin-left: 0;
+    }
+
+    .title {
+        float: right;
+    }
+
+        .title p {
+            text-align: right;
+        }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    td {
+        padding: 5px 0 5px 15px;
+    }
+
+    .tabletitle {
+        text-transform: uppercase;
+        font-size: .7em;
+        background: #EEE;
+    }
+
+    .service {
+        border-bottom: 1px solid #EEE;
+    }
+
+    .item {
+        width: 24mm;
+    }
+
+    .itemtext {
+        font-size: 1em;
+        text-transform: uppercase;
+    }
+
+    #legalcopy {
+        margin-top: 5mm;
+    }
+
+    div.logo {
+        position: absolute;
+        top: 20px;
+        left: 200px;
+        width: 200px;
+        height: 150px;
+    }
+</style>
+
+<link href="~/css/bootstrap.min.css" rel="stylesheet" />
+
+<div id="invoice-POS">
+    <center>
+        <div class="info">
+            <h3 class="head">@ViewBag.OrganizationName </h3>
+            <h3 class="head">@ViewBag.Address </h3>
+            <h3 class="head">@Localizer["Cash Bill"] </h3>
+        </div>
+    </center>
+    <div>
+        <div class="float-left logo">
+            <img src="~/images/custom/@ViewBag.Logo" alt="" height="80">
+        </div>
+        <div class="row">
+            <div class="col-md-6 left">
+                <h3 class="head-1">@Localizer["Bill No"] :@EnglishToNepaliNumber.convertToNepaliNumber(Model.receipt_id)</h3>
+            </div> @{
+                var nepDate = Model.nep_transaction_date.Split("-");
+                var year = EnglishToNepaliNumber.convertToNepaliNumber(Convert.ToDecimal(nepDate[0]));
+                var month = EnglishToNepaliNumber.convertToNepaliNumber(Convert.ToDecimal(nepDate[1]));
+                var day = EnglishToNepaliNumber.convertToNepaliNumber(Convert.ToDecimal(nepDate[2]));
+            }
+            <div class="col-md-6" style="text-align:right;">
+                <h3 class="head-1">@Localizer["Date"]: @year-@month-@day</h3>
+            </div>
+        </div>
+    </div>
+    <br />
+    <div>
+        <b>श्री&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; @Model.customer_name &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;बाट&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@Model.remarks&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;बापत रु &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; @EnglishToNepaliNumber.convertToNepaliNumber(Model.amount)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;अक्षरेपी &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;@NumberToNepaliCurrencyText.NumberToCurrencyText(Model.amount, MidpointRounding.AwayFromZero) &nbsp;&nbsp;&nbsp;&nbsp; मात्र&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; स-धन्यवाद प्राप्त भयो ।  </b>
+    </div>
+    <div id="bot">
+        <div id="table">
+            <table style="text-align:right;">
+                <tr>
+                    <td>...........................................</td>
+                </tr>
+                <tr>
+                    <td><b>बुझिलिनेको सही   </b></td>
+                </tr>
+            </table>
+        </div>
+
+        <div id="legalcopy">
+            <p class="legal">
+                <strong>तयार पार्ने :@ViewBag.User</strong>&nbsp;&nbsp;
+                <strong>मुद्रण मिति:@ViewBag.printDate @ViewBag.printTime<i class="print_date"></i></strong>
+            </p>
+        </div>
+
+        <div class="d-print-none m-t-30 m-b-30">
+            <div class="text-right">
+                <a href="javascript:window.print()" class="btn btn-primary waves-effect waves-light"><i class="fa fa-print m-r-5"></i> @Localizer["Print"]</a>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/js/num2str.js"></script>
+<script src="~/js/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        var strDate = new Date();
+        $(".print_date").text(AD2BS(strDate.getFullYear() + '-' + (strDate.getMonth() + 1) + '-' + strDate.getDate()) + ' ' + strDate.getHours() + ':' + strDate.getMinutes() + ':' + strDate.getSeconds());
+    });
+</script>

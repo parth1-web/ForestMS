@@ -1,0 +1,85 @@
+﻿@model StockUnitIndexViewModel;
+@{
+    ViewData["Title"] = "Stock Unit";
+
+    var list = new List<SelectListItem>() {
+new SelectListItem { Text = "10", Value = "10"},
+new SelectListItem { Text = "20", Value = "20" },
+new SelectListItem { Text = "30", Value = "30" },
+new SelectListItem { Text = "40", Value = "40"},
+new SelectListItem { Text = "50", Value = "50" }
+};
+}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="m-t-0 header-title"><b>@Localizer["Stock Unit"]</b></h4>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <a href="/inventory/stock-unit/new" class="btn btn-icon waves-effect waves-light btn-success btn-sm"><i class="fa fa-plus"></i> @Localizer["Add New Stock Unit"]</a>
+                    </div>
+                    <form action="/inventory/stock-unit" method="get" class="row col-sm-6">
+                        <div class="offset-sm-2 col-sm-6">
+                            @Html.TextBox("name", (string)ViewBag.name, new { @class = "form-control", placeholder = "Stock Unit Name" })
+                        </div>
+                        <div class="col-sm-2">
+                            @Html.DropDownList("number_of_rows", list, new { @class = "form-control" })
+                        </div>
+                        <div class="col-sm-2">
+                            <button type="submit" class="form-control btn btn-primary btn-sm"><i class="fa fa-refresh"></i></button>
+                        </div>
+                    </form>
+                </div>
+                <br />
+                <div class="table-responsive">
+                    <table class="table m-0 table-colored-bordered table-bordered-custom ">
+                        <thead class="bg-custom text-white">
+                            <tr>
+                                <th>#</th>
+                                <th>@Localizer["Stock Unit Name"]</th>
+                                <th>@Localizer["Short Name"]</th>
+                                <th>@Localizer["Enabled/Disabled"]</th>
+                                <th>@Localizer["Actions"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                var sn = 1;
+                                foreach (var unit in Model.stock_units)
+                                {
+                                    string status = "Enabled";
+                                    string statusColor = "success";
+                                    if (unit.is_enabled == false)
+                                    {
+                                        status = "Disabled";
+                                        statusColor = "danger";
+                                    }
+                                    <tr>
+                                        <td>@sn</td>
+                                        <td>@unit.name</td>
+                                        <td>@unit.short_name</td>
+                                        <td><span class="badge badge-@statusColor">@status</span></td>
+                                        <td>
+                                            <a href="/inventory/stock-unit/edit/@unit.stock_unit_id" class="btn btn-icon waves-effect waves-light btn-primary btn-sm"><i class="fa fa-pencil"></i></a>
+                                            <a href="/inventory/stock-unit/delete/@unit.stock_unit_id" class="btn btn-icon waves-effect waves-light btn-danger btn-sm delete"><i class="fa fa-trash"></i></a>
+                                            @{
+                                                string actionName = unit.is_enabled ? "disable" : "enable";
+                                                string icon = unit.is_enabled ? "fa-thumbs-down" : "fa-thumbs-up";
+                                                string color = unit.is_enabled ? "btn-danger" : "btn-success";
+                                            }
+                                            <a href="/inventory/stock-unit/@actionName/@unit.stock_unit_id" class="btn btn-icon waves-effect waves-light btn-primary btn-sm @color" data-toggle="tooltip" title="@actionName Stock Unit"><i class="fa @icon"></i></a>
+                                        </td>
+                                    </tr>
+                                    sn++;
+                                }
+                            }
+                        </tbody>
+                    </table>
+                    <br />
+                    <LeadingEdgePager info="@ViewBag.pagerInfo"></LeadingEdgePager>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

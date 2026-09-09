@@ -1,0 +1,74 @@
+﻿@model ChiranBillReportIndexViewModel;
+@{
+    ViewData["Title"] = "Chiran Bill Report";
+    Layout = null;
+
+}
+<link href="~/css/bootstrap.min.css" rel="stylesheet" />
+<link href="~/css/print.css" rel="stylesheet" />
+
+<center>
+    <page>
+        <center style="font-size:20px; font-weight:600;"> @ViewBag.OrganizationName<br /> @ViewBag.Address <br /> @Localizer["Chiran Bill Report"]<br />@Localizer["From"]  @Model.start_date.ConvertNumerals()  @Localizer["To"]  @Model.end_date.ConvertNumerals()</center>
+        <table>
+            <thead>
+                <tr>
+                    <th>@Localizer["S.N"]</th>
+                    <th>@Localizer["Sales Date"]</th>
+                    <th>@Localizer["Customer"]</th>
+                    <th>@Localizer["Amount"]</th>
+                    <th>@Localizer["Tax"]</th>
+                    <th>@Localizer["Total Amount"]</th>
+                    <th>@Localizer["Remarks"]</th>
+                    <th>@Localizer["Status"]</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{ var sn = 1;
+                    decimal totalAmount = 0;
+                    decimal totalAmountwithTax = 0;
+                    foreach (var detail in Model.chiran_bill_datas)
+                    {
+                        string status = "Billed";
+                        if (detail.is_cancelled)
+                        {
+                            status = "Cancelled";
+                        }
+                        var totAmt = detail.amount + detail.tax_amount;
+                        <tr>
+                            <td>@sn.ToString().ConvertNumerals()</td>
+                            <td>@detail.nep_sales_date.ToString().ConvertNumerals()</td>
+                            <td>@detail.name</td>
+                            <td>@detail.amount.ToString().ConvertNumerals()</td>
+                            <td>@detail.tax_amount.ToString().ConvertNumerals()</td>
+                            <td>@totAmt.ToString().ConvertNumerals()</td>
+                            <td>@detail.remarks</td>
+                            <td>@status</td>
+
+                        </tr>
+                        totalAmount += detail.amount;
+                        totalAmountwithTax += totAmt;
+                        sn++;
+
+                    }
+                }
+                <tr>
+                    <td colspan="2"></td>
+                    <th>@Localizer["Total Amount"]</th>
+                    <th>@totalAmount.ToString().ConvertNumerals()</th>
+                    <td></td>
+                    <th>@totalAmountwithTax.ToString().ConvertNumerals()</th>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </page>
+</center>
+<script src="~/js/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // window.print();
+
+    });
+</script>

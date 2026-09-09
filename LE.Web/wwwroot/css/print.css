@@ -1,0 +1,35 @@
+﻿
+body {
+    background: rgb(204,204,204);
+}
+
+page {
+    background: white;
+    width: 297mm;
+    display: block;
+    margin: 0.2cm;
+    padding: 0.2cm;
+    box-shadow: 0 0 0.5cm rgba(0,0,0,0.5);
+}
+
+    page[size="A4"] {
+        width: 297mm;
+    }
+
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+    font-size: medium;
+}
+
+.header {
+    font-size: 20px;
+    font-weight: 600;
+}

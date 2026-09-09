@@ -1,0 +1,61 @@
+﻿@model AccountingReportVm
+@{
+    ViewData["Title"] = "Profit and Loss";
+}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="m-t-0 header-title"><b>@Localizer["Profit And Loss Account"]</b></h3>
+                <h3 class="text-center">
+                    <i><small>@Localizer["For the year ended"]</small> @Model.fiscalYear.ConvertNumerals()</i>
+                </h3>
+                <div>
+                    <form method="get" class="row mb-2 form-inline">
+                        <div class="col-sm-2">
+                            @Localizer["From Date"]
+                            @Html.TextBoxFor(a => Model.FromDate, new { @class = "date-picker form-control nepali-calendar w-100", @autocomplete = "off" })
+                        </div>
+                        <div class="col-sm-2">
+                            @Localizer["To Date"]
+                            @Html.TextBoxFor(a => Model.ToDate, new { @class = "date-picker form-control nepali-calendar w-100", @autocomplete = "off" })
+                        </div>
+                        <div class="col-sm-2">
+                            @Localizer["Opening Stock"] &nbsp;
+                            @Html.TextBoxFor(a => Model.OpeningBalance, new { @class = "form-control w-100", @autocomplete = "off" })
+                        </div>
+                        <div class="col-sm-2">
+                            @Localizer["Closing Stock"] &nbsp;
+                            @Html.TextBoxFor(a => Model.ClosingBalance, new { @class = "form-control w-100", @autocomplete = "off" })
+                        </div>
+                        <div class="offset-sm-1 col-sm-3 mt-4">
+                            <button type="submit" class="btn btn-primary waves-effect w-md waves-light">
+                                @Localizer["Load"] <i class="fa fa-spinner "></i>
+                            </button>
+                            <button type="submit" formaction="/accounting/report/profitloss-print" formtarget="_blank" class="btn btn-success">
+                                <i class="fa fa-print "></i>
+                            </button>
+                            <button type="submit" formaction="/accounting/report/profitloss-pdf" class="btn btn-danger" formtarget="_blank" title="Pdf">
+                                <i class="fa fa-file-pdf-o fa-lg "></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="report-table">
+                    @{
+                        var leftReportVm = new AccountingReportDecoratorVm { ReportType = AccountingReportType.Split, Report = Model.LeftReport };
+                        var rightReportVm = new AccountingReportDecoratorVm { ReportType = AccountingReportType.Split, Report = Model.RightReport };
+                    }
+                    <div class="row p-2">
+                        <div class="col">
+                            <partial name="Accounting/AccountingReportDecorator" model="@leftReportVm" />
+                        </div>
+                        <div class="col">
+                            <partial name="Accounting/AccountingReportDecorator" model="@rightReportVm" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

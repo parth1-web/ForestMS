@@ -1,0 +1,314 @@
+﻿@model JournalModel
+@{
+    ViewData["Title"] = "New Journal";
+}
+<div id="loading">
+    <img id="loading-image" src="~/images/loader.gif" alt="Loading..." />
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="m-t-0 header-title"><b>@Localizer["New Journal"]</b></h4>
+                <p class="text-muted m-b-30">
+                    @Localizer["Make a Journal Entries."]
+                </p>
+                <div class="row">
+                    <form class="form-horizontal col-md-12" method="post">
+                        @Html.ValidationSummary(true)
+
+                        @Html.AntiForgeryToken()
+                        <div class="form-group row">
+                            @Html.LabelFor(a => a.nep_transaction_date, new { @class = " control-label asterik" })
+                            <div class="col-md-3">
+                                @Html.TextBoxFor(a => a.nep_transaction_date, new { @class = "form-control  nepali-calendar",@id="nep_transaction_date" })
+                            </div>
+
+                            @Html.LabelFor(a => a.voucher_no, new { @class = " control-label" })
+                            <div class="col-md-1">
+                                @Html.TextBoxFor(a => a.voucher_no, new { @class = "form-control voucher_no" })
+                            </div>
+                        </div>
+
+                        <div class="col-lg-12">
+                            <table id="journal" class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th width="50">@Localizer["Dr-Cr"]</th>
+                                        <th>@Localizer["Accounts"]</th>
+                                        <th width="150">@Localizer["Debit Amount"]</th>
+                                        <th width="150">@Localizer["Credit Amount"]</th>
+                                        <th width="30">@Localizer["Action"]</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    <tr data-rowid="1">
+                                        <td>
+                                            <select name="type[1]" id="type1" class="form-control type" data-srno="1">
+                                                <option value="1">Dr</option>
+                                                <option value="2">Cr</option>
+                                            </select>
+                                        </td>
+                                        <td width="300">
+                                            @Html.DropDownList("ledger_id", (SelectList)ViewBag.ledgers, new { @class = "form-control chosen ledger_id", @id = "ledger_id1", @name = "ledger_id[1]" })
+                                        </td>
+                                        <td>
+                                            <input type="number" name="dr_amount" id="dr_amount1" class="form-control drAmt" data-srno="1" />
+                                        </td>
+                                        <td>
+                                            <input type="number" name="cr_amount" id="cr_amount1" class="form-control crAmt" data-srno="1" />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="row">
+                                <div class="col-md-8">
+                                    @Html.TextAreaFor(a => a.remarks, new { @class = "form-control", required = "required", @id = "remarks", placeholder = "Remarks" })
+                                </div>
+
+                                <div class="col-md-4">
+                                    <table class="table table-bordered table-full-purple" style="background-color:lightblue">
+                                        <tr>
+                                            <td width="200px"><b class="font-800">Debit Total</b></td>
+                                            <td><label id="drTotal" class="font-800"></label></td>
+                                        </tr>
+                                        <tr>
+                                            <td width="200px"><b class="font-800">Credit Total</b></td>
+                                            <td><label id="crTotal" class="font-800"></label></td>
+                                        </tr>
+                                    </table>
+                                    <lable id="error"></lable>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <button type="submit" class="btn-save btn btn-primary waves-effect w-md waves-light pull-right"><i class="fa fa-save fa-lg">@Localizer["Save"]</i></button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="col-md-12">
+                        <p>@Localizer["Note"]: <span class="asterik"></span> @Localizer["Fields are mandatory"]</p>
+                        <p><span class="asterik"></span> @Localizer["Hit Enter in amount field to add new row."]</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        $(document).ready(function () {
+            $(".chosen").select2();
+            $('#loading').hide();
+
+            $(document).on("keypress", "form", function (event) {
+                return event.keyCode != 13;
+            });
+            $tableRowNo = 1;
+            $cloneSrnNo = 1;
+            $count = 1;
+
+            $("#type1").attr('disabled', 'disabled');
+
+            $(document).on('change', '.type', function (e) {
+                $rowId = $(this).data("srno");
+
+                $typeVal = $("#type" + $rowId).val();
+                if ($typeVal == 1) {
+                    $("#cr_amount" + $rowId).hide();
+                    $("#cr_amount" + $rowId).val(0);
+                    $("#dr_amount" + $rowId).show();
+                    $("#dr_amount" + $rowId).val(0);
+                }
+                else {
+                    $("#cr_amount" + $rowId).show();
+                    $("#cr_amount" + $rowId).val(0);
+                    $("#dr_amount" + $rowId).hide();
+                    $("#dr_amount" + $rowId).val(0);
+                }
+                calculateDebitTotal($rowId);
+                calculateCreditTotal($rowId);
+            });
+            $("#type" + $cloneSrnNo).change();
+
+
+            $(document).on("keyup", ".drAmt,.crAmt", function (e) {
+                if (e.keyCode == 13 || e.which == 13) {
+                    $drRow = $(this).closest("tr");
+                    $isFirstRow = parseInt($drRow.data("rowid"));
+                    $clonedRow = $drRow.clone();
+
+                    if ($cloneSrnNo == 1 || $isFirstRow == 1) {
+                        $clonedRow.append("<td><a href='#' class='btn btn-danger btn-md delete-row'><i class='fa fa-trash'></i></a></td>");
+                    }
+                    $cloneSrnNo = $cloneSrnNo + 1;
+                    $clonedRow.find('td > .type').each(function (index, item) {
+                        //set new select to value of old select
+                        $(item).val($drRow.find('td > .type').val());
+                    });
+                    $clonedRow.find(".type").attr("id", "type" + $cloneSrnNo);
+                    $clonedRow.find(".type").attr("data-srno", $cloneSrnNo);
+                    $clonedRow.find(".type").attr("name", "name[" + $cloneSrnNo + "]");
+                    $clonedRow.find(".drAmt").attr("id", "dr_amount" + $cloneSrnNo);
+                    $clonedRow.find(".drAmt").val(0);
+                    $clonedRow.find(".drAmt").attr("data-srno", $cloneSrnNo);
+                    $clonedRow.find(".crAmt").attr("data-srno", $cloneSrnNo);
+                    $clonedRow.find(".crAmt").val(0);
+                    $clonedRow.find(".crAmt").attr("id", "cr_amount" + $cloneSrnNo);
+                    $clonedRow.find(".ledger_id").attr("id", "ledger_id" + $cloneSrnNo);
+                    $clonedRow.find(".ledger_id").attr("name", "ledger_id[" + $cloneSrnNo + "]");
+                    $clonedRow.attr("data-rowid", $tableRowNo + 1);
+                    $clonedRow.find(".type").removeAttr('disabled')
+                    $('#journal> tbody:last-child').append($clonedRow);
+                    $clonedRow.find("span").remove();
+                    $clonedRow.find("select").select2();
+                    $count = $count + 1;
+                }
+            });
+
+            $(document).on("keyup keydown", ".drAmt", function () {
+                $cellAmt = parseFloat($(this).val());
+                var cnt = $(this).data("srno");
+                calculateDebitTotal(cnt);
+            });
+
+            $(document).on("keyup keydown", ".crAmt", function () {
+                $cellAmt = parseFloat($(this).val());
+                var cnt = $(this).data("srno");
+                calculateCreditTotal(cnt);
+            });
+
+            function calculateDebitTotal() {
+                var drAmount = 0;
+                for (i = 1; i <= $count; i++) {
+
+                    var dAmt = parseFloat($("#dr_amount" + i).val());
+                    if (dAmt > 0) {
+                        drAmount += dAmt;
+                    }
+                }
+                $('#drTotal').text(drAmount.toFixed(2));
+            }
+
+            function calculateCreditTotal() {
+                var crAmount = 0;
+                for (i = 1; i <= $count; i++) {
+
+                    var cAmt = parseFloat($("#cr_amount" + i).val());
+                    if (cAmt > 0) {
+                        crAmount += cAmt;
+                    }
+                }
+                $('#crTotal').text(crAmount);
+            }
+
+            $(".btn-save").click(function (e) {
+                $debitTotalAmt = parseFloat($("#drTotal").text());
+                $creditTotalAmt = parseFloat($("#crTotal").text());
+                if ($debitTotalAmt == $creditTotalAmt && $debitTotalAmt != 0 && $creditTotalAmt != 0) {
+                    if ($("#remarks").val() == "") {
+                        showMessage("Remarks is Required");
+                        return false;
+                    }
+                    var journalModelDetails = {};
+                    var item = [];
+                    journalModelDetails.remarks = $("#remarks").val();
+                    journalModelDetails.voucher_no = $(".voucher_no").val();
+                    journalModelDetails.nep_transaction_date = $("#nep_transaction_date").val();
+                    var ledgers = [];
+                    $("#journal").find("tbody tr").each(function (i, row) {
+                        var data = {};
+                        var $row = $(row);
+
+                        data.dr_amount = parseFloat($row.find('td > .drAmt').val());
+                        data.cr_amount = parseFloat($row.find('td > .crAmt').val());
+                        data.ledger_id = parseInt($row.find('td > .ledger_id').val());
+                        ledgers.push(parseInt($row.find('td > .ledger_id').val()));
+                        item.push(data);
+                    });
+
+                    journalModelDetails["journalModelDetails"] = item;
+
+                    var recipientsArray = ledgers.sort();
+                    var reportRecipientsDuplicate = [];
+                    for (var i = 0; i < recipientsArray.length - 1; i++) {
+                        if (recipientsArray[i + 1] == recipientsArray[i]) {
+                            reportRecipientsDuplicate.push(recipientsArray[i]);
+                        }
+                    }
+
+                    if (reportRecipientsDuplicate.length > 0) {
+                        showMessage("Debit and Credit Ledgers are Same. Choose another Ledger.");
+                        return false;
+                    }
+
+                    if (item.length > 0) {
+                        $('#loading').show();
+                        $.ajax({
+                            contentType: 'application/json; charset=utf-8',
+                            type: "POST",
+                            beforeSend: function (xhr) {
+                                xhr.setRequestHeader("XSRF-TOKEN",
+                                    $('input:hidden[name="__RequestVerificationToken"]').val());
+                            },
+                            url: "/accounting/journal-entries/new",
+                            dataType: "json",
+                            data: JSON.stringify(journalModelDetails),
+                            success: function (response) {
+                                if (response == null) {
+                                    showMessage("Something went wrong");
+                                }
+                                else if (response.error == true) {
+                                    showMessage(response.responseText)
+                                }
+                                else {
+                                    window.location.href = '/accounting/report/journal-register';
+                                }
+                                $('#loading').hide();
+                            },
+                            error: function (response) {
+                                showMessage(response.responseText)
+                                $('#loading').hide();
+                            }
+                        });
+                    }
+                    else {
+                        alert("Ledgers Not Selected.");
+                        e.preventDefault();
+                    }
+                    e.preventDefault();
+                }
+                else {
+                    $("#error").text("Debit-Credit Amount not equal").css("color", "red");
+                    return false;
+                }
+            });
+
+            $(document).on("click", ".delete-row", function (e) {
+                if (confirm("Are you sure to remove the item?")) {
+                    $(this).closest("tr").remove();
+                    calculateDebitTotal();
+                    calculateCreditTotal();
+                }
+                e.preventDefault();
+            });
+
+            $(".tran-date").focus();
+
+            function showMessage(message) {
+                $.toast({
+                    heading: 'Message!',
+                    text: message,
+                    position: 'top-right',
+                    loaderBg: '#45bbe0',
+                    icon: 'info',
+                    hideAfter: 3000,
+                    stack: 1
+                });
+            }
+        });
+    </script>
+}

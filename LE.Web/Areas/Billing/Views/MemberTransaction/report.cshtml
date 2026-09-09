@@ -1,0 +1,71 @@
+﻿@model MemberTransactionIndexViewModel;
+@{
+    ViewData["Title"] = Localizer["Member Transaction Report"];
+    Layout = null;
+}
+<link href="~/css/bootstrap.min.css" rel="stylesheet" />
+<link href="~/css/print.css" rel="stylesheet" />
+
+<center>
+    <page>
+        <center style="font-size:20px; font-weight:600;"> @ViewBag.OrganizationName  <br /> @ViewBag.Address<br /> @Localizer["Member Transaction Report"]<br />@Localizer["From"]  @Model.start_date.ConvertNumerals()  @Localizer["To"]  @Model.end_date.ConvertNumerals()</center>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>@Localizer["S.N"]</th>
+                    <th>@Localizer["Bill No"]</th>
+                    <th>@Localizer["Bill Date"]</th>
+                    <th>@Localizer["Member Name"]</th>
+                    <th>@Localizer["Golia No"]</th>
+                    <th>@Localizer["Quantity"]</th>
+                    <th>@Localizer["Rate"]</th>
+                    <th>@Localizer["Total"]</th>
+                    <th>@Localizer["Status"]</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{ var sn = 1;
+                    decimal totalAmount = 0;
+                    foreach (var detail in Model.member_transactions)
+                    {
+                        string status = "Billed";
+                        if (detail.is_cancelled)
+                        {
+                            status = "Cancelled";
+                        }
+                        <tr>
+                            <td>@sn.ToString().ConvertNumerals()</td>
+                            <td>@detail.wood_bill_id.ToString().ConvertNumerals()</td>
+                            <td>@detail.woodBill.nep_bill_date.ToString().ConvertNumerals()</td>
+                            <td>@detail.member.FullName</td>
+                            <td>@detail.woodDetail.goliya_number.ToString().ConvertNumerals()</td>
+                            <td>@detail.quantity.ToString().ConvertNumerals()</td>
+                            <td>@detail.rate.ToString().ConvertNumerals()</td>
+                            <td>@detail.amount.ToString().ConvertNumerals()</td>
+                            <td>@status</td>
+
+                        </tr>
+                        totalAmount += detail.amount;
+                        sn++;
+
+                    }
+                }
+                <tr>
+                    <td colspan="6"></td>
+                    <th>@Localizer["Total Amount"]</th>
+                    <th>@totalAmount.ToString().ConvertNumerals()</th>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </page>
+</center>
+
+<script src="~/js/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        //        window.print();
+
+    });
+</script>

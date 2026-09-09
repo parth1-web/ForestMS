@@ -1,0 +1,128 @@
+﻿@model WoodDetailsIndexViewModel;
+@{
+    ViewData["Title"] = "Wood Report";
+
+    var soldType = new List<SelectListItem>() {
+        new SelectListItem { Text = "Sold", Value = "sold"},
+        new SelectListItem { Text = "Unsold", Value = "unsold"},
+        new SelectListItem { Text = "All", Value = "" },
+    };
+
+    var list = new List<SelectListItem>() {
+        new SelectListItem { Text = "10", Value = "10"},
+        new SelectListItem { Text = "20", Value = "20" },
+        new SelectListItem { Text = "30", Value = "30" },
+        new SelectListItem { Text = "40", Value = "40"},
+        new SelectListItem { Text = "50", Value = "50" }
+    };
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="m-t-0 header-title"><b>@Localizer["Wood Report"]</b></h4>
+                <div class="row mb-2">
+                    <form action="/inventory/wood-details/report" method="get" class="row col-sm-12">
+                        <input type="hidden" asp-for="page" />
+                        <div class="col-sm-2">
+                            @Html.DropDownList("stock_type_id", Html.GetEnumSelectList<LE.Inventory.Common.Enums.StockTypes>(), "--Select Stock Type--", new { @class = " form-control stock_type_id select2", @name = "stock_type_id", @id = "stock_type_id" })
+                        </div>
+                        <div class="col-sm-2">
+                            @Html.DropDownList("stock_category_purpose_id", (SelectList)ViewBag.categoryPurposes, "--Select Purpose--", new { @class = "form-control select2" })
+                        </div>
+                        <div class="col-sm-2">
+                            @Html.DropDownList("piling_id", (SelectList)ViewBag.piling, "--Select Piling--", new { @class = "form-control select2" })
+                        </div>
+                        <div class="col-sm-2">
+                            @Html.DropDownList("sold_type", soldType, "-Select Type-", new { @class = "form-control select2" })
+                        </div>
+                        <div class="col-sm-1">
+                            @Html.DropDownList("number_of_rows", list, new { @class = "form-control" })
+                        </div>
+                        <div class="col-sm-3">
+                            <button type="submit" class="btn btn-primary form-control" style="max-width: 100px;"><i class="fa fa-refresh"></i></button>
+                            <button type="submit" formtarget="_blank" formaction="/inventory/wood-details/report-print" class="btn btn-success" title="Print" style="margin-left:5px;"> <i class="fa fa-print "></i></button>
+                            <button type="submit" formtarget="_blank" formaction="/inventory/wood-details/report-pdf" class="btn btn-danger" title="Pdf" style="margin-left:5px;"> <i class="fa fa-file-pdf-o fa-lg "></i></button>
+                        </div>
+                    </form>
+                </div>
+                <div class="table-responsive">
+                    <table class="table m-0 table-colored-bordered table-bordered-custom ">
+                        <thead class="bg-custom text-white">
+                            <tr>
+                                <th rowspan="2">#</th>
+                                <th rowspan="2">@Localizer["Year"]</th>
+                                <th rowspan="2">@Localizer["Piling"]</th>
+                                <th rowspan="2">@Localizer["Ghatgaddhi Goliya No"]</th>
+                                <th rowspan="2">@Localizer["Tuna / Goliya No"]</th>
+                                <th rowspan="2">@Localizer["Wood Type"]</th>
+                                <th rowspan="2">@Localizer["Purpose"]</th>
+                                <th rowspan="2">@Localizer["Stock Type"]</th>
+                                <th colspan="2" class="text-center">@Localizer["Wood Size"]</th>
+                                <th rowspan="2">@Localizer["Total Wood Size"]</th>
+                                <th colspan="2" class="text-center">@Localizer["Hole Status"]</th>
+                                <th rowspan="2">@Localizer["Total Size"]</th>
+                                <th rowspan="2">@Localizer["Grade"]</th>
+                            </tr>
+                            <tr>
+                                <th>@Localizer["Circle(inch)"]</th>
+                                <th>@Localizer["Length(Feet)"]</th>
+                                <th>@Localizer["Hole Size"]</th>
+                                <th>@Localizer["Hole Total"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                var sn = 1;
+                                decimal totalWoodSize = 0;
+                                foreach (var item in Model.wood_details)
+                                {
+                                    totalWoodSize += item.getNetTotal();
+                                    <tr>
+                                        <td>@sn</td>
+                                        <td>@item.year</td>
+                                        <td>@item.piling.title</td>
+                                        <td>@item.goliya_number</td>
+                                        <td>@item.tuna_no</td>
+                                        <td>@item.wood_type.name</td>
+                                        <td>@item.category_purpose.name</td>
+                                        <td>@Enum.GetName(typeof(LE.Inventory.Common.Enums.StockTypes), item.stock_type_id)</td>
+                                        <td>@item.circle_size</td>
+                                        <td>@item.length</td>
+                                        <td>@item.fresh_total_size</td>
+                                        <td>
+                                            @{
+                                                foreach (var damage in item.DamagedWoodDetails)
+                                                {
+                                                    <span>@damage.damaged_first_size + @damage.damaged_second_size + @damage.damaged_third_size + @damage.damaged_fourth_size + @damage.damaged_fifth_size X @damage.damaged_feet_size</span>
+                                                    <br />
+                                                }
+                                            }
+                                        </td>
+                                        <td>@item.getDamagedsize()</td>
+                                        <td>@item.getNetTotal()</td>
+                                        <td>@item.grade</td>
+                                    </tr>
+                                    sn++;
+                                }
+                                <tr>
+                                    <td colspan="13" class="text-right"><b>@Localizer["Total"]</b></td>
+                                    <td><b> @totalWoodSize </b></td>
+                                    <td></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                    <br />
+                    <LeadingEdgePager info="@ViewBag.pagerInfo"></LeadingEdgePager>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts {
+    <script>
+        $(".select2").select2();
+    </script>
+}

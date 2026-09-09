@@ -1,0 +1,395 @@
+﻿@using LE.Common.Enums
+@model MembershipModel
+@{
+	ViewData["Title"] = Localizer["New Membership"];
+}
+<style>
+	.form-group {
+		margin-bottom: 0;
+	}
+
+	.form-horizontal .form-group {
+		margin-left: 0;
+		margin-right: 0;
+	}
+
+	.form-control {
+		border: 1px solid #c7c7c7;
+		border-radius: 4px;
+		padding: 6px 12px;
+		height: 36px;
+	}
+
+	h4.title {
+		background: #41b5e3;
+		color: white;
+		width: fit-content;
+		padding: 4px 15px;
+		box-shadow: rgba(0, 0, 0, 0.40) 3px -2px 3px;
+	}
+
+	.card {
+		box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+	}
+
+	@@media (min-width: 768px) {
+		.offset-md-6 {
+			margin-left: 50% !important;
+		}
+	}
+</style>
+<div class="container-fluid px-5">
+	<div class="card">
+		<div class="card-body">
+			<div class="d-flex align-items-center justify-content-between">
+				<div>
+					<h4 class="m-t-0 header-title"><b>@Localizer["New Membership"]</b></h4>
+					<p class="text-muted">@Localizer["Creates a Membership"].</p>
+				</div>
+			</div>
+			<div>
+				<h4 class="title card-header">Membership Details</h4>
+				<div class="card mb-3">
+					<div class="card-body">
+						<div class="row">
+							<div class="form-group col-md-3">
+								@Html.LabelFor(a => a.MembershipCode, new { @class = "control-label asterik" })
+								@Html.TextBoxFor(a => a.MembershipCode, new { @class = "form-control", required = "required" })
+								<p class="text-danger">@Html.ValidationMessageFor(a => a.MembershipCode)</p>
+							</div>
+							<div class="form-group col-md-3 mt-2">
+								@Html.LabelFor(a => a.Area, new { @class = "control-label" })
+								@Html.TextBoxFor(a => a.Area, new { @class = "form-control" })
+								<p class="text-danger">@Html.ValidationMessageFor(a => a.Area)</p>
+							</div>
+							<div class="form-group col-md-2">
+								@Html.LabelFor(a => a.ToleNo, new { @class = "control-label asterik" })
+								@Html.DropDownList("ToleNo", (SelectList)ViewBag.toles, new { @class = "form-control", required = "required" })
+								<p class="text-danger">@Html.ValidationMessageFor(a => a.ToleNo)</p>
+							</div>
+							<div class="form-group col-md-2">
+								@Html.LabelFor(a => a.Religion, new { @class = "control-label asterik" })
+								@Html.DropDownListFor(a => a.Religion, new SelectList(EnumExtensions.GetEnumDisplayName<ReligionType>(), "Value", "Text"), new { @class = "form-control", required = "required" })
+								<p class="text-danger">@Html.ValidationMessageFor(a => a.Religion)</p>
+							</div>
+						</div>
+						<div class="row">
+							<div class="form-group col-md-3">
+								@Html.Label("IssueDate", "Issue Date", new { @class = "control-label asterik" })
+								@Html.TextBox("IssueDate", Model.MembershipValidity.IssueDate, new { @class = "form-control nepali-calendar", @readonly = "readonly", required = "required" })
+								<p class="text-danger">@Html.ValidationMessage("IssueDate")</p>
+							</div>
+							<div class="form-group col-md-3">
+								@Html.Label("NepValidityDate", "Validity Date", new { @class = "control-label asterik" })
+								@Html.TextBox("NepValidityDate", Model.MembershipValidity.NepValidityDate, new { @class = "form-control nepali-calendar", @readonly = "readonly", required = "required" })
+								<p class="text-danger">@Html.ValidationMessage("NepValidityDate")</p>
+							</div>
+							<div class="form-group offset-md-1 col-md-2 align-content-center">
+								<div>
+									@Html.CheckBoxFor(a => a.HasBioGas, new { @class = "form-check-input" })
+									@Html.LabelFor(a => a.HasBioGas, "Has Bio Gas", new { @class = "form-check-label" })
+								</div>
+								<div>
+									@Html.CheckBoxFor(a => a.HasLPG, new { @class = "form-check-input" })
+									@Html.LabelFor(a => a.HasLPG, "Has L.P.G", new { @class = "form-check-label" })
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<hr />
+			<div>
+				<h4 class="title card-header">Members Details</h4>
+				<div class="card mb-3">
+					<div class="card-body">
+						<form class="form-horizontal" id="memberForm">
+							<div class="row">
+								<div class="col-md-3">
+									<div class="d-flex">
+										@Html.Label("FullName", "Full Name", new { @class = "control-label asterik" })
+										<div class="m-auto">
+											@Html.CheckBox("IsGharmuli", new { @class = "form-check-input" })
+											@Html.Label("IsGharmuli", "Is Gharmuli", new { @class = "form-check-label" })
+										</div>
+									</div>
+									@Html.TextBox("FullName", "", new { @class = "form-control", placeholder = "Enter Member's FullName", required = "required" })
+								</div>
+								<div class="col-md-3 mt-2">
+									@Html.Label("MemberCitizenship", "Member Citizenship", new { @class = "control-label" })
+									@Html.TextBox("MemberCitizenship", "", new { @class = "form-control", placeholder = "Enter Member's Citizenship No." })
+								</div>
+								<div class="col-md-3 mt-2">
+									@Html.Label("Address", "Address", new { @class = "control-label" })
+									@Html.TextBox("Address", "", new { @class = "form-control", placeholder = "Enter Member's Address" })
+								</div>
+								<div class="col-md-3 mt-2">
+									@Html.Label("ContactNo", "Contact No.", new { @class = "control-label" })
+									@Html.TextBox("ContactNo", "", new { @class = "form-control", placeholder = "Enter Member's Contact No." })
+								</div>
+							</div>
+							<div class="row mt-3">
+								<div class="col-md-1">
+									@Html.Label("Age", "Age", new { @class = "control-label asterik" })
+									@Html.TextBox("Age", "25", new { @class = "form-control", type = "number", min = "1", max = "100", inputmode = "numeric", required = "required" })
+								</div>
+								<div class="col-md-2">
+									@Html.Label("Gender", "Gender", new { @class = "control-label asterik" })
+									@Html.DropDownList("Gender", new SelectList(EnumExtensions.GetEnumDisplayName<GenderType>(), "Value", "Text"), new { @class = "form-control", required = "required" })
+								</div>
+								<div class="col-md-3">
+									@Html.Label("FamilyRole", "Family Role", new { @class = "control-label asterik" })
+									@Html.DropDownList("FamilyRole", new SelectList(EnumExtensions.GetEnumDisplayName<RelationType>(), "Value", "Text"), new { @class = "form-control", required = "required" })
+								</div>
+								<div class="col-md-4" style="margin-top: 2.2rem;">
+									<label for="ImageName" class="btn btn-md btn-secondary m-auto">Upload Member Image</label>
+									<input type="file" hidden accept="image/*" name="ImageName" id="ImageName" />
+									<img id="image_preview" src="" alt="image preview" class="img-fluid" style="height:80px; width:80px; object-fit: cover;border:1px solid black;margin-left: 15px;" />
+								</div>
+							</div>
+							<div class="mt-3 text-right">
+								<button type="submit" class="btn btn-outline-primary" id="btnAddMember" value="Add"><i class="fa fa-plus"></i> Add Member</button>
+							</div>
+						</form>
+
+						<h4><b>List of Members : </b></h4>
+						<table id="membersTable" class="table table-responsive">
+							<thead>
+								<tr>
+									<th>Is Gharmuli</th>
+									<th>Full Name</th>
+									<th>Citizenship no.</th>
+									<th>Address</th>
+									<th>Contact no.</th>
+									<th>Age</th>
+									<th>Gender</th>
+									<th>Family Role</th>
+									<th>Image</th>
+									<th>Action</th>
+								</tr>
+							</thead>
+							<tbody></tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+			<div class="col-lg-12">
+				<div class="form-group">
+					<p>@Localizer["Note"]: <span class="asterik"></span> @Localizer["Fields are mandatory"].</p>
+					<button type="button" class="btn btn-primary waves-effect w-md waves-light" id="saveMembership"><i class="fa fa-save fa-lg"> @Localizer["Save"]</i></button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section scripts {
+	<script>
+		$(document).ready(function () {
+			let membersList = [];
+
+			$("#ImageName").change(function () {
+				readURL(this);
+			});
+
+			function readURL(input) {
+				if (input.files && input.files[0]) {
+					var reader = new FileReader();
+
+					reader.onload = function (e) {
+						$('#image_preview').attr('src', e.target.result);
+					}
+					reader.readAsDataURL(input.files[0]);
+				}
+			}
+
+			$("#IsGharmuli").change(function(){
+				if($(this).is(':checked')){
+					$("#FamilyRole").val('Headofthehousehold').attr('disabled', true);
+				}
+				else{
+					$("#FamilyRole").attr('disabled', false);
+				}
+			});
+
+			$("#memberForm").submit(function (event) {
+				event.preventDefault();
+				let member = {
+					FullName: $('input[name="FullName"]').val().trim(),
+					MemberCitizenship: $('input[name="MemberCitizenship"]').val().trim(),
+					Address: $('input[name="Address"]').val(),
+					ContactNo: $('input[name="ContactNo"]').val(),
+					Age: $('input[name="Age"]').val(),
+					Gender: $('select[name="Gender"]').val(),
+					FamilyRole: $('select[name="FamilyRole"]').val(),
+					IsGharmuli: $('input[name="IsGharmuli"]').is(':checked'),
+					ImageName: $('#ImageName')[0].files.length > 0 ? $('#ImageName')[0].files[0] : ''
+				};
+
+				if (!validateMemberData(member)) {
+					return;
+				}
+
+				membersList.push(member);
+				let index = membersList.length - 1;
+				let isGharmuliIcon = "-";
+				if (member.IsGharmuli) {
+					isGharmuliIcon = "<i class='fa fa-check-circle' style='font-size:20px;color:#78c350;'></i>"
+				}
+
+				let memberRow = `<tr data-index="${index}">
+													<td>${isGharmuliIcon}</td>
+													<td>${member.FullName}</td>
+													<td>${member.MemberCitizenship}</td>
+													<td>${member.Address}</td>
+													<td>${member.ContactNo}</td>
+													<td>${member.Age}</td>
+													<td>${member.Gender}</td>
+													<td>${member.FamilyRole}</td>
+													<td>${member.ImageName.name ? '<img src="' + URL.createObjectURL($('#ImageName')[0].files[0]) + '" style="width: 50px; height: 50px; object-fit: cover;" />' : ''}</td>
+													<td><button data-index="${index}" type="button" class="deleteMember btn btn-danger"><i class="fa fa-trash"></i></button></td>
+												</tr>`;
+				$('#membersTable tbody').append(memberRow);
+				$('#memberForm')[0].reset();
+				$('#image_preview').attr('src', '');
+			});
+
+			$('#membersTable').on('click', '.deleteMember', function (event) {
+				if (!confirm("Are you sure to remove member?")) {
+					event.preventDefault();
+					return;
+				}
+				let index = $(this).data('index');
+				membersList.splice(index, 1);
+				$(this).closest('tr').remove();
+				updateMemberIndexes();
+			});
+
+			function updateMemberIndexes() {
+				$('#membersTable tbody tr').each(function (i) {
+					$(this).attr('data-index', i);
+					$(this).find('.deleteMember').attr('data-index', i);
+				});
+			}
+
+			function validateMemberData(member) {
+				let memberExists = false;
+				if (member.MemberCitizenship != null && member.MemberCitizenship != "") {
+					memberExists = membersList.some(m => m.MemberCitizenship === member.MemberCitizenship);
+					if (memberExists) {
+						alert("A member with same citizenship no. already exists below.");
+						return false;
+					}
+					else {
+						memberExists = membersList.some(m => m.FullName === member.FullName && m.MemberCitizenship === member.MemberCitizenship);
+						if (memberExists) {
+							alert("A member with the same Full Name and Citizenship no. already exists below.");
+							return false;
+						}
+					}
+				}
+				if (member.IsGharmuli) {
+					if (membersList.filter(m => m.IsGharmuli).length >= 1) {
+						alert("Only 1 member is allowed to be Gharmuli.");
+						return false;
+					}
+				}
+
+				return true;
+			}
+
+			$('#saveMembership').click(function (e) {
+				e.preventDefault();
+				if (!validateMembershipData()) {
+					return;
+				}
+
+				let formData = new FormData();
+				formData.append("MembershipValidity.IssueDate", $('input[name="IssueDate"]').val());
+				formData.append("MembershipValidity.NepValidityDate", $('input[name="NepValidityDate"]').val());
+				formData.append("MembershipCode", $('input[name="MembershipCode"]').val().trim());
+				formData.append("Area", $('input[name="Area"]').val().trim());
+				formData.append("ToleNo", $('select[name="ToleNo"] option:selected').text());
+				formData.append("Religion", $('select[name="Religion"]').val());
+				formData.append("HasBioGas", $('input[name="HasBioGas"]').is(':checked'));
+				formData.append("HasLPG", $('input[name="HasLPG"]').is(':checked'));
+
+				membersList.forEach((member, index) => {
+					formData.append(`MemberDetails[${index}].FullName`, member.FullName);
+					formData.append(`MemberDetails[${index}].MemberCitizenship`, member.MemberCitizenship);
+					formData.append(`MemberDetails[${index}].Address`, member.Address);
+					formData.append(`MemberDetails[${index}].ContactNo`, member.ContactNo);
+					formData.append(`MemberDetails[${index}].Age`, member.Age);
+					formData.append(`MemberDetails[${index}].Gender`, member.Gender);
+					formData.append(`MemberDetails[${index}].FamilyRole`, member.FamilyRole);
+					formData.append(`MemberDetails[${index}].IsGharmuli`, member.IsGharmuli);
+					formData.append(`MemberDetails[${index}].ImageName`, member.ImageName);
+				});
+
+				$.ajax({
+					url: '/billing/membership/new',
+					method: 'POST',
+					contentType: false,
+					processData: false,
+					data: formData,
+					success: function (response) {
+						if (response.success) {
+							window.location.reload();
+						} else {
+							alert("Failed : " + response.message);
+						}
+					},
+					error: function (xhr, status, error) {
+						alert('Error submitting membership form.');
+					}
+				});
+			});
+
+			function validateMembershipData() {
+				let membershipCode = $('input[name="MembershipCode"]').val().trim();
+				let toleNo = $('select[name="ToleNo"]').val();
+				let religion = $('select[name="Religion"]').val();
+				let issueDate = $('input[name="IssueDate"]').val();
+				let validityDate = $('input[name="NepValidityDate"]').val();
+				let hasGharmuli = membersList.filter(m => m.IsGharmuli).length;
+
+				if (membersList.length <= 0) {
+					alert("At least one member is required.");
+					return false;
+				}
+
+				if (hasGharmuli <= 0) {
+					alert("At least one Gharmuli is required.")
+					return false;
+				}
+
+				if (membershipCode == null || membershipCode == "") {
+					alert("Membership Code is required.");
+					return false;
+				}
+
+				if (toleNo <= 0) {
+					alert("Invalid Tole no.");
+					return false;
+				}
+
+				if (religion <= 0) {
+					alert("Invalid Religion.");
+					return false;
+				}
+
+				if (issueDate == null || issueDate == "") {
+					alert("Invalid Issue Date.");
+					return false;
+				}
+
+				if (validityDate == null || validityDate == "") {
+					alert("Invalid Validity Date.");
+					return false;
+				}
+
+				return true;
+			}
+		});
+	</script>
+}

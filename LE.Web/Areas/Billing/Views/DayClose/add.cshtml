@@ -1,0 +1,91 @@
+﻿@model DayCloseIndexViewModel;
+@{
+    ViewData["Title"] = Localizer["Day Close"];
+}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <form method="get" class="col-md-12 form-inline">
+                <div class="card-body">
+                    <h4 class="m-t-0 header-title"><b>@Localizer["Day Close"]</b></h4>
+                    <div class="row">
+                        @Html.TextBoxFor(a => a.date, new { @class = "form-control nepali-calendar" })
+                        <button type="submit" class="btn btn-primary waves-effect w-md waves-light pull-right" style="margin-left:5px;">@Localizer["Load"] <i class="fa fa-spinner "></i></button>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table m-0 table-responsive">
+                                <thead class="bg-custom text-white">
+                                    <tr>
+                                        <th>@Localizer["S.N"]</th>
+                                        <th>@Localizer["Particulars"]</th>
+                                        <th>@Localizer["Amount"]</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>@Localizer["1"]</td>
+                                        <td>@Localizer["Counter Billing"]</td>
+                                        <td>@Model.day_counter_sales</td>
+                                    </tr>
+                                    <tr>
+                                        <td>@Localizer["2"]</td>
+                                        <td>@Localizer["Wood Billing"]</td>
+                                        <td>@Model.day_wood_sales</td>
+                                    </tr>
+                                    <tr>
+                                        <td>@Localizer["3"]</td>
+                                        <td>@Localizer["Firewood Billing"]</td>
+                                        <td>@Model.day_firewood_sales</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="col-md-6">
+                            <table class="table table-responsive">
+                                <thead class="bg-custom text-white">
+                                    <tr>
+                                        <td>S.N</td>
+                                        <td>Service</td>
+                                        <td>Quantity</td>
+                                    </tr>
+                                    </thead>
+                                <tbody>
+                                    @{
+                                        var sno = 1;
+                                        foreach (var count in Model.service_count)
+                                        {
+                                            <tr>
+                                                <td>@sno</td>
+                                                <td>@count.service.name</td>
+                                                <td>@count.qty</td>
+                                            </tr>
+                                            sno++;
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+
+                    @if (Model.is_closed == true)
+                    {
+                        <br />
+                        <br />
+                        <br />
+                        <br />
+                        <div class="row">
+                            <div class="col-md-2">
+                                <button type="submit" formaction="/billing/day-close/save" class="btn btn-success waves-effect w-md waves-light pull-right" style="margin-left:5px;">@Localizer["Day Close"] <i class="fa fa-lock "></i></button>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,72 @@
+﻿@model StatementOfLedgerIndexViewModel;
+@{
+    ViewData["Title"] = "Cash & Bank Book";
+
+    var list = new List<SelectListItem>()
+    {
+        new SelectListItem { Text = "Cash", Value = StatementOfLedgerIndexViewModel.ACCOUNT_TYPE_CASH },
+        new SelectListItem { Text = "Bank", Value = StatementOfLedgerIndexViewModel.ACCOUNT_TYPE_BANK },
+    };
+}
+<style>
+    .bg-custom {
+        background-color: #348cd4 !important;
+    }
+</style>
+<div class="content-wrapper">
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>@Localizer["Cash & Bank Book"]</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item">
+                            <a href="#">Home</a>
+                        </li>
+                        <li class="breadcrumb-item active">@Localizer["Cash & Bank Book"]</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="content">
+        <div class="container-fluid">
+            <div class="card card-default">
+                <div class="card-body">
+                    <div class="row">
+                        <form method="get" class="col-md-12 form-inline">
+                            @Html.TextBoxFor(a => a.start_date, new { @class = "date-picker form-control nepali-calendar mr-3" })
+
+                            @Html.TextBoxFor(a => a.end_date, new { @class = "date-picker form-control nepali-calendar mr-3" })
+
+                            @Html.DropDownListFor(a => a.ledger_type, list, new { @class = "form-control" })
+
+                            <button type="submit" class="btn btn-primary waves-effect w-md waves-light pull-right" style="margin-left:5px;">
+                                @Localizer["Load"] <i class="fa fa-spinner "></i>
+                            </button>
+
+
+                            <div class="pull-right">
+                                <button type="submit" formaction="/accounting/report/cash-and-bank-book-print" formtarget="_blank" class="btn btn-success waves-effect w-md waves-light pull-right" style="margin-left:5px;">
+                                    <i class="fa fa-print "></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+
+            </div>
+            <div class="card">
+                @{
+                    var vm = new AccountingReportDecoratorVm { ReportType = AccountingReportType.DrCrWise, Report = Model.Report, HideTopLevel = true };
+                }
+                <partial name="Accounting/AccountingReportDecorator" model="vm"/>
+            </div>
+
+        </div>
+    </section>
+</div>

@@ -1,0 +1,60 @@
+﻿@model ListLedgerIndexViewModel;
+@{
+    ViewData["Title"] = "Group Wise Report";
+    Layout = null;
+}
+
+<link href="~/css/print.css" rel="stylesheet" />
+<link href="~/css/bootstrap.min.css" rel="stylesheet" />
+
+<center>
+    <page>
+        <center class="header"> @Model.organization_name <br /> @Model.address<br /></center>
+        @{
+            foreach (var groups in Model.listLedgerindexVM)
+            {
+                if (groups.ledger_details.Count > 0)
+                {
+                    <h5 class="font-800" style="text-align:left;">@groups.group_name</h5>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th width="50px">@Localizer["S.N"]</th>
+                                <th>@Localizer["Particulars"]</th>
+                                <th width="200px">@Localizer["Amount"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                decimal total = 0;
+                                int sn = 1;
+                                foreach (var ledger in groups.ledger_details)
+                                {
+                                    decimal balance = Math.Abs(ledger.balance);
+                                    <tr>
+                                        <td>@sn.ToString().ConvertNumerals()</td>
+                                        <td>@ledger.name</td>
+                                        <td>@balance.ToString().ConvertNumerals()</td>
+                                    </tr>
+                                    sn++;
+                                    total += balance;
+                                }
+                                <tr>
+                                    <td colspan="2" class="text-right font-800 font-14"><b>@Localizer["Total"]</b></td>
+                                    <td class="font-14 font-800"><b>@total.ToString().ConvertNumerals()</b></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                    <br />
+                }
+            }
+        }
+    </page>
+</center>
+<script src="~/js/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        window.print();
+    });
+</script>

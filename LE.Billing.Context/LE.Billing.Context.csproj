@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LE.Billing.Entities\LE.Billing.Entities.csproj" />
+    <ProjectReference Include="..\LE.Billing.Service\LE.Billing.Service.csproj" />
+    <ProjectReference Include="..\LE.Common\LE.Common.csproj" />
+    <ProjectReference Include="..\LE.Context\LE.Context.csproj" />
+  </ItemGroup>
+
+</Project>

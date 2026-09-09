@@ -1,0 +1,85 @@
+﻿@using LE.Common.Enums
+@model MemberDetail
+@{
+	ViewData["Title"] = Localizer["Edit Member"];
+}
+
+<div>
+	<h4 class="title card-header">Edit Members Details</h4>
+	<div class="card mb-3">
+		<div class="card-body">
+			<form class="form-horizontal" method="post" action="/billing/membership/members/edit" enctype="multipart/form-data">
+				@Html.HiddenFor(a=>a.MemberId)
+				@Html.HiddenFor(a=>a.Membership.MembershipCode)
+				@Html.HiddenFor(a=>a.MembershipId)
+				<div class="row">
+					<div class="col-md-3">
+						<div class="d-flex">
+							@Html.LabelFor(a => a.FullName, new { @class = "control-label asterik" })
+							<div class="m-auto">
+								@Html.CheckBoxFor(a => a.IsGharmuli, new { @class = "form-check-input" })
+								@Html.LabelFor(a => a.IsGharmuli, new { @class = "form-check-label" })
+							</div>
+						</div>
+						@Html.TextBoxFor(a => a.FullName, new { @class = "form-control", placeholder = "Enter Member's FullName", required = "required" })
+					</div>
+					<div class="col-md-3 mt-2">
+						@Html.LabelFor(a => a.MemberCitizenship, new { @class = "control-label" })
+						@Html.TextBoxFor(a => a.MemberCitizenship, new { @class = "form-control", placeholder = "Enter Member's Citizenship No." })
+					</div>
+					<div class="col-md-3 mt-2">
+						@Html.LabelFor(a => a.Address, new { @class = "control-label" })
+						@Html.TextBoxFor(a => a.Address, new { @class = "form-control", placeholder = "Enter Member's Address" })
+					</div>
+					<div class="col-md-3 mt-2">
+						@Html.LabelFor(a => a.ContactNo, new { @class = "control-label" })
+						@Html.TextBoxFor(a => a.ContactNo, "", new { @class = "form-control", placeholder = "Enter Member's Contact No." })
+					</div>
+				</div>
+				<div class="row mt-3">
+					<div class="col-md-1">
+						@Html.LabelFor(a => a.Age, new { @class = "control-label asterik" })
+						@Html.TextBoxFor(a => a.Age, new { @class = "form-control", type = "number", min = "1", max = "100", inputmode = "numeric", required = "required" })
+					</div>
+					<div class="col-md-2">
+						@Html.LabelFor(a => a.Gender, new { @class = "control-label asterik" })
+						@Html.DropDownListFor(a => a.Gender, new SelectList(EnumExtensions.GetEnumDisplayName<GenderType>(), "Value", "Text"), new { @class = "form-control", required = "required" })
+					</div>
+					<div class="col-md-3">
+						@Html.LabelFor(a => a.FamilyRole, new { @class = "control-label asterik" })
+						@Html.DropDownListFor(a => a.FamilyRole, new SelectList(EnumExtensions.GetEnumDisplayName<RelationType>(), "Value", "Text"), new { @class = "form-control", required = "required" })
+					</div>
+					<div class="col-md-4" style="margin-top: 2.2rem;">
+						<label for="ImageName" class="btn btn-md btn-secondary m-auto">Upload Member Image</label>
+						<input type="file" hidden accept="image/*" name="ImageName" id="ImageName" />
+						<img id="image_preview" src="~/images/custom/@Model.ImageName" alt="image preview" class="img-fluid" style="height:80px; width:80px; object-fit: cover;border:1px solid black;margin-left: 15px;" />
+					</div>
+				</div>
+				<div class="mt-3 text-right">
+					<button type="submit" class="btn btn-outline-primary" value="update"><i class="fa fa-pencil"></i> Update Member</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+@section scripts {
+	<script>
+		$(document).ready(function () {
+			$("#ImageName").change(function () {
+				readURL(this);
+			});
+
+			function readURL(input) {
+				if (input.files && input.files[0]) {
+					var reader = new FileReader();
+
+					reader.onload = function (e) {
+						$('#image_preview').attr('src', e.target.result);
+					}
+					reader.readAsDataURL(input.files[0]);
+				}
+			}
+		});
+	</script>
+}

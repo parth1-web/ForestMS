@@ -1,0 +1,13 @@
+﻿.image-preview {
+    height: 150px;
+    width: 140px;
+    float: right;
+}
+
+.no-padding{
+    padding:0px;
+}
+
+a{
+    cursor:pointer;
+}

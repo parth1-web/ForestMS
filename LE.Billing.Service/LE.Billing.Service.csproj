@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <Optimize>True</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <Optimize>False</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LE.Account.Service\LE.Account.Service.csproj" />
+    <ProjectReference Include="..\LE.Billing.Entities\LE.Billing.Entities.csproj" />
+    <ProjectReference Include="..\LE.Billing.Infrastructure\LE.Billing.Infrastructure.csproj" />
+    <ProjectReference Include="..\LE.Inventory.Service\LE.Inventory.Service.csproj" />
+  </ItemGroup>
+
+</Project>

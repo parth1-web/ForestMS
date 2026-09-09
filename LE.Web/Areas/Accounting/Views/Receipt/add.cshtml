@@ -1,0 +1,137 @@
+﻿@using LE.Web.Areas.Accounting.Models
+@model ReceiptModel
+@{
+    ViewData["Title"] = "New Receipt";
+}
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="m-t-0 header-title"><b>@Localizer["New Receipt"]</b></h4>
+                <p class="text-muted m-b-30">
+                    @Localizer["Makes a Receipt."]
+                </p>
+                <form method="post" class="form-horizontal">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            @Html.ValidationSummary(true)
+                            @Html.AntiForgeryToken()
+
+                            <div class="form-group row">
+                                @Html.LabelFor(a => a.nep_transaction_date, new { @class = "col-md-3 control-label asterik" })
+                                <div class="col-md-9">
+                                    @Html.TextBoxFor(a => a.nep_transaction_date, new { @class = "form-control tran-date nepali-calendar", required = "required" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.nep_transaction_date)</p>
+                            </div>
+
+                            <div class=" form-group row">
+                                @Html.LabelFor(a => a.receipt_from, new { @class = "col-md-3 control-label asterik" })
+                                <div class="col-md-9">
+                                    @Html.DropDownList("receipt_from", (SelectList)ViewBag.receiptFromLedgers, "--Select Ledger--", new { @class = "form-control chosen", required = "required" })
+                                    <i class="receipt-from-amount text-primary font-800"></i>
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.receipt_from)</p>
+                            </div>
+
+                            <div class=" form-group row">
+                                @Html.LabelFor(a => a.receipt_to, new { @class = "col-md-3 control-label asterik" })
+                                <div class="col-md-9">
+                                    @Html.DropDownList("receipt_to", (SelectList)ViewBag.receiptToLedgers, "--Select Ledger--", new { @class = "form-control chosen", required = "required" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.receipt_to)</p>
+                            </div>
+
+                            <div class="form-group row">
+                                @Html.LabelFor(a => a.customer_name, new { @class = "col-md-3 control-label" })
+                                <div class="col-md-9">
+                                    @Html.TextBoxFor(a => a.customer_name, new { @class = "form-control cheque_no" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.customer_name)</p>
+                            </div>
+
+                            <div class="form-group row">
+                                @Html.LabelFor(a => a.cheque_no, new { @class = "col-md-3 control-label" })
+                                <div class="col-md-9">
+                                    @Html.TextBoxFor(a => a.cheque_no, new { @class = "form-control cheque_no" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.cheque_no)</p>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <div class="form-group row">
+                                @Html.LabelFor(a => a.amount, new { @class = "col-md-3 control-label asterik" })
+                                <div class="col-md-9">
+                                    @Html.TextBoxFor(a => a.amount, new { @class = "form-control", type = "number", required = "required", step = ".01" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.amount)</p>
+                            </div>
+
+                            <div class="form-group row">
+                                @Html.LabelFor(a => a.remarks, new { @class = "col-md-3 control-label asterik" })
+                                <div class="col-md-9">
+                                    @Html.TextAreaFor(a => a.remarks, new { @class = "form-control", required = "required" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.remarks)</p>
+                            </div>
+
+                            <div class="col-md-12">
+                                <button type="submit" class="btn btn-primary waves-effect w-md waves-light pull-right save"><i class="fa fa-save fa-lg"> @Localizer["Save"]</i></button>
+                            </div>
+                        </div>
+                        <div class="col-lg-12">
+                            <p>@Localizer["Note"]: <span class="asterik"></span> @Localizer["Fields are mandatory"].</p>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            $('.chosen').select2();
+            $(".cheque_date_row").hide();
+            $('.cheque_no').keydown(function () {
+                $(".cheque_date_row").show();
+            });
+
+            function getLedgerBalance($receiptFromId) {
+                var result = 0;
+                if ($receiptFromId > 0) {
+                    $.ajax({
+                        contentType: 'application/json; charset=utf-8',
+                        type: "Get",
+                        url: "/accounting/ledgers/get-ledger-end-balance/" + $receiptFromId,
+                        dataType: "json",
+                        async: false,
+                        success: function (response) {
+                            if (response == null) {
+                                alert("Failed to get ledger end balance!");
+                            }
+                            else if (response.error == true) {
+                                alert(response.responseText);
+                            }
+                            else {
+                                result = response;
+                            }
+                        },
+                        error: function (response) {
+                            alert(response.responseText);
+                        }
+                    });
+                }
+                return result;
+            }
+
+            $("#receipt_from").change(function () {
+                var receiptFromId = parseInt($("#receipt_from").val());
+                $(".receipt-from-amount").text("Rs: " + getLedgerBalance(receiptFromId));
+            });
+        });
+    </script>
+}

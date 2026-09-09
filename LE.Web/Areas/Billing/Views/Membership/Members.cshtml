@@ -1,0 +1,113 @@
+﻿@using LE.Billing.Entities
+@using LE.Common.Enums
+@model List<Member>
+@{
+	ViewData["Title"] = Localizer["Members"];
+
+	var list = new List<SelectListItem>() {
+		new SelectListItem { Text = "10", Value = "10"},
+		new SelectListItem { Text = "20", Value = "20" },
+		new SelectListItem { Text = "30", Value = "30" },
+		new SelectListItem { Text = "40", Value = "40"},
+		new SelectListItem { Text = "50", Value = "50" }
+	};
+}
+
+<style>
+	.card {
+		box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+	}
+</style>
+
+<div class="row">
+	<div class="col-lg-12">
+		<div class="card">
+			<div class="card-body">
+				<h4 class="m-t-0 header-title"><b>@Localizer["Members"]</b></h4>
+				<div class="row">
+					<form action="/billing/membership/members" method="get" class="row col-sm-6">
+						<div class="col-sm-6">
+							@Html.TextBox("name", (string)ViewBag.name, new { @class = "form-control", placeholder = "Search by code or name" })
+						</div>
+						<div class="col-sm-2">
+							@Html.DropDownList("number_of_rows", list, new { @class = "form-control" })
+						</div>
+						<div class="col-sm-3">
+							<button type="submit" class="form-control btn btn-primary btn-md"><i class="fa fa-refresh"></i></button>
+						</div>
+					</form>
+				</div>
+				<br />
+				<div class="table-responsive">
+					<table class="table m-0 table-colored-bordered table-bordered-custom">
+						<thead class="bg-custom text-white">
+							<tr>
+								<th>@Localizer["S.N"]</th>
+								<th>@Localizer["Membership Code"]</th>
+								<th>@Localizer["Image"]</th>
+								<th>@Localizer["Full Name"]</th>
+								<th>@Localizer["Gender"]</th>
+								<th>@Localizer["Age"]</th>
+								<th>@Localizer["Family Role"]</th>
+								<th>@Localizer["Contact No."]</th>
+								<th>@Localizer["Citizenship No."]</th>
+								<th>@Localizer["Is Gharmuli"]</th>
+								<th>@Localizer["Status"]</th>
+								<th>@Localizer["Actions"]</th>
+							</tr>
+						</thead>
+						<tbody>
+							@{
+								var sn = 1;
+								foreach (var member in Model)
+								{
+									string status = "Active";
+									string statusColor = "success";
+
+									if (!member.IsActive)
+									{
+										status = "Inactive";
+										statusColor = "danger";
+									}
+
+									<tr class="bg-white">
+										<td>@sn</td>
+										<td class="memCode">@member.Membership.MembershipCode</td>
+										<td>
+											@Html.Raw(!string.IsNullOrEmpty(member.ImageName)
+											? $"<a href='/images/custom/{member.ImageName}' target='_blank' rel='noopener noreferer'><img src='/images/custom/{member.ImageName}' style='object-fit:contain;' height='50' width='50' alt='member image'/></a>"
+											: "N/A")
+										</td>
+										<td>@member.FullName</td>
+										<td>@EnumExtensions.GetDisplayName(member.Gender)</td>
+										<td>@member.Age</td>
+										<td>@EnumExtensions.GetDisplayName(member.FamilyRole)</td>
+										<td>@(!string.IsNullOrEmpty(member.ContactNo) ? member.ContactNo : "N/A")</td>
+										<td>@(!string.IsNullOrEmpty(member.MemberCitizenship) ? member.MemberCitizenship : "N/A")</td>
+										<td>
+											@Html.Raw(member.IsGharmuli ? "<i class='fa fa-check-circle' style='font-size:24px;color:#78c350;'></i>" : "<i class='fa fa-times-circle' style='font-size:24px;color:#f7531f;'></i>")
+										</td>
+										<td><span class="badge badge-@statusColor status mr-2">@status</span></td>
+										<td>
+											<a href="/billing/membership/members/edit/@member.MemberId" class="btn btn-icon waves-effect waves-light btn-primary btn-sm" title="Edit"><i class="fa fa-pencil"></i></a>
+											@{
+												string actionName = member.IsActive ? "Disable" : "Enable";
+												string icon = member.IsActive ? "fa-thumbs-down" : "fa-thumbs-up";
+												string color = member.IsActive ? "btn-warning" : "btn-success";
+											}
+											<a href="/billing/membership/members/@actionName/@member.MemberId" class="btn btn-icon waves-effect waves-light btn-sm @color" data-toggle="tooltip" title="@actionName Member"><i class="fa @icon"></i></a>
+											<a href="/billing/membership/members/delete/@member.MemberId" class="btn btn-icon waves-effect waves-light btn-sm btn-danger" data-toggle="tooltip" title="Delete Member"><i class="fa fa-trash"></i></a>
+										</td>
+									</tr>
+									sn++;
+								}
+							}
+						</tbody>
+					</table>
+					<br />
+					<LeadingEdgePager info="@ViewBag.pagerInfo"></LeadingEdgePager>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

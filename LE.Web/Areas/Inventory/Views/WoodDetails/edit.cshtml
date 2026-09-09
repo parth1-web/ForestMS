@@ -1,0 +1,381 @@
+﻿@model WoodDetailsModel
+@{
+    ViewData["Title"] = "Update Wood Stock";
+    var list = new List<SelectListItem>() {
+        new SelectListItem { Text = "2080", Value = "2080"},
+        new SelectListItem { Text = "2081", Value = "2081", Selected=true},
+        new SelectListItem { Text = "2082", Value = "2082"},
+        new SelectListItem { Text = "2083", Value = "2083"},
+        new SelectListItem { Text = "2084", Value = "2084"},
+        new SelectListItem { Text = "2085", Value = "2085"},
+        new SelectListItem { Text = "2086", Value = "2086"},
+        new SelectListItem { Text = "2087", Value = "2087"},
+        new SelectListItem { Text = "2088", Value = "2088"},
+        new SelectListItem { Text = "2089", Value = "2089"},
+        new SelectListItem { Text = "2090", Value = "2090"},
+    };
+}
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="m-t-0 header-title"><b>@Localizer["Update Wood Stock"]</b></h4>
+                <p class="text-muted m-b-30">
+                    @Localizer["Updates a Wood Stock."]
+                </p>
+                <form class="form-horizontal" method="post" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            @Html.ValidationSummary(true)
+                            @Html.HiddenFor(a => a.wood_details_id)
+                            @Html.AntiForgeryToken()
+
+                            <div class="form-group row">
+                                @Html.LabelFor(a => a.year, new { @class = "col-md-4 control-label asterik" })
+                                <div class="col-md-8">
+                                    @Html.DropDownListFor(a => a.year, list, new { @class = "form-control" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.year)</p>
+                            </div>
+
+                            <div class="form-group row">
+                                @Html.LabelFor(a => a.goliya_number, new { @class = "col-md-4 control-label asterik" })
+                                <div class="col-md-8">
+                                    @Html.TextBoxFor(a => a.goliya_number, new { @class = "goliya_no form-control name" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.goliya_number)</p>
+                            </div>
+
+                            <div class="form-group row">
+                                @Html.LabelFor(a => a.tuna_no, new { @class = "col-md-4 control-label" })
+                                <div class="col-md-8">
+                                    @Html.TextBoxFor(a => a.tuna_no, new { @class = "tuna_no form-control" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.tuna_no)</p>
+                            </div>
+
+                            <div class=" form-group row">
+                                @Html.LabelFor(a => a.piling_id, new { @class = "col-md-4 control-label asterik" })
+                                <div class="col-md-8">
+                                    @Html.DropDownList("piling_id", (SelectList)ViewBag.pilings, new { @class = "form-control" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.piling_id)</p>
+                            </div>
+
+                            <div class=" form-group row">
+                                @Html.LabelFor(a => a.stock_category_purpose_id, new { @class = "col-md-4 control-label asterik" })
+                                <div class="col-md-8">
+                                    @Html.DropDownList("stock_category_purpose_id", (SelectList)ViewBag.categoryPurposes, new { @class = "form-control" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.stock_category_purpose_id)</p>
+                            </div>
+
+                            <div class=" form-group row">
+                                @Html.LabelFor(a => a.wood_type_id, new { @class = "col-md-4 control-label asterik" })
+                                <div class="col-md-8">
+                                    @Html.DropDownList("wood_type_id", (SelectList)ViewBag.woodTypes, new { @class = "form-control" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.wood_type_id)</p>
+                            </div>
+
+                            <div class="form-group row ">
+                                <div class="col-md-4">
+                                    <b>@Localizer["Stock Type"]</b>
+                                </div>
+                                <div class="col-md-8">
+                                    @Html.DropDownList("stock_type_id", Html.GetEnumSelectList<LE.Inventory.Common.Enums.StockTypes>(), new { @class = " form-control stock_type_id", @name = "stock_type_id", @id = "stock_type_id" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <div class="form-group row balla_balli_category">
+                                <div class="col-md-4">
+                                    <b>बल्लाबल्ली बर्ग</b>
+                                </div>
+                                <div class="col-md-8">
+                                    @Html.DropDownList("balla_balli_category_id", Html.GetEnumSelectList<LE.Inventory.Common.Enums.BallaBalliCategorys>(), "-- Select Categoy --", new { @class = " form-control balla_balli_category_id", @name = "balla_balli_category_id", @id = "balla_balli_category_id" })
+                                </div>
+                            </div>
+
+                            <div class="form-group row circle_size">
+                                @Html.LabelFor(a => a.circle_size, new { @class = "col-md-4 control-label " })
+                                <div class="col-md-8">
+                                    @Html.TextBoxFor(a => a.circle_size, new { @class = "form-control " })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.circle_size)</p>
+                            </div>
+
+                            <div class="form-group row length">
+                                @Html.LabelFor(a => a.length, new { @class = "col-md-4 control-label " })
+                                <div class="col-md-8">
+                                    @Html.TextBoxFor(a => a.length, new { @class = "form-control " })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.length)</p>
+                            </div>
+
+                            <div class="form-group row ">
+                                <div class="col-md-4">
+                                    <b>@Localizer["Grade"]</b>
+                                </div>
+                                <div class="col-md-8">
+                                    @Html.DropDownList("grade", Html.GetEnumSelectList<LE.Inventory.Common.Enums.Grade>(), new { @class = " form-control grade", @name = "grade", @id = "grade" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12">
+                            <div class="col-md-2">
+                                <h4>धोद कट्टी</h4>
+                            </div>
+
+                            <div class="form-group row damaged_part">
+                                <table class="damaged_table">
+                                    @{
+                                        foreach (var damage in Model.damagedWoodDetailModels)
+                                        {
+                                            <tr rowId=@damage.damaged_wood_details_id>
+                                                <td>
+                                                    <input type="number"
+                                                           step="any"
+                                                           class="form-control"
+                                                           id="damaged_first_size"
+                                                           placeholder="इन्च"
+                                                           name="damaged_first_size" 
+                                                           value="@damage.damaged_first_size"/>
+                                                </td>
+                                                <td>
+                                                    <input type="number"
+                                                           step="any"
+                                                           class="form-control"
+                                                           id="damaged_second_size"
+                                                           placeholder="इन्च"
+                                                           name="damaged_second_size"
+                                                           value="@damage.damaged_second_size"/>
+                                                </td>
+                                                <td>
+                                                    <input 
+                                                           type="number" 
+                                                           step="any" 
+                                                           class="form-control" 
+                                                           id="damaged_third_size" 
+                                                           placeholder="इन्च" 
+                                                           name="damaged_third_size" 
+                                                           value="@damage.damaged_third_size"/>
+                                                </td>
+                                                <td>
+                                                    <input 
+                                                           type="number" 
+                                                           step="any" 
+                                                           class="form-control" 
+                                                           id="damaged_fourth_size" 
+                                                           placeholder="इन्च" 
+                                                           name="damaged_fourth_size" 
+                                                           value="@damage.damaged_fourth_size"/>
+                                                </td>
+                                                <td>
+                                                    <input 
+                                                           type="number" 
+                                                           step="any" 
+                                                           class="form-control" 
+                                                           id="damaged_fifth_size" 
+                                                           placeholder="इन्च" 
+                                                           name="damaged_fifth_size" 
+                                                           value="@damage.damaged_fifth_size"/>
+                                                </td>
+                                                <td>
+                                                    <input 
+                                                           type="number" 
+                                                           step="any" 
+                                                           placeholder="लम्बई फिटमा" 
+                                                           class="form-control" 
+                                                           id="damaged_feet_size"
+                                                           name="damaged_feet_size" 
+                                                           value="@damage.damaged_feet_size"/>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-primary update waves-effect w-md waves-light pull-right"><i class="fa fa-save fa-lg"> @Localizer["Update"]</i></button>
+                        </div>
+
+                        <div class="col-md-12">
+                            <p>@Localizer["Note"]: <span class="asterik"></span> @Localizer["Fields are mandatory"].</p>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+         $(document).ready(function() {
+        $(".name").focus();
+        $("#stock_type_id").change(function() {
+            var type_id = $("#stock_type_id").val();
+            if (type_id == @((int) LE.Inventory.Common.Enums.StockTypes.Lakadi)) {
+                $(".balla_balli_category").hide();
+                $(".circle_size").show();
+                $(".length").show();
+                $(".damaged_part").show();
+            } else {
+                $(".balla_balli_category").show();
+                $(".circle_size").show();
+                $(".length").show();
+                $(".damaged_part").show();
+            }
+        });
+
+        $("#balla_balli_category_id").change(function() {
+            var ballaballiCatId = $("#balla_balli_category_id").val();
+            if (ballaballiCatId == @((int) LE.Inventory.Common.Enums.BallaBalliCategorys.KhabaKhutti)) {
+                $(".circle_size").hide();
+                $(".length").hide();
+                $(".damaged_part").hide();
+            } else {
+                $(".circle_size").show();
+                $(".length").show();
+                $(".damaged_part").show();
+            }
+        });
+
+        $("#stock_type_id").change();
+        $("#balla_balli_category_id").change();
+
+        //damaged part
+        $(".new-damaged-row").click(function() {
+            var $tr = $('.damaged_table >tbody > tr').last();
+            var $clone = $tr.clone();
+            $clone.find('#damaged_first_size').val('');
+            $clone.find('#damaged_second_size').val('');
+            $clone.find('#damaged_third_size').val('');
+            $clone.find('#damaged_fourth_size').val('');
+            $clone.find('#damaged_fifth_size').val('');
+            $clone.find('#damaged_feet_size').val('');
+            var oldRowId = parseInt($tr.attr("rowid"));
+            $clone.attr("rowid", parseInt(oldRowId + 1));
+            $clone.find(".delete-damaged-row").attr("id", "delete" + parseInt(oldRowId + 1));
+            $tr.after($clone);
+        });
+
+
+        $(document).on('click', ".delete-damaged-row", function() {
+            var rowCount = $('.damaged_table tr').length;
+            if (rowCount > 1) {
+                if (confirm("Are you sure to remove?")) {
+                    var DelBtnNum = $(this).attr('id');
+                    $('#' + DelBtnNum).closest("tr").remove();
+                } else {
+                    return false;
+                }
+            }
+        });
+
+
+        $(document).on("click", ".update", function(e) {
+            var items = {};
+            items.stock_category_purpose_id = parseInt($("#stock_category_purpose_id").val());
+            items.piling_id = parseInt($("#piling_id").val());
+            items.year = $("#year").val();
+            items.stock_type_id = parseInt($("#stock_type_id").val());
+            items.balla_balli_category_id = parseInt($("#balla_balli_category_id").val());
+            items.wood_type_id = parseInt($("#wood_type_id").val());
+            items.circle_size = parseFloat($("#circle_size").val());
+            items.length = parseFloat($("#length").val());
+            items.grade = parseInt($("#grade").val());
+            items.goliya_number = $("#goliya_number").val();
+            items.tuna_no = $("#tuna_no").val();
+            items.wood_details_id =@Model.wood_details_id;
+            
+            var item = [];
+            $(".damaged_table tr").each(function (i, row) {
+                var data = {};
+                var $row = $(row);
+                data.damaged_wood_details_id = parseInt($row.attr("rowId"));
+                
+                data.damaged_first_size = parseInt($row.find('input[name*="damaged_first_size"]').val());
+                data.damaged_second_size = parseInt($row.find('input[name*="damaged_second_size"]').val());
+                data.damaged_third_size = parseInt($row.find('input[name*="damaged_third_size"]').val());
+                data.damaged_fourth_size = parseInt($row.find('input[name*="damaged_fourth_size"]').val());
+                data.damaged_fifth_size = parseInt($row.find('input[name*="damaged_fifth_size"]').val());
+                data.damaged_feet_size = parseInt($row.find('input[name*="damaged_feet_size"]').val());
+                item.push(data);
+            });
+            items["damagedWoodDetailModels"] = item;
+            $.ajax({
+                contentType: 'application/json; charset=utf-8',
+                type: "POST",
+                beforeSend: function(xhr) {
+                    xhr.setRequestHeader("XSRF-TOKEN",
+                        $('input:hidden[name="__RequestVerificationToken"]').val());
+                },
+                url: "/inventory/wood-details/edit",
+                dataType: "json",
+                data: JSON.stringify(items),
+                success: function(response) {
+
+                    if (response == null) {
+                        alert("Something went wrong");
+                    } else if (response.error == true) {
+                        alert(response.responseText);
+                    } else {
+                        window.location.href = "/inventory/wood-details"
+                    }
+                    $('#loading').hide();
+                },
+                error: function(response) {
+                    alert(response.responseText)
+                    $('#loading').hide();
+                }
+            });
+            e.preventDefault();
+        });
+    });
+        @*$(document).ready(function () {
+            $(".name").focus();
+            $("#stock_type_id").change(function () {
+                var type_id = $("#stock_type_id").val();
+                if (type_id ==  @((int)LE.Inventory.Common.Enums.StockTypes.Lakadi)) {
+                    $(".balla_balli_category").hide();
+                    $(".circle_size").show();
+                    $(".length").show();
+                    $(".damaged_part").show();
+                }
+                else {
+                    $(".balla_balli_category").show();
+                    $(".circle_size").show();
+                    $(".length").show();
+                    $(".damaged_part").show();
+                }
+
+            });
+
+            $("#balla_balli_category_id").change(function () {
+                    var ballaballiCatId = $("#balla_balli_category_id").val();
+                if (ballaballiCatId ==@((int)LE.Inventory.Common.Enums.BallaBalliCategorys.KhabaKhutti)) {
+                    $(".circle_size").hide();
+                    $(".length").hide();
+                    $(".damaged_part").hide();
+                  //  $(".balla_balli_category").show();
+                } else {
+                    $(".circle_size").show();
+                    $(".length").show();
+                    $(".damaged_part").show();
+                   // $(".balla_balli_category").show();
+                }
+
+            });
+
+            $("#stock_type_id").change();
+            $("#balla_balli_category_id").change();
+        });*@
+
+    </script>
+}

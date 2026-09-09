@@ -1,0 +1,95 @@
+﻿@model YearCloseVm
+
+@{
+	ViewBag.Title = "Year Close";
+	Layout = "_Layout";
+}
+
+<div class="content-wrapper">
+	<form id="yearCloseForm" method="post">
+		<div class="card">
+			<div class="card-header">
+				<div class="card-title">Financial Year Closing of @Model.FinancialYear.Name</div>
+			</div>
+			<div class="card-body">
+				<div class="row">
+					<div class="col-2">
+						<div class="form-group">
+							<label class="col-form-label">@Localizer["Closing Date"]</label>
+							@Html.TextBoxFor(m => m.ClosingDate, new { @class = "form-control nepali-calendar" })
+						</div>
+					</div>
+					<div class="col-2">
+						<div class="form-group">
+							<label>Ledger</label>
+							<select class="form-control" asp-items="@Model.GetLedgerOptions()" asp-for="LedgerId">
+								<option value="">Select</option>
+							</select>
+						</div>
+					</div>
+					<div class="col-2">
+						<div class="form-group">
+							<label>Opening Stock</label>
+							<input type="number" class="form-control" asp-for="OpeningStock" />
+						</div>
+					</div>
+					<div class="col-2">
+						<div class="form-group">
+							<label>Closing Stock</label>
+							<input type="number" class="form-control" asp-for="ClosingStock" />
+						</div>
+					</div>
+					<div class="col-2">
+						<label>This Year @Model.Type</label>
+						<input type="number" class="form-control" asp-for="Amount" value="@Model.Amount" />
+					</div>
+					<div class="col-2">
+						<br>
+						<button class="btn btn-primary mt-1" type="button" onclick="submitForm('get')">
+							<i class="fa fa-spinner"></i>
+							Load Profit & Loss
+						</button>
+					</div>
+				</div>
+
+			</div>
+			<div class="card-body">
+				<div class="card-header">
+					<i class="fa fa-info-circle"></i>
+					Agreement
+				</div>
+
+				<ul>
+					<li>
+						I ensure that the current running fiscal year is <kbd>@Model.FinancialYear.Code</kbd> is correct.
+					</li>
+					<li>
+						I ensure that the <kbd>OPENING</kbd> and <kbd>CLOSING</kbd> stock is correct.
+					</li>
+					<li>
+						I ensure that the <kbd>@Model.Type</kbd> with amount <kbd>@Model.Amount</kbd> is correct.
+					</li>
+					<li>
+						I have checked the <kbd>Profit & Loss</kbd> report and it is correct.
+					</li>
+				</ul>
+				<hr>
+
+				<button class="btn btn-info" type="submit">
+					<i class="fa fa-save"></i>
+					I am sure, close the fiscal year <kbd>@Model.FinancialYear.Code</kbd>
+				</button>
+
+			</div>
+		</div>
+	</form>
+</div>
+@section scripts {
+	<script type="text/javascript">
+		function submitForm(method) {
+			var form = document.getElementById('yearCloseForm');
+			form.method = method;
+			form.submit();
+		}
+	</script>
+}

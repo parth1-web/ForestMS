@@ -1,0 +1,106 @@
+﻿@model DynamicMenuDto
+@{
+    ViewData["Title"] = "New Menu";
+}
+
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="m-t-0 header-title"><b>New Menu</b></h4>
+                <p class="text-muted m-b-30">
+                    Creates a menu.
+                </p>
+                <div class="row">
+                    <div class="col-lg-6">
+                        <form class="form-horizontal" method="post">
+                            @Html.ValidationSummary(true)
+
+                            @Html.AntiForgeryToken()
+                            <div class="form-group row">
+                                @Html.LabelFor(a => a.menu_name, new { @class = "col-md-3 control-label asterik" })
+
+                                <div class="col-md-9">
+                                    @Html.TextBoxFor(a => a.menu_name, new { @class = "form-control name" })
+
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.menu_name)</p>
+                            </div>
+
+
+                            <div class=" form-group row">
+                                @Html.LabelFor(a => a.module_id, new { @class = "col-md-3 control-label asterik" })
+                                <div class="col-md-9">
+                                    @Html.DropDownList("module_id", (SelectList)ViewBag.modules, new { @class = "form-control" })
+
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.module_id)</p>
+
+                            </div>
+
+                            <div class=" form-group row">
+                                @Html.LabelFor(a => a.parent_menu_id, new { @class = "col-md-3 control-label" })
+                                <div class="col-md-9">
+                                    @Html.DropDownList("parent_menu_id", (SelectList)ViewBag.parent_menus, new { @class = "form-control" })
+
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.parent_menu_id)</p>
+
+                            </div>
+
+                            <div class="form-group row">
+                                @Html.LabelFor(a => a.icon, new { @class = "col-md-3 control-label" })
+                                <div class="col-md-9">
+                                    @Html.TextBoxFor(a => a.icon, new { @class = "form-control" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.icon)</p>
+                            </div>
+
+                            <div class="form-group row">
+                                @Html.LabelFor(a => a.web_url, new { @class = "col-md-3 control-label" })
+                                <div class="col-md-9">
+                                    @Html.TextBoxFor(a => a.web_url, new { @class = "form-control" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.web_url)</p>
+                            </div>
+
+                            <div class="form-group row">
+                                @Html.LabelFor(a => a.api_url, new { @class = "col-md-3 control-label" })
+                                <div class="col-md-9">
+                                    @Html.TextBoxFor(a => a.api_url, new { @class = "form-control" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.api_url)</p>
+                            </div>
+
+                            <div class="form-group row">
+                                @Html.LabelFor(a => a.display_order, new { @class = "col-md-3 control-label" })
+                                <div class="col-md-9">
+                                    @Html.TextBoxFor(a => a.display_order, new { @class = "form-control",type="number" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.display_order)</p>
+                            </div>
+
+
+                            <div class="col-md-12">
+                                <button type="submit" class="btn btn-primary waves-effect w-md waves-light pull-right"><i class="fa fa-save fa-lg"> Save</i></button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-md-12">
+                        <p>Note: <span class="asterik"></span> Fields are mandatory.</p>
+                    </div>
+                </div>
+                <!-- end row -->
+            </div>
+        </div>
+    </div><!-- end col -->
+</div>
+
+@section scripts{
+    <script>
+        $(document).ready(function () {
+            $(".name").focus();
+        });
+    </script>
+}

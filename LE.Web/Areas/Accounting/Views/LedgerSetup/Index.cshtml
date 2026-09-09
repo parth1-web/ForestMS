@@ -1,0 +1,182 @@
+﻿@using System.Linq
+@using LE.Account.Entities
+@model List<LedgerSetup>
+@{
+    ViewData["Title"] = "Index";
+
+    List<string> keys = SetupKeys.getKeys();
+    var purchaseKey = SetupKeys.getPurchaseLedgerKey;
+    var salesKey = SetupKeys.getSalesLedgerKey;
+    var bankKey = SetupKeys.getBankLedgerKey;
+    var cashKey = SetupKeys.getCashLedgerKey;
+    var salesReturnKey = SetupKeys.getSalesReturnKey;
+    var discountAllowedKey = SetupKeys.getDiscountAllowedLedgerKey;
+    var discountReceivedKey = SetupKeys.getDiscountReceivedLedgerKey;
+    var taxKey = SetupKeys.getTaxLedgerKey;
+    var ballaballiKey = SetupKeys.getBallaballiSalesLedgerKey;
+    var lakadiKey = SetupKeys.getLakadiSalesLedgerKey;
+    var khabakhuttiKey = SetupKeys.getKhabaKhuttiSalesLedgerKey;
+    var firewoodKey = SetupKeys.getFirewoodSalesLedgerKey;
+    var furnitureKey = SetupKeys.getFurnitureSalesLedgerKey;
+    var chiranKey = SetupKeys.getChiranSalesLedgerKey;
+    var debtorsGroupKey = SetupKeys.getDebtorsGroupKey;
+    var creditorsGroupKey = SetupKeys.getCreditorsGroupKey;
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="m-t-0 header-title"><b>@Localizer["Ledger Setup"]</b></h4>
+                <form action="/accounting/ledger-setup/new" method="post" class="col-md-6">
+                    @Html.AntiForgeryToken()
+                    <div class="table-responsive">
+                        <table class="table m-0">
+                            <tbody>
+                                @{
+                                    int sn = 0; LedgerSetup setup = new LedgerSetup();
+                                }
+                                @foreach (var key in keys)
+                                {
+                                    string value = "";
+                                    <tr>
+                                        @{
+                                            setup = Model.Where(a => a.key == key).SingleOrDefault();
+                                            if (setup != null)
+                                            {
+                                                value = setup.value;
+                                            }
+                                        }
+                                        <td><span> @key.Replace("_", " ") </span><input type="hidden" name="datas[@sn].key" value="@key" /></td>
+                                        <td>
+                                            <select name="datas[@sn].value" class="form-control">
+                                                @{
+                                                    if (key == purchaseKey)
+                                                    {
+                                                        foreach (var itm in ViewBag.purchaseLedgers)
+                                                        {
+                                                            <option selected="@(value == itm.ledger_id.ToString() ? "selected" : null)" value="@itm.ledger_id">@itm.name</option>
+                                                        }
+                                                    }
+                                                    if (key == salesKey)
+                                                    {
+                                                        foreach (var itm in ViewBag.salesLedgers)
+                                                        {
+                                                            <option selected="@(value == itm.ledger_id.ToString() ? "selected" : null)" value="@itm.ledger_id">@itm.name</option>
+                                                        }
+                                                    }
+                                                    if (key == salesReturnKey)
+                                                    {
+                                                        foreach (var itm in ViewBag.salesReturnLedgers)
+                                                        {
+                                                            <option selected="@(value == itm.ledger_id.ToString() ? "selected" : null)" value="@itm.ledger_id">@itm.name</option>
+                                                        }
+                                                    }
+                                                    if (key == discountAllowedKey)
+                                                    {
+                                                        foreach (var itm in ViewBag.discountAllowedLedgers)
+                                                        {
+                                                            <option selected="@(value == itm.ledger_id.ToString() ? "selected" : null)" value="@itm.ledger_id">@itm.name</option>
+                                                        }
+                                                    }
+                                                    if (key == discountReceivedKey)
+                                                    {
+                                                        foreach (var itm in ViewBag.discountReceivedLedgers)
+                                                        {
+                                                            <option selected="@(value == itm.ledger_id.ToString() ? "selected" : null)" value="@itm.ledger_id">@itm.name</option>
+                                                        }
+                                                    }
+                                                    if (key == bankKey)
+                                                    {
+                                                        foreach (var itm in ViewBag.bankLedgers)
+                                                        {
+                                                            <option selected="@(value == itm.ledger_id.ToString() ? "selected" : null)" value="@itm.ledger_id">@itm.name</option>
+                                                        }
+                                                    }
+                                                    if (key == cashKey)
+                                                    {
+                                                        foreach (var itm in ViewBag.cashLedgers)
+                                                        {
+                                                            <option selected="@(value == itm.ledger_id.ToString() ? "selected" : null)" value="@itm.ledger_id">@itm.name</option>
+                                                        }
+                                                    }
+                                                    if (key == taxKey)
+                                                    {
+                                                        foreach (var itm in ViewBag.salesTaxLedgers)
+                                                        {
+                                                            <option selected="@(value == itm.ledger_id.ToString() ? "selected" : null)" value="@itm.ledger_id">@itm.name</option>
+                                                        }
+                                                    }
+                                                    if (key == ballaballiKey)
+                                                    {
+                                                        foreach (var itm in ViewBag.salesLedgers)
+                                                        {
+                                                            <option selected="@(value == itm.ledger_id.ToString() ? "selected" : null)" value="@itm.ledger_id">@itm.name</option>
+                                                        }
+                                                    }
+                                                    if (key == firewoodKey)
+                                                    {
+                                                        foreach (var itm in ViewBag.salesLedgers)
+                                                        {
+                                                            <option selected="@(value == itm.ledger_id.ToString() ? "selected" : null)" value="@itm.ledger_id">@itm.name</option>
+                                                        }
+                                                    }
+                                                    if (key == lakadiKey)
+                                                    {
+                                                        foreach (var itm in ViewBag.salesLedgers)
+                                                        {
+                                                            <option selected="@(value == itm.ledger_id.ToString() ? "selected" : null)" value="@itm.ledger_id">@itm.name</option>
+                                                        }
+                                                    }
+                                                    if (key == khabakhuttiKey)
+                                                    {
+                                                        foreach (var itm in ViewBag.salesLedgers)
+                                                        {
+                                                            <option selected="@(value == itm.ledger_id.ToString() ? "selected" : null)" value="@itm.ledger_id">@itm.name</option>
+                                                        }
+                                                    }
+                                                    if (key == chiranKey)
+                                                    {
+                                                        foreach (var itm in ViewBag.salesLedgers)
+                                                        {
+                                                            <option selected="@(value == itm.ledger_id.ToString() ? "selected" : null)" value="@itm.ledger_id">@itm.name</option>
+                                                        }
+                                                    }
+                                                    if (key == furnitureKey)
+                                                    {
+                                                        foreach (var itm in ViewBag.salesLedgers)
+                                                        {
+                                                            <option selected="@(value == itm.ledger_id.ToString() ? "selected" : null)" value="@itm.ledger_id">@itm.name</option>
+                                                        }
+                                                    }
+                                                    if (key == debtorsGroupKey)
+                                                    {
+                                                        foreach (var itm in ViewBag.debtorsGroup)
+                                                        {
+                                                            <option selected="@(value == itm.ledger_group_id.ToString() ? "selected" : null)" value="@itm.ledger_group_id">@itm.name</option>
+                                                        }
+                                                    }
+                                                    if (key == creditorsGroupKey)
+                                                    {
+                                                        foreach (var itm in ViewBag.creditorsGroup)
+                                                        {
+                                                            <option selected="@(value == itm.ledger_group_id.ToString() ? "selected" : null)" value="@itm.ledger_group_id">@itm.name</option>
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    sn++;
+                                }
+                            </tbody>
+                        </table>
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-primary waves-effect w-md waves-light pull-right">@Localizer["Save"]</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

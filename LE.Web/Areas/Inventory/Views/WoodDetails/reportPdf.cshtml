@@ -1,0 +1,108 @@
+﻿@model WoodDetailsIndexViewModel;
+@{
+    ViewData["Title"] = Localizer["Wood-Report-Print"];
+    Layout = null;
+}
+<link href="~/css/bootstrap.min.css" rel="stylesheet" />
+<link href="~/css/print.css" rel="stylesheet" />
+
+<style>
+    table {
+        border-collapse: collapse;
+    }
+
+    .centered {
+        text-align: center;
+        align-content: center;
+    }
+
+    table, th, td {
+        border: 1px solid black;
+        padding: 5px;
+    }
+</style>
+
+<center>
+    <page size="A4">
+
+        <center style="font-size:20px;">
+            <b style="font-size:16px"> जामुनबारी सामुदायिक वन उपभाेता समूह</b>
+            <br><b style="font-size:16px">कनकाइ न.पा.</b>
+            <br><b style="font-size:16px">023550946</b>
+            <br>
+        </center>
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead class="bg-custom">
+                    <tr>
+                        <th rowspan="2">@Localizer["S.N"]</th>
+                        <th rowspan="2">@Localizer["Year"]</th>
+                        <th rowspan="2">@Localizer["Goliya No"]</th>
+                        <th rowspan="2">@Localizer["Wood Type"]</th>
+
+                        <th colspan="2" class="text-center">@Localizer["Wood Size"]</th>
+                        <th rowspan="2">@Localizer["Total Wood Size"]</th>
+                        <th colspan="2" class="text-center">@Localizer["Hole Status"]</th>
+                        <th rowspan="2">@Localizer["Total Size"]</th>
+                        <th rowspan="2">@Localizer["Grade"]</th>
+                    </tr>
+                    <tr>
+                        <th>@Localizer["Circle(inch)"]</th>
+                        <th>@Localizer["Length(Feet)"]</th>
+
+                        <th>@Localizer["Hole Size"]</th>
+                        <th>@Localizer["Hole Total"]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{ var sn = 1;
+                    decimal totalWoodSize = 0;
+                    foreach (var item in Model.wood_details)
+                    {
+
+                    totalWoodSize += item.getNetTotal();
+
+
+                    <tr>
+                        <td>@sn.ToString().ConvertNumerals()</td>
+                        <td>@item.year.ConvertNumerals()</td>
+                        <td>@item.goliya_number.ToString().ConvertNumerals()</td>
+                        <td>@item.wood_type.name</td>
+
+                        <td>@item.circle_size.ToString().ConvertNumerals()</td>
+                        <td>@item.length.ToString().ConvertNumerals()</td>
+                        <td>@item.fresh_total_size.ToString().ConvertNumerals()</td>
+
+                        <td>
+                            @{
+                            foreach (var damage in item.DamagedWoodDetails)
+                            {
+                            <i>@damage.damaged_first_size.ToString().ConvertNumerals() + @damage.damaged_second_size.ToString().ConvertNumerals() + @damage.damaged_third_size.ToString().ConvertNumerals() + @damage.damaged_fourth_size.ToString().ConvertNumerals() + @damage.damaged_fifth_size.ToString().ConvertNumerals() X @damage.damaged_feet_size.ToString().ConvertNumerals()</i><br />
+                            }
+                            }
+                        </td>
+                        <td>@item.getDamagedsize().ToString().ConvertNumerals()</td>
+                        <td>@item.getNetTotal().ToString().ConvertNumerals()</td>
+                        <td>@item.grade.ToString().ConvertNumerals()</td>
+
+                    </tr>
+                    sn++;
+                    }
+                    <tr>
+                        <td colspan="9" class="text-right"><b>Total</b></td>
+                        <td><b> @totalWoodSize.ToString().ConvertNumerals() </b></td>
+                        <td></td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </page>
+</center>
+<script src="~/js/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        window.print();
+
+    });
+</script>

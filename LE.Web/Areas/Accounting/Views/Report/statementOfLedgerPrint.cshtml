@@ -1,0 +1,170 @@
+﻿@using LE.Web.Areas.Accounting.ViewModels
+@using static LE.Common.Library.DateConverter.Entity.NepaliDate
+@model StatementOfLedgerIndexViewModel;
+@{
+    ViewData["Title"] = "Statement Of Ledger";
+    Layout = null;
+}
+
+<link href="~/css/print.css" rel="stylesheet" />
+<link href="~/css/bootstrap.min.css" rel="stylesheet" />
+<style>
+    table {
+        border-collapse: collapse;
+    }
+
+    table, th, td {
+        padding: 8px;
+        text-align: left;
+    }
+
+    td {
+        border: none;
+    }
+
+    th {
+        border-top: 1px solid black;
+        border-bottom: 1px solid black;
+    }
+</style>
+<center>
+    <page size="A4">
+        <center class="header">@Model.organization_name <br /> @Model.address<br />@Model.name <br />@Localizer["From"] @Model.start_date.ConvertNumerals() @Localizer["To"] @Model.end_date.ConvertNumerals()</center>
+        <table>
+            <thead>
+                <tr>
+                    <th width="100">@Localizer["Date"]</th>
+                    <th width="400">@Localizer["Particulars"]</th>
+                    <th>@Localizer["Vch Type"]</th>
+                    <th>@Localizer["Vch no."]</th>
+                    <th>@Localizer["Debit"]</th>
+                    <th>@Localizer["Credit"]</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    decimal drTotal = 0;
+                    decimal crTotal = 0;
+                    decimal openingBalance = Model.old_balance;
+                    decimal lastBalance = 0;
+                    decimal crAmt = 0;
+                    decimal drAmt = 0;
+                    string opBalanceText = "CR";
+
+                    if (openingBalance >= 0)
+                    {
+                        drAmt = Math.Abs(openingBalance);
+                        crAmt = 0;
+                        drTotal += Math.Abs(openingBalance);
+                    }
+                    else
+                    {
+                        crAmt = Math.Abs(openingBalance);
+                        drAmt = 0;
+                        crTotal += Math.Abs(openingBalance);
+                        opBalanceText = "DR";
+                    }
+
+
+                    <tr>
+                        <td></td>
+                        <td class="font-600"><b> &nbsp; &nbsp; &nbsp; &nbsp; @Localizer["Balance"] c/d</b></td>
+                        <td></td>
+                        <td></td>
+                        <td class="font-600"><b>@crAmt.ToString().ConvertNumerals()</b></td>
+                        <td class="font-600"><b>@drAmt.ToString().ConvertNumerals()</b></td>
+                    </tr>
+                    if (Model.transactionDetail != null)
+                    {
+                        int sn = 1;
+                        foreach (var transactionData in Model.transactionDetail)
+                        {
+                            string prefix = "To ";
+                            string balanceText = "CR";
+
+                            if (transactionData.dr_amount > 0)
+                            {
+                                prefix = "By ";
+                            }
+
+                            drTotal += transactionData.dr_amount;
+                            crTotal += transactionData.cr_amount;
+                            decimal totBalance = drTotal - crTotal;
+
+                            lastBalance = totBalance;
+
+                            if (lastBalance < 0)
+                            {
+                                balanceText = "DR";
+                            }
+                            <tr>
+                                <td>@DateConverter.Core.Service_Factory.DateConverterFactory.getDateConverterService().ToBS(transactionData.transaction_date.Date, LE.Common.Library.DateConverter.Entity.NepaliDate.DateFormats.yMd).getFormattedDate().ConvertNumerals()</td>
+                                <td><b>@prefix @transactionData.name</b></td>
+                                <td><b>@transactionData.transaction.voucher_type</b></td>
+                                <td>@transactionData.transaction.voucher_no</td>
+                                <td>
+                                    @{
+                                        if (transactionData.cr_amount > 0)
+                                        {
+                                            @transactionData.cr_amount.ToString().ConvertNumerals()
+                                        }
+                                    }
+                                </td>
+                                <td>
+                                    @{
+                                        if (transactionData.dr_amount > 0)
+                                        {
+                                            @transactionData.dr_amount.ToString().ConvertNumerals()
+                                        }
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+
+                    if (lastBalance >= 0)
+                    {
+                        drAmt = 0;
+                        crAmt = Math.Abs(lastBalance);
+                        crTotal += crAmt;
+                    }
+                    else
+                    {
+                        crAmt = 0;
+                        drAmt = Math.Abs(lastBalance);
+                        drTotal += drAmt;
+                    }
+
+                    <tr>
+                        <td></td>
+                        <td class="font-600"><b>&nbsp; &nbsp; &nbsp; &nbsp;@Localizer["Balance"] b/d</b></td>
+                        <td></td>
+                        <td></td>
+                        <td class="font-600"><b>@crAmt.ToString().ConvertNumerals()</b></td>
+                        <td class="font-600"><b>@drAmt.ToString().ConvertNumerals()</b></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td class="font-600"><b>@Localizer["Total"]</b></td>
+                        <td></td>
+                        <td></td>
+                        <td class="font-600" style="border-top: 1px solid black;border-bottom: 1px solid black;">
+                            <b>@crTotal.ToString().ConvertNumerals()</b>
+                        </td>
+                        <td class="font-600" style="border-top: 1px solid black;border-bottom: 1px solid black;">
+                            <b>@drTotal.ToString().ConvertNumerals()</b>
+                        </td>
+                        <td></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </page>
+</center>
+
+<script src="~/js/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // window.print();
+    });
+</script>
