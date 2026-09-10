@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using DateConverter.Core.Service_Factory;
 using LE.Billing.Common.Enums;
 using LE.Billing.Entities;
@@ -74,8 +74,8 @@ namespace LE.Web.Areas.Billing.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [Route("new")]
-        [IgnoreAntiforgeryToken]
         public IActionResult add([FromBody] FireWoodBillModel model)
         {
             try

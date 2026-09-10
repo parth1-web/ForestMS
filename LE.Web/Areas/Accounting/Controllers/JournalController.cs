@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using DateConverter.Core.Service_Factory;
 using LE.Account.Infrastructure.Dto;
 using LE.Account.Infrastructure.Repository.Interface;
@@ -48,8 +48,8 @@ namespace LE.Web.Areas.Accounting.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [Route("new")]
-        [IgnoreAntiforgeryToken]
         public JsonResult add([FromBody] JournalModel journalModel)
         {
             try

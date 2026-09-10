@@ -47,6 +47,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -101,18 +102,25 @@ namespace LE.Web
             registerElements(services);
             services.AddAuthentication(options =>
             {
+                // Cookie auth is the default for the web UI (login pages, MVC controllers).
+                // JWT remains available for API controllers that explicitly opt in via
+                // [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)].
+                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
             })
              .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
              {
-                 options.Cookie.HttpOnly = false;
-                 options.ExpireTimeSpan = TimeSpan.FromMinutes(1);
+                 options.Cookie.HttpOnly = true;
+                 options.Cookie.Name = "LE.Auth";
+                 // Read the configured expiry (hours) instead of the previous hard-coded 1 minute.
+                 int cookieExpirationHours = Configuration.GetValue<int>("Security:CookieExpirationHours", 8);
+                 options.ExpireTimeSpan = TimeSpan.FromHours(cookieExpirationHours);
+                 options.SlidingExpiration = false;
                  options.LoginPath = "/account/login";
                  options.LogoutPath = "/account/logout";
-                 options.AccessDeniedPath = "/error";
+                 options.AccessDeniedPath = "/error/403";
              })
             .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
             {
@@ -121,7 +129,9 @@ namespace LE.Web
                     ValidateAudience = true,
                     ValidateIssuer = true,
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("thisisasecreteforauth")),
+                    ValidIssuer = Configuration["Jwt:Issuer"],
+                    ValidAudience = Configuration["Jwt:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"] ?? "thisisasecreteforauth")),
                     RequireExpirationTime = false,
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero
@@ -131,9 +141,9 @@ namespace LE.Web
             services.AddAntiforgery(o => o.HeaderName = "XSRF-TOKEN");
             services.AddMvc(options =>
             {
-                //options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
-                //options.Filters.Add(new RequireHttpsAttribute());
-
+                // Require an authenticated user for every action unless it is explicitly
+                // opted-out with [AllowAnonymous] (login pages, error pages, public assets).
+                options.Filters.Add(new AuthorizeFilter());
             }).AddControllersAsServices()
               .AddNewtonsoftJson(jsonOptions =>
               {
@@ -263,6 +273,7 @@ namespace LE.Web
             registerUserLibraries(services);
             services.AddSingleton<PaginatedMetaService, PaginatedMetaServiceImpl>();
             services.AddSingleton<DateConverterService, DateConverterServiceImpl>();
+            services.AddSingleton<LoginAttemptTracker, LoginAttemptTracker>();
         }
 
         private void registerUserLibraries(IServiceCollection services)

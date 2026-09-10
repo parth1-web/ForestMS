@@ -75,9 +75,12 @@ namespace LE.Web.Areas.Inventory.Controllers
             try
             {
                 PurchaseDto dto = new PurchaseDto();
-                dto.user_id = getLoggedInAuthenticationId();
 
                 dto = _mapper.Map<PurchaseDto>(purchaseModel);
+                // Attribution is taken from the session, not the posted form
+                // (the previous assignment before Map was dead code that the
+                // mapper overwrote with the client-supplied user id).
+                dto.user_id = getLoggedInAuthenticationId();
                 _purchaseService.makePurchase(dto);
                 AlertHelper.setMessage(this, "Stock added successfully.");
                 return RedirectToAction("index");

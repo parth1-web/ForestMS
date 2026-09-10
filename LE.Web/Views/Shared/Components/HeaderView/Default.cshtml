@@ -51,10 +51,19 @@
                         <li><a href="/administration/user/change-password/@ViewBag.authenticationId" class="dropdown-item">@Localizer["Change Password"]</a></li>
                         <li><a href="/setup/org-setup" class="dropdown-item">@Localizer["Setup"]</a></li>
                         <li class="dropdown-divider"></li>
-                        <li><a href="/account/logout" class="dropdown-item">@Localizer["Logout"]</a></li>
+                        <li><a href="/account/logout" class="dropdown-item" onclick="return postLogout(this.href);">@Localizer["Logout"]</a></li>
                     </ul>
                 </li>
             </ul>
+
+            <form id="logoutForm" action="/account/logout" method="post" style="display:none;">@Html.AntiForgeryToken()</form>
+            <script>
+                function postLogout(url) {
+                    var form = document.getElementById('logoutForm');
+                    if (form) { form.submit(); }
+                    return false;
+                }
+            </script>
 
             <div class="menu-item">
                 <a class="navbar-toggle">

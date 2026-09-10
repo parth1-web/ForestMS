@@ -8,5 +8,6 @@ namespace LE.Common.Library
     {
         string CreateHash(string password);
         bool ValidatePassword(string password, string correct_hash);
+        bool NeedsRehash(string correct_hash);
     }
 }

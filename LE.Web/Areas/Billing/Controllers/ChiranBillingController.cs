@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using DateConverter.Core.Service_Factory;
 using LE.Billing.Common.Enums;
 using LE.Billing.Entities;
@@ -79,8 +79,8 @@ namespace LE.Web.Areas.Billing.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [Route("new")]
-        [IgnoreAntiforgeryToken]
         public JsonResult add([FromBody] ChiranBillModel model)
         {
             try

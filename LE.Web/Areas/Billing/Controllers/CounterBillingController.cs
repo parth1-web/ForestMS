@@ -1,4 +1,4 @@
-﻿using LE.Billing.Entities;
+using LE.Billing.Entities;
 using LE.Billing.Infrastructure.Dto;
 using LE.Billing.Infrastructure.Repository.Interface;
 using LE.Billing.Service.Services.Interface;
@@ -15,7 +15,7 @@ using System.Linq;
 
 namespace LE.Web.Areas.Billing.Controllers
 {
-    [Authorize]
+    [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme + "," + Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
     [Area("billing")]
     [Route("billing/counter-billing")]
     public class CounterBillingController : BaseController
@@ -37,12 +37,18 @@ namespace LE.Web.Areas.Billing.Controllers
 
 
 
-        [Route("save")]
+        [HttpPost]
+        // Consumed by the counter POS desktop client (JWT-authenticated), which cannot
+        // send browser antiforgery tokens; identity is enforced server-side above.
         [IgnoreAntiforgeryToken]
+        [Route("save")]
         public IActionResult save([FromBody] CounterSalesDto dto)
         {
             try
             {
+                // The bill is always attributed to the authenticated user from the session,
+                // never to a client-supplied id (prevents forged audit attribution).
+                dto.user_id = getLoggedInAuthenticationId();
                 long salesId = _counterSalesService.makeSales(dto);
                 var sales = _counterSalesRepo.getById(salesId);
                 var responseData = buildResponseJson(sales);
@@ -60,6 +66,13 @@ namespace LE.Web.Areas.Billing.Controllers
         {
             try
             {
+                // Users may only view their own sales of the current day; an authenticated
+                // user querying a different user's sales is rejected (anti-IDOR).
+                long loggedInUserId = getLoggedInAuthenticationId();
+                if (user_id != loggedInUserId)
+                {
+                    return Content(JsonWrapper.buildErrorJson("You are not authorized to view sales of another user."), "application/json");
+                }
 
                 var sales = _counterSalesRepo.getQueryable().Where(a => a.user_id == user_id && a.sales_date.Date == DateTime.Now.Date).ToList();
 

@@ -39,9 +39,10 @@
 				@Html.Partial("message")
 				<h2> Login Here </h2>
 				<p>Please provide your login credentials.</p>
-				@using (Html.BeginForm())
-				{
-					<div class="form-left-to-w3l">
+			@using (Html.BeginForm())
+			{
+				@Html.AntiForgeryToken()
+				<div class="form-left-to-w3l">
 						<span class="fa fa-user m-auto" aria-hidden="true"></span>
 						@Html.TextBoxFor(a => a.username, new { @Placeholder = "Enter Your Username", @class = "uname" })
 						<p class="text-danger">@Html.ValidationMessageFor(a => a.username)</p>

@@ -117,10 +117,28 @@
                  values: new object[] { "Leading Edge", "birtamode-5", "023-540171", "contact@leadingedgesoft.com", true, 1, DateTime.Now });
 
 
+            // SECURITY: do NOT seed a fixed/hard-coded password hash here.
+            // Generate a unique hash for a strong password of your choice (per deployment)
+            // using the recipe below, paste it in place of {ADMIN_PASSWORD_HASH}, run this
+            // seed, log in with your chosen password, and change it again from the UI.
+            //
+            // PowerShell generator (matches LE.Common PasswordHashImpl v2 format):
+            //
+            //   $password = Read-Host "Initial admin password"
+            //   $salt = New-Object byte[] 16
+            //   [System.Security.Cryptography.RandomNumberGenerator]::Fill($salt)
+            //   $pbkdf2 = New-Object System.Security.Cryptography.Rfc2898DeriveBytes(
+            //       $password, $salt, 310000, [System.Security.Cryptography.HashAlgorithmName]::SHA256)
+            //   $hash = $pbkdf2.GetBytes(32)
+            //   "v2:$([Convert]::ToBase64String($salt)):$([Convert]::ToBase64String($hash))"
+            //
+            // Any database seeded from an older revision of this file (hash
+            // "1000:2g+LR0YZ..." i.e. the password "admin") must have the admin
+            // password rotated immediately from Administration > User.
             migrationBuilder.InsertData(
                    table: "authentications",
                    columns: new[] { "type_id", "type", "username", "password", "is_enabled" },
-                   values: new object[] { 1, 1, "admin", "1000:2g+LR0YZGnowMxRiGsFW72dpPQ6h+HAL:PgxZSf2ETjNUTZfIcPOZ1Lk9Wj2+x1PS", true });
+                   values: new object[] { 1, 1, "admin", "{ADMIN_PASSWORD_HASH}", true });
 
 
             migrationBuilder.InsertData(

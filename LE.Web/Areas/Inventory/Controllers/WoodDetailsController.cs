@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using LE.Common.Enums;
 using LE.Inventory.Entities;
 using LE.Inventory.Infrastructure.Dto;
@@ -99,8 +99,8 @@ namespace LE.Web.Areas.Inventory.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [Route("new")]
-        [IgnoreAntiforgeryToken]
         public IActionResult add([FromBody] WoodDetailsModel woodDetailModel)
         {
             try
@@ -236,8 +236,8 @@ namespace LE.Web.Areas.Inventory.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [Route("edit")]
-        [IgnoreAntiforgeryToken]
         public IActionResult edit([FromBody] WoodDetailsModel model)
         {
             try
