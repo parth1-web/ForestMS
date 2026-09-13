@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,7 +9,11 @@ namespace LE.Web.Controllers
     [AllowAnonymous]
     public class ErrorController : Controller
     {
-        [HttpGet("/error/{statusCode}")]
+        // Accepts any HTTP method: StatusCodePagesWithReExecute re-executes failed
+        // requests (including POSTs) against this route, and a method-restricted
+        // handler would turn e.g. an antiforgery 400 into a confusing 405.
+        [AcceptVerbs("GET", "POST", "PUT", "DELETE", "PATCH")]
+        [Route("/error/{statusCode}")]
         public IActionResult Index(int statusCode)
         {
             if (statusCode == 404)

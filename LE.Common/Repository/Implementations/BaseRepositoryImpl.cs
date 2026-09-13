@@ -41,10 +41,8 @@ namespace LE.Common.Repository.Implementations
 			public void Commit() { }
 			public void Rollback() { }
 			public void Dispose() { }
-
-			// Not part of the EF Core 2.1 interface this project compiles against, but
-			// required by the EF Core 3.x interface resolved at runtime; declared as a
-			// plain method so it satisfies both.
+			public System.Threading.Tasks.Task CommitAsync(System.Threading.CancellationToken cancellationToken = default) => System.Threading.Tasks.Task.CompletedTask;
+			public System.Threading.Tasks.Task RollbackAsync(System.Threading.CancellationToken cancellationToken = default) => System.Threading.Tasks.Task.CompletedTask;
 			public System.Threading.Tasks.ValueTask DisposeAsync() => default;
 		}
 

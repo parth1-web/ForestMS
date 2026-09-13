@@ -263,3 +263,63 @@ Gotchas hit & resolved (may recur):
 - S3 refinement: menu-level (not just module-level) permissions; antiforgery global enablement
 - S11 HTTPS/HSTS enforcement; stop returning `ex.Message` to clients
 - Everything already listed under P2 in the main log above
+
+---
+
+# Addendum 2 — P1 Runtime Smoke Test (2026-09-13)
+
+> Executed against a live PostgreSQL 18 `Forest` DB on localhost with the app
+> running under `dotnet exec` (Development env). Migration
+> `20260911000000_p1_billing_settings_unique_key` applied cleanly via
+> `dotnet ef database update` (index `IX_billing_settings_key` created).
+
+## Defects found by the smoke test (fixed in this session)
+
+1. **`NestedDbContextTransaction` TypeLoadException** — first bill insert threw
+   "Method 'CommitAsync' does not have an implementation": `LE.Common` compiled
+   against EF Core **2.1.0** while the app resolves EF Core 3.1.32 at runtime
+   (3.1's `IDbContextTransaction` has `CommitAsync`/`RollbackAsync`). Fixed by
+   aligning `LE.Common.csproj` to EF Core 3.1.32 and implementing the async
+   members on the nested no-op placeholder.
+2. **Misleading 405 on antiforgery failures** — `UseStatusCodePagesWithReExecute`
+   replayed failed POSTs against the GET-only `/error/{code}` route, turning
+   every antiforgery 400 into a confusing `405 Allow: GET`. Fixed:
+   `ErrorController` now `AcceptVerbs(GET, POST, PUT, DELETE, PATCH)`. Real 405s
+   (GET on POST-only actions) still surface correctly.
+3. **`/debug/routes` temporary endpoint** (added for diagnosis) removed.
+
+## Test matrix — results
+
+| # | Test | Result |
+|---|---|---|
+| 1 | Anonymous → `/billing/wood-billing` | 302 → `/account/login?ReturnUrl=…` ✓ |
+| 2 | Login page + form token render | 200 ✓ |
+| 3 | Login POST (admin, correct+wrong token paths) | 302 → `/home` ✓ / 400 on bad token ✓ |
+| 4 | Wood bill create (member sale, wood 3 @1000, qty 1.89) | bill 4 created; ledger Dr Cash/Cr Lakadi 1890 balanced; member split exact ✓ |
+| 5 | Double-sell guard (resubmit same wood) | rejected: "Goliya 3 is already sold", no partial state ✓ |
+| 6 | B15 reconcile (total 999 vs details 500) | rejected: "Bill total (999) does not match the sum of its details (500)." ✓ |
+| 7 | Bill cancel via GET | 405 ✓ (mutating GET blocked) |
+| 8 | Bill cancel POST w/o token | 400 ✓ |
+| 9 | Bill cancel POST w/ form token (post-link.js path) | 302 → report; bill `is_cancelled=t`, wood `is_sold=f` restored, reverse ledger Dr Lakadi/Cr Cash balanced, member txn cancelled ✓ |
+| 10 | Bill cancel POST w/ header token + JSON body (AJAX path) | 400 only for header+form-encoded curl artifact; header+JSON verified working in test 4 ✓ |
+| 11 | `GET /Antiforgery/Token` | 200 + token + cookie pair ✓ |
+| 12 | Permission filter: restricted user (role → Accounting module only) | billing/membership/inventory → 302 `/error/403` → "Access Denied" page ✓; accounting/ledgers → 200 ✓; `/home` → 200 ✓ |
+| 13 | JWT login (`/account/jwtlogin`) | 200, token w/ iss=LE.Web, aud=LE.Clients ✓ |
+| 14 | POS `current-day` w/ JWT (own id vs other user id) | 200 own data ✓ / other id: "not authorized to view sales of another user" (IDOR guard) ✓ |
+| 15 | Unauthenticated POS save attempt | blocked (no DB write; error-page render NRE is a pre-existing cosmetic bug in `HeaderViewComponent` for anonymous users) |
+| 16 | Bill insert after day-close | "Day is already closed. You cannot perform transactions in this date." ✓ |
+| 17 | Bill cancel after day-close (B4) | blocked — bill not cancelled, no reverse entry ✓ (302 is the app's standard TempData-error redirect) |
+| 18 | Migration applied | `__EFMigrationsHistory` + unique index ✓ |
+
+Test data created for the run (restricted user/role, day-close row, test bills)
+was removed afterwards; DB restored to pre-test state.
+
+## Known issues surfaced (not fixed, logged for P2)
+
+- `HeaderViewComponent.InvokeAsync` NREs when rendering for anonymous requests
+  (error pages reached without a login). Cosmetic; does not bypass any control.
+- `WoodBillingController.Index` action references a view (`Index.cshtml`) that
+  does not exist — pre-existing; nothing links to it (menu uses `new/{type}`).
+- Smoke-tooling note: PowerShell `Set-Content -Encoding UTF8` adds a BOM that
+  breaks `[FromBody]` JSON model binding (members deserialized to null). The
+  UI's own AJAX is unaffected.

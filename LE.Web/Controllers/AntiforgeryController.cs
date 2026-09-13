@@ -22,6 +22,10 @@ namespace LE.Web.Controllers
         [Route("Token")]
         public IActionResult Token()
         {
+            // Standard Microsoft-documented pattern for exposing a token to
+            // JavaScript: GetAndStoreTokens persists the pair and (re)issues the
+            // companion antiforgery cookie on this response. The client must keep
+            // that cookie alongside the returned request token.
             var tokens = _antiforgery.GetAndStoreTokens(HttpContext);
             return Json(new { token = tokens.RequestToken });
         }
