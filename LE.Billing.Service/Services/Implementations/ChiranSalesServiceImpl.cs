@@ -9,7 +9,6 @@ using LE.Billing.Service.Assemblers.Interface;
 using LE.Billing.Service.Services.Interface;
 using LE.Common.Exceptions;
 using System;
-using System.Transactions;
 
 namespace LE.Billing.Service.Services.Implementations
 {
@@ -38,25 +37,33 @@ namespace LE.Billing.Service.Services.Implementations
 
         public void cancel(long chiran_sales_id, long user_id)
         {
-            try
+            var chiranSale = _chiranSalesRepo.getById(chiran_sales_id);
+            if (chiranSale == null)
             {
-                var chiranSale = _chiranSalesRepo.getById(chiran_sales_id);
-                if (chiranSale == null)
-                {
-                    throw new ItemNotFoundException($"Chiran Bill with id {chiran_sales_id} doesnot exist.");
-                }
+                throw new ItemNotFoundException($"Chiran Bill with id {chiran_sales_id} doesnot exist.");
+            }
+            if (chiranSale.is_cancelled)
+            {
+                throw new ItemUsedException("This bill is already cancelled.");
+            }
+
+            // P1/B4 fix: counter-bill cancels already enforce day-close; chiran cancels
+            // now do too, and the whole cancel runs in one real database transaction.
+            var isClosed = _dayCloseRepository.getByDate(chiranSale.sales_date.Date);
+            if (isClosed != null)
+            {
+                throw new ItemUsedException("Day is already closed. You cannot cancel this bill.");
+            }
+
+            using (var tx = _chiranSalesRepo.beginTransaction())
+            {
                 chiranSale.cancel();
                 chiranSale.cancelled_by = user_id;
                 chiranSale.cancelled_date = DateFunctionsFactory.getDateFunctionsService().getDateTimeByTimeZone();
                 _chiranSalesRepo.update(chiranSale);
 
                 createReverseTransaction(chiranSale);
-
-            }
-            catch (Exception)
-            {
-
-                throw;
+                tx.Commit();
             }
         }
 
@@ -98,40 +105,35 @@ namespace LE.Billing.Service.Services.Implementations
 
         public long insert(ChiranSalesDto chiran_sales_dto)
         {
-            try
+            // P1/B5 fix: the day-close check was commented out, letting sales be entered
+            // on already-closed days. Restored, and the insert now runs in one real
+            // database transaction instead of the no-op ambient TransactionScope.
+            using (var tx = _chiranSalesRepo.beginTransaction())
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                var IsClosed = _dayCloseRepository.getByDate(chiran_sales_dto.sales_date.Date);
+                if (IsClosed != null)
                 {
-                    //var IsClosed = _dayCloseRepository.getByDate(chiran_sales_dto.sales_date.Date);
-                    //if (IsClosed != null)
-                    //{
-                    //    throw new ItemUsedException("Day is already closed. You cannot perform transactions in this date.");
-                    //}
-
-                    var chiranSales = new ChiranSales();
-
-                    _chiranSalesAssembler.copy(chiranSales, chiran_sales_dto);
-
-                    _chiranSalesRepo.insert(chiranSales);
-
-                    chiran_sales_dto.chiran_detail_dto.ForEach(a => a.chiran_sales_id = chiranSales.chiran_sales_id);
-                    _chiranSalesDetailService.insert(chiran_sales_dto.chiran_detail_dto);
-
-                    if (chiran_sales_dto.amount > 0)
-                    {
-                        chiran_sales_dto.chiran_sales_id = chiranSales.chiran_sales_id;
-                        createTransaction(chiran_sales_dto);
-
-                    }
-
-                    tx.Complete();
-                    return chiranSales.chiran_sales_id;
+                    throw new ItemUsedException("Day is already closed. You cannot perform transactions in this date.");
                 }
 
-            }
-            catch (Exception ex)
-            {
-                throw ex;
+                var chiranSales = new ChiranSales();
+
+                _chiranSalesAssembler.copy(chiranSales, chiran_sales_dto);
+
+                _chiranSalesRepo.insert(chiranSales);
+
+                chiran_sales_dto.chiran_detail_dto.ForEach(a => a.chiran_sales_id = chiranSales.chiran_sales_id);
+                _chiranSalesDetailService.insert(chiran_sales_dto.chiran_detail_dto);
+
+                if (chiran_sales_dto.amount > 0)
+                {
+                    chiran_sales_dto.chiran_sales_id = chiranSales.chiran_sales_id;
+                    createTransaction(chiran_sales_dto);
+
+                }
+
+                tx.Commit();
+                return chiranSales.chiran_sales_id;
             }
         }
 

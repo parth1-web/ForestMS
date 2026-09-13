@@ -178,8 +178,8 @@
 												string icon = membership.IsActive ? "fa-thumbs-down" : "fa-thumbs-up";
 												string color = membership.IsActive ? "btn-danger" : "btn-success";
 											}
-											<a href="/billing/membership/@actionName/@membership.MembershipId" class="btn btn-icon waves-effect waves-light btn-sm @color" data-toggle="tooltip" title="@actionName Member"><i class="fa @icon"></i></a>
-											<a href="/billing/membership/delete/@membership.MembershipId" class="btn btn-icon waves-effect waves-light btn-sm btn-danger delete" data-toggle="tooltip" title="Delete Member"><i class="fa fa-trash"></i></a>
+											<a href="/billing/membership/@actionName/@membership.MembershipId" class="btn btn-icon waves-effect waves-light btn-sm @color post-link" data-toggle="tooltip" title="@actionName Member"><i class="fa @icon"></i></a>
+											<a href="/billing/membership/delete/@membership.MembershipId" class="btn btn-icon waves-effect waves-light btn-sm btn-danger post-link" data-confirm="Are you sure to delete?" data-toggle="tooltip" title="Delete Member"><i class="fa fa-trash"></i></a>
 
 											@*<div class="btn-group">
 											<a href="javascript:void(0);" data-toggle="dropdown"><i class="fa fa-ellipsis-v dropdownMenuIcon" aria-hidden="true"></i></a>

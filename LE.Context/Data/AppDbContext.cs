@@ -24,6 +24,12 @@ namespace LE.Context.Data
             foreach (var fk in cascadeFKs)
                 fk.DeleteBehavior = DeleteBehavior.Restrict;
 
+            // Backs the atomic bill-number sequence (UPDATE ... RETURNING) and prevents
+            // duplicate counter rows for the same billing key.
+            modelBuilder.Entity<BillingSettings>()
+                .HasIndex(bs => bs.key)
+                .IsUnique();
+
             base.OnModelCreating(modelBuilder);
         }
 

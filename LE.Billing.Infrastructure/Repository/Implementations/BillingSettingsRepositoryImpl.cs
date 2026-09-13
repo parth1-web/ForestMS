@@ -2,8 +2,8 @@
 using LE.Billing.Infrastructure.Repository.Interface;
 using LE.Common.Repository.Implementations;
 using LE.Context.Data;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
-using System.Transactions;
 
 namespace LE.Billing.Infrastructure.Repository.Implementations
 {
@@ -20,134 +20,46 @@ namespace LE.Billing.Infrastructure.Repository.Implementations
             return AppDbContext.billing_settings.Where(a => a.key == key).SingleOrDefault();
         }
 
+        // P1/B2 fix: the counter row used to be read outside the transaction and updated with a
+        // plain read-modify-write, so concurrent bill inserts collided on the generated PK.
+        // The increment now happens in a single atomic UPDATE ... RETURNING statement that
+        // PostgreSQL serializes per row; a missing key row is created race-free first
+        // (value starts at 0 so the first generated bill number remains 1).
+        private long nextSequence(string key)
+        {
+            AppDbContext.Database.ExecuteSqlRaw(
+                "INSERT INTO billing_settings (\"key\", \"value\") VALUES ({0}, 0) ON CONFLICT DO NOTHING", key);
+            var sequence = AppDbContext.billing_settings
+                .FromSqlRaw("UPDATE billing_settings SET \"value\" = \"value\" + 1 WHERE \"key\" = {0} RETURNING settings_id, \"key\", \"value\"", key)
+                .AsEnumerable()
+                .Select(s => s.value)
+                .FirstOrDefault();
+            return sequence;
+        }
+
         public long getCounterBillingSequence()
         {
-            BillingSettings tranactionSequence = new BillingSettings();
-            var billingSequence = AppDbContext.billing_settings.Where(a => a.key == "COUNTER_BILLING").SingleOrDefault();
-            long sequence;
-            using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
-            {
-                if (billingSequence == null)
-                {
-                    tranactionSequence.key = "COUNTER_BILLING";
-                    tranactionSequence.value = 1;
-                    insert(tranactionSequence);
-                    sequence = 1;
-                }
-                else
-                {
-                    long newSequence = billingSequence.value + 1;
-                    billingSequence.value = newSequence;
-                    sequence = newSequence;
-                    this.update(billingSequence);
-                }
-                tx.Complete();
-            }
-            return sequence;
+            return nextSequence("COUNTER_BILLING");
         }
 
         public long getWoodBillingSequence()
         {
-            BillingSettings tranactionSequence = new BillingSettings();
-            var billingSequence = AppDbContext.billing_settings.Where(a => a.key == "WOOD_BILLING").SingleOrDefault();
-            long sequence;
-            using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
-            {
-                if (billingSequence == null)
-                {
-                    tranactionSequence.key = "WOOD_BILLING";
-                    tranactionSequence.value = 1;
-                    insert(tranactionSequence);
-                    sequence = 1;
-                }
-                else
-                {
-                    long newSequence = billingSequence.value + 1;
-                    billingSequence.value = newSequence;
-                    sequence = newSequence;
-                    this.update(billingSequence);
-                }
-                tx.Complete();
-            }
-            return sequence;
+            return nextSequence("WOOD_BILLING");
         }
 
         public long getChiranSalesSequence()
         {
-            BillingSettings tranactionSequence = new BillingSettings();
-            var billingSequence = AppDbContext.billing_settings.Where(a => a.key == "CHIRAN").SingleOrDefault();
-            long sequence;
-            using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
-            {
-                if (billingSequence == null)
-                {
-                    tranactionSequence.key = "CHIRAN";
-                    tranactionSequence.value = 1;
-                    insert(tranactionSequence);
-                    sequence = 1;
-                }
-                else
-                {
-                    long newSequence = billingSequence.value + 1;
-                    billingSequence.value = newSequence;
-                    sequence = newSequence;
-                    this.update(billingSequence);
-                }
-                tx.Complete();
-            }
-            return sequence;
+            return nextSequence("CHIRAN");
         }
 
         public long getFireWoodBillingSequence()
         {
-            BillingSettings tranactionSequence = new BillingSettings();
-            var billingSequence = AppDbContext.billing_settings.Where(a => a.key == "FIREWOOD_BILLING").SingleOrDefault();
-            long sequence;
-            using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
-            {
-                if (billingSequence == null)
-                {
-                    tranactionSequence.key = "FIREWOOD_BILLING";
-                    tranactionSequence.value = 1;
-                    insert(tranactionSequence);
-                    sequence = 1;
-                }
-                else
-                {
-                    long newSequence = billingSequence.value + 1;
-                    billingSequence.value = newSequence;
-                    sequence = newSequence;
-                    this.update(billingSequence);
-                }
-                tx.Complete();
-            }
-            return sequence;
+            return nextSequence("FIREWOOD_BILLING");
         }
 
         public long getFurnitureBillingSequence()
         {
-            BillingSettings tranactionSequence = new BillingSettings();
-            var billingSequence = AppDbContext.billing_settings.Where(a => a.key == "FURNITURE_BILLING").SingleOrDefault();
-            long sequence;
-            using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
-            {
-                if (billingSequence == null)
-                {
-                    tranactionSequence.key = "FURNITURE_BILLING";
-                    tranactionSequence.value = 1;
-                    insert(tranactionSequence);
-                    sequence = 1;
-                }
-                else
-                {
-                    long newSequence = billingSequence.value + 1;
-                    billingSequence.value = newSequence;
-                    sequence = newSequence;
-                    this.update(billingSequence);
-                }
-                tx.Complete();
-            }
-            return sequence;
+            return nextSequence("FURNITURE_BILLING");
         }
     }
 }

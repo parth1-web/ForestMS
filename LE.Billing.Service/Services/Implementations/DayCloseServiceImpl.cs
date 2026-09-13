@@ -11,7 +11,6 @@ using LE.Common.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Transactions;
 
 namespace LE.Billing.Service.Services.Implementations
 {
@@ -38,34 +37,29 @@ namespace LE.Billing.Service.Services.Implementations
 
         public void insert(DayCloseDto day_close_dto)
         {
-            try
+            // P1 fix: ambient TransactionScope was a no-op for EF Core; the day-close row
+            // and the counter-sales ledger posting now run in one real database transaction.
+            using (var tx = _dayCloseRepo.beginTransaction())
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                var dayClose = _dayCloseRepo.getByDate(day_close_dto.eng_close_date.Date);
+
+                if (dayClose != null)
                 {
-                    var dayClose = _dayCloseRepo.getByDate(day_close_dto.eng_close_date.Date);
-
-                    if (dayClose != null)
-                    {
-                        throw new DuplicateItemException($"Day is already Closed");
-                    }
-
-                    if (day_close_dto.eng_close_date.Date > DateFunctionsFactory.getDateFunctionsService().getDateTimeByTimeZone().Date)
-                    {
-                        throw new InvalidValueException("You are not allowed to close the future date.");
-                    }
-
-                    dayClose = new DayClose();
-                    _dayCloseAssembler.copy(dayClose, day_close_dto);
-                    _dayCloseRepo.insert(dayClose);
-
-                    //entry to account
-                    makeEntryToAccount(day_close_dto);
-                    tx.Complete();
+                    throw new DuplicateItemException($"Day is already Closed");
                 }
-            }
-            catch (Exception)
-            {
-                throw;
+
+                if (day_close_dto.eng_close_date.Date > DateFunctionsFactory.getDateFunctionsService().getDateTimeByTimeZone().Date)
+                {
+                    throw new InvalidValueException("You are not allowed to close the future date.");
+                }
+
+                dayClose = new DayClose();
+                _dayCloseAssembler.copy(dayClose, day_close_dto);
+                _dayCloseRepo.insert(dayClose);
+
+                //entry to account
+                makeEntryToAccount(day_close_dto);
+                tx.Commit();
             }
         }
 

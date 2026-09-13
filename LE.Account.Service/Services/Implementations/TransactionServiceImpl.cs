@@ -8,9 +8,9 @@ using LE.Account.Service.Services.FinancialYearService;
 using LE.Account.Service.Services.Interface;
 using LE.Common.Exceptions;
 using LE.Common.Provider;
+using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Threading.Tasks;
-using System.Transactions;
 
 namespace LE.Account.Service.Services.Implementations
 {
@@ -28,11 +28,16 @@ namespace LE.Account.Service.Services.Implementations
 			_transactionMaker = transactionMaker;
 			_connectionProvider = connectionProvider;
 		}
+		public IDbContextTransaction beginTransaction()
+		{
+			return transactionRepo.beginTransaction();
+		}
+
 		public void addTransaction(TransactionDto transactionDto)
 		{
 			try
 			{
-				using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+				using (var tx = transactionRepo.beginTransaction())
 				{
 					if (transactionDto.voucher_type != VoucherType.YearClosed)
 					{
@@ -47,9 +52,18 @@ namespace LE.Account.Service.Services.Implementations
 					}
 					var currentFiscalYear = GetRunningFinancialYear()?.Result;
 
-					if(transactionDto.transaction_date.Date < currentFiscalYear.StartDate.Date)
+					// P1/B16 fix: fiscal-year validation was one-sided (only rejected dates
+					// before FY start) and NRE'd when no running FY exists. A running
+					// fiscal year is now required, and dates after FY end are rejected too.
+					if (currentFiscalYear == null)
 					{
-						throw new CustomException("आर्थिक वर्ष बन्द भएपछि पछिल्लो मितिमा प्रविष्टि गर्न अनुमति छैन। कृपया चालु आर्थिक वर्षमा समायोजन गर्नुहोस्।");
+						throw new CustomException("No running financial year found. Please set up the current fiscal year.");
+					}
+
+					if (transactionDto.transaction_date.Date < currentFiscalYear.StartDate.Date
+					    || transactionDto.transaction_date.Date > currentFiscalYear.EndDate.Date)
+					{
+						throw new CustomException("आर्थिक वर्ष बन्द भएपछि पछिल्लो मितिमा प्रविष्टि गर्न अनुमति छैन। कृपया चालु आर्थिक वर्षमा समायोजन गर्नुहोस्।");
 					}
 
 					Entities.Transaction transactionEntity = new Entities.Transaction();
@@ -62,7 +76,7 @@ namespace LE.Account.Service.Services.Implementations
 					transactionRepo.insert(transactionEntity);
 
 					transactionDetailService.addTransactionDetail(transactionDto, tran_id);
-					tx.Complete();
+					tx.Commit();
 				}
 			}
 			catch (Exception)

@@ -346,7 +346,10 @@ namespace LE.Web.Areas.Accounting.Controllers
 				vm.ToDate = nepFiscalEndDate;
 			}
 			var dateConverterService = DateConverterFactory.getDateConverterService();
-			var date = dateConverterService.ToAD(vm.FromDate).getFormattedDate();
+			// P1/B17 fix: the screen (dayBook) filters by ToDate but the print variant
+			// used FromDate — printing showed a different day than the screen. The
+			// day-book view's only date input is ToDate; use it for print too.
+			var date = dateConverterService.ToAD(vm.ToDate).getFormattedDate();
 			vm.RightReport = await _accountingReportReporter.GetDayVoucher(fromDate: date.Date, toDate: date.Date);
 			vm.organization_name = org_name;
 			vm.address = address;
@@ -371,7 +374,9 @@ namespace LE.Web.Areas.Accounting.Controllers
 				vm.ToDate = nepFiscalEndDate;
 			}
 			var dateConverterService = DateConverterFactory.getDateConverterService();
-			var date = dateConverterService.ToAD(vm.FromDate).getFormattedDate();
+			// P1/B17 fix: same as day-book-print — the PDF must honor the ToDate filter
+			// shown on the day book screen, not FromDate.
+			var date = dateConverterService.ToAD(vm.ToDate).getFormattedDate();
 			vm.RightReport = await _accountingReportReporter.GetDayVoucher(fromDate: date.Date, toDate: date.Date);
 			vm.organization_name = org_name;
 			vm.address = address;

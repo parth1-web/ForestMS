@@ -48,6 +48,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -144,6 +145,11 @@ namespace LE.Web
                 // Require an authenticated user for every action unless it is explicitly
                 // opted-out with [AllowAnonymous] (login pages, error pages, public assets).
                 options.Filters.Add(new AuthorizeFilter());
+
+                // P1/S3 fix: enforce role_permission_maps at action level. The filter is
+                // resolved through DI (TypeFilter) so it can take repository dependencies;
+                // it only guards requests routed to a permissioned MVC area.
+                options.Filters.Add(new Microsoft.AspNetCore.Mvc.TypeFilterAttribute(typeof(Helpers.ModulePermissionFilter)));
             }).AddControllersAsServices()
               .AddNewtonsoftJson(jsonOptions =>
               {

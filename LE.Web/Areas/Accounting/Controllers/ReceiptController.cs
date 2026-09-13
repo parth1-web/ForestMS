@@ -160,7 +160,8 @@ namespace LE.Web.Areas.Accounting.Controllers
             return receiptDto;
         }
 
-        [HttpGet]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         [Route("cancel/{receipt_id}")]
         public IActionResult cancel(long receipt_id)
         {

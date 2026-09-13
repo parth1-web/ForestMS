@@ -98,7 +98,8 @@ namespace LE.Web.Areas.Billing.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         [Route("cancel/{counter_sales_id}")]
         public IActionResult cancel(long counter_sales_id)
         {

@@ -1,4 +1,5 @@
-﻿using LE.Billing.Entities;
+﻿using Microsoft.EntityFrameworkCore.Storage;
+using LE.Billing.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +9,8 @@ namespace LE.Billing.Infrastructure.Repository.Interface
 {
     public interface WoodBillRepository
     {
+        // Real transaction boundary on the shared AppDbContext (see BaseRepositoryImpl).
+        IDbContextTransaction beginTransaction();
         void insert(WoodBill woodBill);
         void update(WoodBill woodBill);
         void delete(WoodBill woodBill);
@@ -16,3 +19,4 @@ namespace LE.Billing.Infrastructure.Repository.Interface
         IQueryable<WoodBill> getQueryable();
     }
 }
+

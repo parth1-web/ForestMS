@@ -10,7 +10,6 @@ using LE.Common.Exceptions;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Transactions;
 
 namespace LE.Account.Service.Services.Implementations
 {
@@ -33,136 +32,106 @@ namespace LE.Account.Service.Services.Implementations
 
         public void delete(long ledger_id)
         {
-            try
-            {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
-                {
-                    var ledger = _ledgerRepo.getById(ledger_id);
-                    if (ledger == null)
-                        throw new ItemNotFoundException($"The ledger with id {ledger_id} doesnot exist.");
+            var ledger = _ledgerRepo.getById(ledger_id);
+            if (ledger == null)
+                throw new ItemNotFoundException($"The ledger with id {ledger_id} doesnot exist.");
 
-                    if (ledger.hasTransactions())
-                        throw new ItemUsedException("Specified Ledger has already performed transactions.You cannot delete at this moment.");
+            if (ledger.hasTransactions())
+                throw new ItemUsedException("Specified Ledger has already performed transactions.You cannot delete at this moment.");
 
-                    _ledgerRepo.delete(ledger);
-                    tx.Complete();
-                }
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            _ledgerRepo.delete(ledger);
         }
 
         public void update(LedgerDto ledgerDto)
         {
-            try
+            // P1 fix: real EF transaction (the ambient scope was a no-op for EF Core).
+            using (var tx = _ledgerRepo.beginTransaction())
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                var ledger = _ledgerRepo.getById(ledgerDto.ledger_id);
+                if (ledger == null)
+                    throw new ItemNotFoundException($"Ledger with id {ledgerDto.ledger_id} doesnot exist.");
+
+                var ledgerWithSamename = _ledgerRepo.getByName(ledgerDto.name);
+                bool isNameAllowed = (ledgerWithSamename == null || ledgerWithSamename.ledger_id == ledgerDto.ledger_id);
+
+                if (!isNameAllowed)
+                    throw new DuplicateItemException($"Ledger with name {ledgerDto.name} already exists.");
+
+                var ledgerWithSameCode = _ledgerRepo.getQueryable().Where(a => a.code == ledgerDto.code).SingleOrDefault();
+                bool isCodeAllowed = (ledgerWithSameCode == null || ledgerWithSameCode.ledger_id == ledgerDto.ledger_id);
+
+                if (!isCodeAllowed)
                 {
-                    var ledger = _ledgerRepo.getById(ledgerDto.ledger_id);
-                    if (ledger == null)
-                        throw new ItemNotFoundException($"Ledger with id {ledgerDto.ledger_id} doesnot exist.");
-
-                    var ledgerWithSamename = _ledgerRepo.getByName(ledgerDto.name);
-                    bool isNameAllowed = (ledgerWithSamename == null || ledgerWithSamename.ledger_id == ledgerDto.ledger_id);
-
-                    if (!isNameAllowed)
-                        throw new DuplicateItemException($"Ledger with name {ledgerDto.name} already exists.");
-
-                    var ledgerWithSameCode = _ledgerRepo.getQueryable().Where(a => a.code == ledgerDto.code).SingleOrDefault();
-                    bool isCodeAllowed = (ledgerWithSameCode == null || ledgerWithSameCode.ledger_id == ledgerDto.ledger_id);
-
-                    if (!isCodeAllowed)
-                    {
-                        throw new ItemUsedException("The provided code is already in use. Try another one.");
-                    }
-
-                    if (!ledger.hasTransactions())
-                    {
-                        if (ledgerDto.opening_balance > 0)
-                        {
-                            var dateFiscalYearService = FiscalYearFactory.getFiscalYearService();
-                            ledgerDto.ledger_id = ledger.ledger_id;
-                            TransactionDto transactionDto = _transactionDtoMaker.createTransactionDtoFrom(ledgerDto);
-                            transactionDto.transaction_date = getFiscalYearFirstDate();
-                            transactionDto.voucher_type = VoucherType.Journal;
-                            _transactionService.addTransaction(transactionDto);
-                        }
-                    }
-                    _ledgerMaker.copy(ledger, ledgerDto);
-                    _ledgerRepo.update(ledger);
-                    tx.Complete();
+                    throw new ItemUsedException("The provided code is already in use. Try another one.");
                 }
-            }
-            catch (Exception)
-            {
-                throw;
+
+                if (!ledger.hasTransactions())
+                {
+                    if (ledgerDto.opening_balance > 0)
+                    {
+                        var dateFiscalYearService = FiscalYearFactory.getFiscalYearService();
+                        ledgerDto.ledger_id = ledger.ledger_id;
+                        TransactionDto transactionDto = _transactionDtoMaker.createTransactionDtoFrom(ledgerDto);
+                        transactionDto.transaction_date = getFiscalYearFirstDate();
+                        transactionDto.voucher_type = VoucherType.Journal;
+                        _transactionService.addTransaction(transactionDto);
+                    }
+                }
+                _ledgerMaker.copy(ledger, ledgerDto);
+                _ledgerRepo.update(ledger);
+                tx.Commit();
             }
         }
 
         public Ledger save(LedgerDto ledgerDto)
         {
-            try
+            // P1 fix: real EF transaction (the ambient scope was a no-op for EF Core).
+            using (var tx = _ledgerRepo.beginTransaction())
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                var ledgerWithSameName = _ledgerRepo.getByName(ledgerDto.name);
+                bool isNameAllowed = ledgerWithSameName == null;
+                //if (!isNameAllowed)
+                //    throw new DuplicateItemException($"Ledger {ledgerDto.name} already exist.");
+
+                Ledger _ledger = new Ledger();
+
+                if (ledgerDto.code == null || ledgerDto.code == "")
                 {
-                    try
+                    var ledgerList = _ledgerRepo.getLedgersByLedgerGroup(ledgerDto.ledger_group_id);
+                    var newCode = string.Concat(ledgerDto.ledger_group_id, ".1");
+
+                    if (ledgerList.Count != 0)
                     {
-                        var ledgerWithSameName = _ledgerRepo.getByName(ledgerDto.name);
-                        bool isNameAllowed = ledgerWithSameName == null;
-                        //if (!isNameAllowed)
-                        //    throw new DuplicateItemException($"Ledger {ledgerDto.name} already exist.");
-
-                        Ledger _ledger = new Ledger();
-
-                        if (ledgerDto.code == null || ledgerDto.code == "")
-                        {
-                            var ledgerList = _ledgerRepo.getLedgersByLedgerGroup(ledgerDto.ledger_group_id);
-                            var newCode = string.Concat(ledgerDto.ledger_group_id, ".1");
-
-                            if (ledgerList.Count != 0)
-                            {
-                                var lastLedgerGroupIdonParticularType = ledgerList[ledgerList.Count - 1].code;
-                                string[] parts = lastLedgerGroupIdonParticularType.Split('.');
-                                var front = int.Parse(parts[0]);
-                                int last = int.Parse(parts[1]) + 1;
-                                newCode = string.Concat(front, ".", last);
-                            }
-                            ledgerDto.code = newCode;
-                        }
-                        else
-                        {
-                            var dublicateCode = _ledgerRepo.getQueryable().Where(a => a.code == ledgerDto.code).ToList();
-                            if (dublicateCode.Count > 0)
-                            {
-                                throw new ItemUsedException("The provided code is already in use. Try another one.");
-                            }
-                        }
-
-                        _ledgerMaker.copy(_ledger, ledgerDto);
-                        _ledgerRepo.insert(_ledger);
-                        if (ledgerDto.opening_balance > 0)
-                        {
-                            ledgerDto.ledger_id = _ledger.ledger_id;
-                            TransactionDto transactionDto = _transactionDtoMaker.createTransactionDtoFrom(ledgerDto);
-                            transactionDto.transaction_date = getFiscalYearFirstDate();
-                            transactionDto.voucher_type = VoucherType.Journal;
-                            _transactionService.addTransaction(transactionDto);
-                        }
-
-                        tx.Complete();
-                        return _ledger;
+                        var lastLedgerGroupIdonParticularType = ledgerList[ledgerList.Count - 1].code;
+                        string[] parts = lastLedgerGroupIdonParticularType.Split('.');
+                        var front = int.Parse(parts[0]);
+                        int last = int.Parse(parts[1]) + 1;
+                        newCode = string.Concat(front, ".", last);
                     }
-                    catch (Exception ex)
+                    ledgerDto.code = newCode;
+                }
+                else
+                {
+                    var dublicateCode = _ledgerRepo.getQueryable().Where(a => a.code == ledgerDto.code).ToList();
+                    if (dublicateCode.Count > 0)
                     {
-                        throw ex;
+                        throw new ItemUsedException("The provided code is already in use. Try another one.");
                     }
                 }
-            }
-            catch (TransactionAbortedException ex)
-            {
-                throw ex;
+
+                _ledgerMaker.copy(_ledger, ledgerDto);
+                _ledgerRepo.insert(_ledger);
+                if (ledgerDto.opening_balance > 0)
+                {
+                    ledgerDto.ledger_id = _ledger.ledger_id;
+                    TransactionDto transactionDto = _transactionDtoMaker.createTransactionDtoFrom(ledgerDto);
+                    transactionDto.transaction_date = getFiscalYearFirstDate();
+                    transactionDto.voucher_type = VoucherType.Journal;
+                    _transactionService.addTransaction(transactionDto);
+                }
+
+                tx.Commit();
+                return _ledger;
             }
         }
 

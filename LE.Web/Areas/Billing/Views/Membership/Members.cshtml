@@ -95,8 +95,8 @@
 												string icon = member.IsActive ? "fa-thumbs-down" : "fa-thumbs-up";
 												string color = member.IsActive ? "btn-warning" : "btn-success";
 											}
-											<a href="/billing/membership/members/@actionName/@member.MemberId" class="btn btn-icon waves-effect waves-light btn-sm @color" data-toggle="tooltip" title="@actionName Member"><i class="fa @icon"></i></a>
-											<a href="/billing/membership/members/delete/@member.MemberId" class="btn btn-icon waves-effect waves-light btn-sm btn-danger" data-toggle="tooltip" title="Delete Member"><i class="fa fa-trash"></i></a>
+											<a href="/billing/membership/members/@actionName/@member.MemberId" class="btn btn-icon waves-effect waves-light btn-sm @color post-link" data-toggle="tooltip" title="@actionName Member"><i class="fa @icon"></i></a>
+											<a href="/billing/membership/members/delete/@member.MemberId" class="btn btn-icon waves-effect waves-light btn-sm btn-danger post-link" data-confirm="Are you sure to delete?" data-toggle="tooltip" title="Delete Member"><i class="fa fa-trash"></i></a>
 										</td>
 									</tr>
 									sn++;

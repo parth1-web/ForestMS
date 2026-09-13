@@ -5,8 +5,6 @@ using LE.Inventory.Infrastructure.Repository.Interface;
 using LE.Inventory.Service.Adapter.Interface;
 using LE.Inventory.Service.Assemblers.Interface;
 using LE.Inventory.Service.Services.Interface;
-using System;
-using System.Transactions;
 
 namespace LE.Inventory.Service.Services.Implementations
 {
@@ -25,30 +23,20 @@ namespace LE.Inventory.Service.Services.Implementations
 
         public void record(StockMovementDto stock_movement_dto)
         {
-            try
+            // Runs inside the caller's real EF transaction (see beginTransaction());
+            // the previous ambient TransactionScope was a no-op for EF Core.
+            if (!stock_movement_dto.isMovementValid())
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
-                {
-                    if (!stock_movement_dto.isMovementValid())
-                    {
-                        throw new InvalidValueException("Stock movement data is not valid.");
-                    }
-
-                    var stockMovement = new StockMovement();
-
-                    _stockMovementAssembler.copy(stockMovement, stock_movement_dto);
-
-                    _stockMovementRepo.insert(stockMovement);
-
-                    updateItemAvailability(stock_movement_dto);
-
-                    tx.Complete();
-                }
+                throw new InvalidValueException("Stock movement data is not valid.");
             }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+
+            var stockMovement = new StockMovement();
+
+            _stockMovementAssembler.copy(stockMovement, stock_movement_dto);
+
+            _stockMovementRepo.insert(stockMovement);
+
+            updateItemAvailability(stock_movement_dto);
         }
 
         private void updateItemAvailability(StockMovementDto stock_movement_dto)

@@ -36,44 +36,65 @@ namespace LE.Account.Service.Services.FinancialYearService
 
 		public async Task CloseYear(FiscalYearCloseDto dto)
 		{
-			await using var conn = _connectionProvider.GetDbConnection();
+			// P1/B13 fix: this whole flow ran on a Dapper connection separate from the EF
+			// shared context while _transactionService writes through EF, so the ambient
+			// TransactionScope never covered both. The EF transaction below is started on
+			// the shared context first so every write participates in one real transaction.
+			var efTransaction = _transactionService.beginTransaction();
 
-			using var tsc = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
-			await EnsureOlderFiscalYearIsClosed();
-			await UpdateForThisYear(dto);
-			var ledgerType = "SELECT lg.group_type_name from ledger_group as lg INNER JOIN ledger as l ON lg.ledger_group_id = l.ledger_group_id WHERE ledger_id = @ledgerId";
-			var transactionDto = new TransactionDto();
-			transactionDto.remarks = "Being year closed";
-			await conn.ExecuteAsync(ledgerType, new { ledgerId = dto.LedgerId });
+			try
+			{
+				await using var conn = _connectionProvider.GetDbConnection();
+				conn.Open();
+				using var connTx = conn.BeginTransaction();
 
-			if (ledgerType.ToLower() == "assets" || ledgerType.ToLower() == "expenses")
-			{
-				transactionDto.addDebitData(new LedgerTransactionDto()
+				await EnsureOlderFiscalYearIsClosed(conn, connTx);
+				var currentYear = await UpdateForThisYear(conn, connTx, dto);
+
+				// P1/B13 fix: the code compared the SQL *string literal* instead of the
+				// executed result, so the P/L amount was always posted as a credit. The
+				// group type is now actually queried and used.
+				var ledgerTypeSql = "SELECT lg.group_type_name from ledger_group as lg INNER JOIN ledger as l ON lg.ledger_group_id = l.ledger_group_id WHERE l.ledger_id = @ledgerId";
+				var ledgerTypeName = await conn.QueryFirstOrDefaultAsync<string>(new CommandDefinition(ledgerTypeSql, new { ledgerId = dto.LedgerId }, connTx));
+
+				var transactionDto = new TransactionDto();
+				transactionDto.remarks = "Being year closed";
+
+				if (string.Equals(ledgerTypeName, "asset", StringComparison.OrdinalIgnoreCase) || string.Equals(ledgerTypeName, "expenses", StringComparison.OrdinalIgnoreCase))
 				{
-					amount = dto.Amount,
-					ledger_id = dto.LedgerId,
-				});
-			}
-			else
-			{
-				transactionDto.addCreditData(new LedgerTransactionDto()
+					transactionDto.addDebitData(new LedgerTransactionDto()
+					{
+						amount = dto.Amount,
+						ledger_id = dto.LedgerId,
+					});
+				}
+				else
 				{
-					amount = dto.Amount,
-					ledger_id = dto.LedgerId
-				});
+					transactionDto.addCreditData(new LedgerTransactionDto()
+					{
+						amount = dto.Amount,
+						ledger_id = dto.LedgerId
+					});
+				}
+				transactionDto.voucher_no = 0;
+				transactionDto.voucher_type = VoucherType.YearClosed;
+				transactionDto.transaction_date = dto.Date;
+				_transactionService.addTransaction(transactionDto);
+
+				connTx.Commit();
+				efTransaction?.Commit();
 			}
-			transactionDto.voucher_no = 0;
-			transactionDto.voucher_type = VoucherType.YearClosed;
-			transactionDto.transaction_date = dto.Date;
-			_transactionService.addTransaction(transactionDto);
-			tsc.Complete();
+			catch
+			{
+				efTransaction?.Rollback();
+				throw;
+			}
 		}
 
-		private async Task EnsureOlderFiscalYearIsClosed()
+		private async Task EnsureOlderFiscalYearIsClosed(Npgsql.NpgsqlConnection conn, Npgsql.NpgsqlTransaction tx)
 		{
-			await using var conn = _connectionProvider.GetDbConnection();
 			var years = "SELECT * FROM financial_year";
-			var fiscalYears = (await conn.QueryAsync<FinancialYear>(years)).ToList();
+			var fiscalYears = (await conn.QueryAsync<FinancialYear>(new CommandDefinition(years, transaction: tx))).ToList();
 			var thisYear = fiscalYears.FirstOrDefault(x => x.Running);
 			if (thisYear == null)
 			{
@@ -86,30 +107,55 @@ namespace LE.Account.Service.Services.FinancialYearService
 			}
 		}
 
-		private async Task UpdateForThisYear(FiscalYearCloseDto dto)
+		private async Task<FinancialYear> UpdateForThisYear(Npgsql.NpgsqlConnection conn, Npgsql.NpgsqlTransaction tx, FiscalYearCloseDto dto)
 		{
-			await using var conn = _connectionProvider.GetDbConnection();
-			var currentYear = await GetRunningFinancialYear();
+			var currentYear = await GetRunningFinancialYear(conn, tx);
+			if (currentYear == null)
+			{
+				throw new Exception("No running financial year found");
+			}
 			if (currentYear.EndDate.Date != dto.Date.Date)
 			{
 				throw new Exception("Please close financial year on the last day of the year");
 			}
 
 			var updateQuery = "UPDATE financial_year SET OpeningStock = @OpeningStock, ClosingStock = @ClosingStock, Type = @Type, PlAmount = @PlAmount WHERE Running = 1";
-			await conn.ExecuteAsync(updateQuery, new
+			await conn.ExecuteAsync(new CommandDefinition(updateQuery, new
 			{
 				OpeningStock = dto.OpeningStock,
 				ClosingStock = dto.ClosingStock,
 				Type = dto.Type,
 				PlAmount = dto.Amount
-			});
+			}, tx));
 
 			var markAsClosedQuery =
 				"UPDATE financial_year SET Running = 0, Closed = 1, ClosedDate = @ClosedDate WHERE Running = 1";
-			await conn.ExecuteAsync(markAsClosedQuery, new { ClosedDate = currentYear.EndDate });
+			await conn.ExecuteAsync(new CommandDefinition(markAsClosedQuery, new { ClosedDate = currentYear.EndDate }, tx));
+
+			// P1/B13 fix: assumed the next fiscal year is exactly 'Id + 1' and blindly set it
+			// Running; if that row does not exist the database is left with NO running
+			// fiscal year and every subsequent transaction NREs. The next year row must
+			// actually exist and be unclosed before it can be activated.
+			var nextYearSql = "SELECT * FROM financial_year WHERE Id > @Id ORDER BY Id LIMIT 1";
+			var nextYear = await conn.QueryFirstOrDefaultAsync<FinancialYear>(new CommandDefinition(nextYearSql, new { Id = currentYear.Id }, tx));
+			if (nextYear == null)
+			{
+				throw new Exception("No next financial year defined. Please create the next fiscal year before closing this one.");
+			}
+			if (nextYear.Closed)
+			{
+				throw new Exception("The next financial year is already closed. Please create a new fiscal year before closing this one.");
+			}
 
 			var markAsRunningQuery = "UPDATE financial_year SET Running = 1 WHERE Id = @Id";
-			await conn.ExecuteAsync(markAsRunningQuery, new { Id = currentYear.Id + 1 });
+			await conn.ExecuteAsync(new CommandDefinition(markAsRunningQuery, new { Id = nextYear.Id }, tx));
+
+			return currentYear;
+		}
+
+		private async Task<FinancialYear> GetRunningFinancialYear(Npgsql.NpgsqlConnection conn, Npgsql.NpgsqlTransaction tx)
+		{
+			return await conn.QueryFirstOrDefaultAsync<FinancialYear>(new CommandDefinition("SELECT * FROM financial_year WHERE Running = 1", transaction: tx));
 		}
 	}
 }

@@ -41,16 +41,19 @@ namespace LE.Web.Areas.Inventory.Controllers
 
         public IActionResult Index(PurchaseFilter filter)
         {
-            var purchase = _purchaseRepo.getQueryable();
+            var purchase = _purchaseRepo.getQueryable().Where(a => a.is_deleted == false);
             if (!string.IsNullOrWhiteSpace(filter.name))
             {
                 purchase = purchase.Where(a => a.stock_items.name.Contains(filter.name));
             }
+            // P1/B18 fix: the is_deleted filter was applied after Skip/Take, so deleted
+            // rows consumed page slots (short pages, wrong counts). Filtering now happens
+            // before pagination.
             ViewBag.pagerInfo = _paginatedMetaService.GetMetaData(purchase
                 .Count(), filter.page, filter.number_of_rows);
-            purchase = purchase.Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows);
+            purchase = purchase.OrderByDescending(a => a.purchase_date).Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows);
 
-            var purchases = purchase.Where(a => a.is_deleted == false).OrderByDescending(a => a.purchase_date).ToList();
+            var purchases = purchase.ToList();
 
             PurchaseIndexViewModel purchaseIndexViewModel = getViewModelFrom(purchases);
             return View(purchaseIndexViewModel);
@@ -92,7 +95,8 @@ namespace LE.Web.Areas.Inventory.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         [Route("delete/{purchase_id}")]
         public IActionResult delete(long purchase_id)
         {

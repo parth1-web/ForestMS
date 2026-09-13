@@ -136,7 +136,8 @@ namespace LE.Web.Areas.Accounting.Controllers
             paymentDto.transaction_date = dateConverterService.ToAD(paymentModel.transaction_date).getFormattedDate().Add(currentDate.TimeOfDay);
             return paymentDto;
         }
-        [HttpGet]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         [Route("cancel/{payment_id}")]
         public IActionResult cancel(long payment_id)
         {

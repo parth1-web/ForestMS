@@ -70,13 +70,13 @@
                                         <td><span class="badge badge-@statusColor">@status</span></td>
                                         <td>
                                             <a href="/inventory/stock-item/edit/@item.stock_item_id" class="btn btn-icon waves-effect waves-light btn-primary btn-sm"><i class="fa fa-pencil"></i></a>
-                                            <a href="/inventory/stock-item/delete/@item.stock_item_id" class="btn btn-icon waves-effect waves-light btn-danger btn-sm delete"><i class="fa fa-trash"></i></a>
+                                            <a href="/inventory/stock-item/delete/@item.stock_item_id" class="btn btn-icon waves-effect waves-light btn-danger btn-sm post-link" data-confirm="Are you sure to delete?"><i class="fa fa-trash"></i></a>
                                             @{
                                                 string actionName = item.is_enabled ? "disable" : "enable";
                                                 string icon = item.is_enabled ? "fa-thumbs-down" : "fa-thumbs-up";
                                                 string color = item.is_enabled ? "btn-danger" : "btn-success";
                                             }
-                                            <a href="/inventory/stock-item/@actionName/@item.stock_item_id" class="btn btn-icon waves-effect waves-light btn-primary btn-sm @color" data-toggle="tooltip" title="@actionName Item"><i class="fa @icon"></i></a>
+                                            <a href="/inventory/stock-item/@actionName/@item.stock_item_id" class="btn btn-icon waves-effect waves-light btn-primary btn-sm @color post-link" data-toggle="tooltip" title="@actionName Item"><i class="fa @icon"></i></a>
                                         </td>
                                     </tr>
                                     sn++;

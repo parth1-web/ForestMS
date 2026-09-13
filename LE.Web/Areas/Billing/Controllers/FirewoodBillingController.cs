@@ -243,7 +243,8 @@ namespace LE.Web.Areas.Billing.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         [Route("cancel/{firewood_bill_id}")]
         public IActionResult cancel(long firewood_bill_id)
         {

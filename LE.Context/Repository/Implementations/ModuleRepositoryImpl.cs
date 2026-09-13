@@ -19,5 +19,12 @@ namespace LE.Context.Repository.Implementations
         {
             return _appDbContext.modules.Where(a => a.module_name.ToUpper() == module_name.ToUpper()).SingleOrDefault();
         }
+
+        public Module getByCode(string module_code)
+        {
+            // P1/S3: permission checks resolve modules by module_code (the seed data
+            // reuses area-like codes, e.g. "billing"), which is unique per module.
+            return _appDbContext.modules.Where(a => a.module_code.ToUpper() == module_code.ToUpper()).SingleOrDefault();
+        }
     }
 }

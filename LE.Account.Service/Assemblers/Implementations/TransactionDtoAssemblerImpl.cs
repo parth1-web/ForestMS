@@ -106,14 +106,18 @@ namespace LE.Account.Service.Assemblers.Implementations
 
             if (receiptDto.discount > 0)
             {
-                TransactionDetailDto crTransactionDetailDto = new TransactionDetailDto();
+                // P1/B11 fix: this branch mutated 'creditTransactionDetailDto' (already added
+                // above), overwriting the receipt's credit line with the discount ledger and
+                // breaking Dr = Cr for every receipt with a discount. The discount line is
+                // now its own DTO instance.
+                LedgerTransactionDto crTransactionDetailDto = new LedgerTransactionDto();
                 //check whether settings is available or not
                 Entities.LedgerSetup discount_setting = ledgerSetupRepo.getByKey(LedgerSetup.discount_allowed.ToString());
                 if (discount_setting == null)
                     throw new ItemNotFoundException("No setup found for discount allowed.");
-                creditTransactionDetailDto.ledger_id = Convert.ToInt32(discount_setting.value);
-                creditTransactionDetailDto.amount = receiptDto.discount;
-                transactionDto.addCreditData(creditTransactionDetailDto);
+                crTransactionDetailDto.ledger_id = Convert.ToInt32(discount_setting.value);
+                crTransactionDetailDto.amount = receiptDto.discount;
+                transactionDto.addCreditData(crTransactionDetailDto);
             }
             return transactionDto;
         }

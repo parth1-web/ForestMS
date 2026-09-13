@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Storage;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,5 +15,6 @@ namespace LE.Common.Repository.Interface
         List<T> getAll();
         T getById(long id);
         IQueryable<T> getQueryable();
+        IDbContextTransaction beginTransaction();
     }
 }

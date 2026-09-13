@@ -7,7 +7,6 @@ using LE.Inventory.Service.Adapter.Interface;
 using LE.Inventory.Service.Assemblers.Interface;
 using LE.Inventory.Service.Services.Interface;
 using System;
-using System.Transactions;
 
 namespace LE.Inventory.Service.Services.Implementations
 {
@@ -33,25 +32,19 @@ namespace LE.Inventory.Service.Services.Implementations
 
         public void makePurchase(PurchaseDto purchase_dto)
         {
-            try
+            // P1 fix: ambient TransactionScope was a no-op for EF Core; purchase +
+            // stock movement now run in one real database transaction.
+            using (var tx = _purchaseRepo.beginTransaction())
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
-                {
+                var newPurchase = new Purchase();
 
-                    var newPurchase = new Purchase();
+                _purchaseAssembler.copy(newPurchase, purchase_dto);
 
-                    _purchaseAssembler.copy(newPurchase, purchase_dto);
+                _purchaseRepo.insert(newPurchase);
 
-                    _purchaseRepo.insert(newPurchase);
-
-                    long purchaseId = newPurchase.purchase_id;
-                    recordStockMovement(purchase_dto, purchaseId, StockMovementType.purchase);
-                    tx.Complete();
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ex;
+                long purchaseId = newPurchase.purchase_id;
+                recordStockMovement(purchase_dto, purchaseId, StockMovementType.purchase);
+                tx.Commit();
             }
         }
 
@@ -63,17 +56,27 @@ namespace LE.Inventory.Service.Services.Implementations
             {
                 throw new ItemNotFoundException("Purchase Data doesnot exist.");
             }
-            var availableStock = _stockItemAvailabilityRepo.getByStockItemId(purchases.stock_item_id);
-            if (availableStock.qty < purchases.qty)
+
+            // P1/B9 fix: the check + soft-delete + stock movement ran without any real
+            // transaction (the ambient scope was a no-op). A failure in the middle left
+            // the purchase deleted but stock unchanged. All steps now run in one
+            // database transaction on the shared DbContext.
+            using (var tx = _purchaseRepo.beginTransaction())
             {
-                throw new ItemUsedException("Stock is already being sold. you cannot delete at a moment.");
+                var availableStock = _stockItemAvailabilityRepo.getByStockItemId(purchases.stock_item_id);
+                if (availableStock == null || availableStock.qty < purchases.qty)
+                {
+                    throw new ItemUsedException("Stock is already being sold. you cannot delete at a moment.");
+                }
+
+                purchases.is_deleted = true;
+                _purchaseRepo.update(purchases);
+                PurchaseDto purchaseDto = getPurchaseDtoFrom(purchases);
+                // P1/B7 fix: 'delete' no longer forces 'increase' in the adapter, so this
+                // correctly decreases the availability row when a purchase is removed.
+                recordStockMovement(purchaseDto, purchases.purchase_id, StockMovementType.delete);
+                tx.Commit();
             }
-
-            purchases.is_deleted = true;
-            _purchaseRepo.update(purchases);
-            PurchaseDto purchaseDto = getPurchaseDtoFrom(purchases);
-            recordStockMovement(purchaseDto, purchases.purchase_id, StockMovementType.delete);
-
         }
 
         private PurchaseDto getPurchaseDtoFrom(Purchase purchases)

@@ -266,7 +266,8 @@ namespace LE.Web.Areas.Billing.Controllers
         }
 
 
-        [HttpGet]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         [Route("cancel/{chiran_sales_id}")]
         public IActionResult cancel(long chiran_sales_id)
         {

@@ -1,4 +1,5 @@
 ﻿using DateConverter.Core.Service_Factory;
+using LE.Common.Exceptions;
 using LE.Inventory.Entities;
 using LE.Inventory.Infrastructure.Dto;
 using LE.Inventory.Infrastructure.Repository.Interface;
@@ -6,7 +7,6 @@ using LE.Inventory.Service.Assemblers.Interface;
 using LE.Inventory.Service.Services.Interface;
 using System;
 using System.Collections.Generic;
-using System.Transactions;
 
 namespace LE.Inventory.Service.Services.Implementations
 {
@@ -26,29 +26,26 @@ namespace LE.Inventory.Service.Services.Implementations
 
         public void saveOrUpdate(List<StockMovementDetailDto> stock_movement_details)
         {
-            try
+            foreach (var stockMovementDetail in stock_movement_details)
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
-                {
-                    foreach (var stockMovementDetail in stock_movement_details)
-                    {
-                        var alreadyRecordedStockItemAvailability = _stockItemAvailabilityRepo.getByStockItemId(stockMovementDetail.stock_item_id);
+                var alreadyRecordedStockItemAvailability = _stockItemAvailabilityRepo.getByStockItemId(stockMovementDetail.stock_item_id);
 
-                        if (alreadyRecordedStockItemAvailability == null)
-                        {
-                            insert(stockMovementDetail);
-                        }
-                        else
-                        {
-                            update(stockMovementDetail, alreadyRecordedStockItemAvailability);
-                        }
+                if (alreadyRecordedStockItemAvailability == null)
+                {
+                    // P1/B8 fix: the first movement on a missing availability row used to
+                    // store the qty as positive even for decreases, silently creating stock
+                    // out of nothing. A decrease with no recorded availability means there
+                    // is nothing to sell/burn — reject it.
+                    if (stockMovementDetail.operation == LE.Inventory.Common.Enums.MovementOperation.decrease)
+                    {
+                        throw new ItemUsedException($"Stock item {stockMovementDetail.stock_item_id} has no recorded availability to decrease.");
                     }
-                    tx.Complete();
+                    insert(stockMovementDetail);
                 }
-            }
-            catch (Exception)
-            {
-                throw;
+                else
+                {
+                    update(stockMovementDetail, alreadyRecordedStockItemAvailability);
+                }
             }
         }
 
@@ -56,17 +53,23 @@ namespace LE.Inventory.Service.Services.Implementations
         {
             var dateConverterService = DateConverterFactory.getDateConverterService();
 
-            alreadyRecordedStockItemAvailability.last_updated_date = DateTime.Now;
-            alreadyRecordedStockItemAvailability.nep_last_updated_date = dateConverterService.ToBS(DateTime.Now).getFormattedDate();
-
-            if (stockMovementDetail.operation ==LE.Inventory.Common.Enums.MovementOperation.decrease)
+            // P1/B8 fix: no negative-stock guard existed; a read-modify-write could push
+            // qty below zero. Decreases now validate the resulting quantity first.
+            if (stockMovementDetail.operation == LE.Inventory.Common.Enums.MovementOperation.decrease)
             {
+                if (alreadyRecordedStockItemAvailability.qty < stockMovementDetail.qty)
+                {
+                    throw new ItemUsedException($"Stock item {stockMovementDetail.stock_item_id} has insufficient stock. Available: {alreadyRecordedStockItemAvailability.qty}, requested: {stockMovementDetail.qty}.");
+                }
                 alreadyRecordedStockItemAvailability.qty -= stockMovementDetail.qty;
             }
             else
             {
                 alreadyRecordedStockItemAvailability.qty += stockMovementDetail.qty;
             }
+
+            alreadyRecordedStockItemAvailability.last_updated_date = DateTime.Now;
+            alreadyRecordedStockItemAvailability.nep_last_updated_date = dateConverterService.ToBS(DateTime.Now).getFormattedDate();
 
             _stockItemAvailabilityRepo.update(alreadyRecordedStockItemAvailability);
         }

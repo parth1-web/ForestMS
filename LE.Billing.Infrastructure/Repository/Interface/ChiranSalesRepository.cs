@@ -1,4 +1,5 @@
-﻿using LE.Billing.Entities;
+﻿using Microsoft.EntityFrameworkCore.Storage;
+using LE.Billing.Entities;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -6,6 +7,8 @@ namespace LE.Billing.Infrastructure.Repository.Interface
 {
     public interface ChiranSalesRepository
     {
+        // Real transaction boundary on the shared AppDbContext (see BaseRepositoryImpl).
+        IDbContextTransaction beginTransaction();
         void insert(ChiranSales chiran_sales_id);
         void update(ChiranSales chiran_sales_id);
         void delete(ChiranSales chiran_sales_id);
@@ -14,3 +17,4 @@ namespace LE.Billing.Infrastructure.Repository.Interface
         IQueryable<ChiranSales> getQueryable();
     }
 }
+

@@ -138,8 +138,9 @@ namespace LE.Web.Areas.Billing.Controllers
                 memberDto.wood_bill_id = dto.wood_bill_id;
                 memberDto.member_id = member.MemberId;
                 woodBillMemberDtos.Add(memberDto);
-                foreach (var detail in model.items)
+                for (int detailIndex = 0; detailIndex < model.items.Count; detailIndex++)
                 {
+                    var detail = model.items[detailIndex];
                     var memberCount = model.members.Count();
                     WoodBillMemberTransactionDto transDto = new WoodBillMemberTransactionDto();
                     transDto.wood_details_id = detail.wood_details_id;
@@ -155,11 +156,39 @@ namespace LE.Web.Areas.Billing.Controllers
                         qty = 1;
                     }
 
-                    var providedQuantity = Math.Round(qty / memberCount, 4);
+                    // P1/B15 fix: each member's share was rounded independently
+                    // (Round(qty/count, 4)), so shares never summed back to the bill
+                    // quantity. All members except the last now receive the rounded
+                    // share; the last member absorbs the remaining remainder.
+                    decimal providedQuantity;
+                    bool isLastMember = member.MemberId == model.members.Last().MemberId;
+                    if (isLastMember)
+                    {
+                        decimal assignedSoFar = 0;
+                        foreach (var other in model.members)
+                        {
+                            if (other.MemberId == member.MemberId) continue;
+                            assignedSoFar += Math.Round(qty / memberCount, 4);
+                        }
+                        providedQuantity = qty - assignedSoFar;
+                    }
+                    else
+                    {
+                        providedQuantity = Math.Round(qty / memberCount, 4);
+                    }
                     transDto.quantity = providedQuantity;
                     if (dto.tax_amount > 0)
                     {
-                        transDto.tax_amount = Math.Round(dto.tax_amount / memberCount, 2);
+                        // Same remainder handling for tax so member tax shares sum
+                        // back to the bill tax exactly.
+                        if (isLastMember)
+                        {
+                            transDto.tax_amount = Math.Round(dto.tax_amount - Math.Round(dto.tax_amount / memberCount, 2) * (memberCount - 1), 2);
+                        }
+                        else
+                        {
+                            transDto.tax_amount = Math.Round(dto.tax_amount / memberCount, 2);
+                        }
                     }
                     transDto.amount = Math.Round(providedQuantity * detail.rate, 2);
                     transDtos.Add(transDto);
@@ -355,7 +384,8 @@ namespace LE.Web.Areas.Billing.Controllers
         }
 
 
-        [HttpGet]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         [Route("cancel/{wood_bill_id}")]
         public IActionResult cancel(long wood_bill_id)
         {

@@ -12,7 +12,6 @@ using LE.Inventory.Common.Enums;
 using LE.Inventory.Infrastructure.Repository.Interface;
 using System;
 using System.Linq;
-using System.Transactions;
 
 namespace LE.Billing.Service.Services.Implementations
 {
@@ -49,26 +48,34 @@ namespace LE.Billing.Service.Services.Implementations
 
         public void cancel(long wood_bill_id, long user_id)
         {
-            try
+            var billDetail = _woodBillRepository.getById(wood_bill_id);
+            if (billDetail == null)
             {
-                var billDetail = _woodBillRepository.getById(wood_bill_id);
-                if (billDetail == null)
-                {
-                    throw new ItemNotFoundException($"Wood Bill with id {wood_bill_id} doesnot exist.");
-                }
-                if (billDetail.is_cancelled)
-                {
-                    throw new ItemUsedException("This Bill is Already Cancelled.");
-                }
+                throw new ItemNotFoundException($"Wood Bill with id {wood_bill_id} doesnot exist.");
+            }
+            if (billDetail.is_cancelled)
+            {
+                throw new ItemUsedException("This Bill is Already Cancelled.");
+            }
+
+            // P1/B4 fix: cancelling must not be possible once the bill date has been day-closed
+            // (counter sales already enforced this; wood bills did not).
+            var isClosed = _dayCloseRepository.getByDate(billDetail.bill_date.Date);
+            if (isClosed != null)
+            {
+                throw new ItemUsedException("Day is already closed. You cannot cancel this bill.");
+            }
+
+            // P1/B4 fix: cancel ran without any real transaction, leaving half-cancelled bills
+            // on failure. The EF ambient TransactionScope was a no-op, so all steps now run
+            // inside one explicit database transaction on the shared DbContext.
+            using (var tx = _woodBillRepository.beginTransaction())
+            {
                 udateBill(user_id, billDetail);
                 udateWoodDetails(billDetail);
                 updateMemberTransactions(billDetail);
                 makeReverseEntryToAccount(billDetail);
-
-            }
-            catch (Exception)
-            {
-                throw;
+                tx.Commit();
             }
         }
 
@@ -76,6 +83,30 @@ namespace LE.Billing.Service.Services.Implementations
         {
             long cashLedgerId = getCashLedgerId();
             long taxLedgerId = getTaxLedgerId();
+
+            // P1/B4 fix: reverse entries used the first detail's stock type for the whole bill.
+            // A mixed bill (ballaballi + lakadi) now reverses each group to its own ledger.
+            var grouped = billDetail.wood_bill_detail
+                .GroupBy(d => d.woodDetails.stock_type_id)
+                .Select(g => new { stockTypeId = g.Key, amount = g.Sum(x => x.amount) });
+
+            foreach (var groupData in grouped)
+            {
+                long salesLedgerId = getSalesLedgerIdFor(groupData.stockTypeId, requireBoth: false);
+                if (billDetail.amount > 0)
+                {
+                    // P1/B3 fix: tax was posted once per stock-type group with the full bill tax,
+                    // overstating cash and tax by (groups - 1). The reverse entry allocates the
+                    // bill tax across groups proportionally so the sum equals the posted tax once.
+                    decimal groupShare = groupData.amount / billDetail.amount;
+                    decimal groupTax = decimal.Round(billDetail.tax_amount * groupShare, 2);
+                    createReverseTransactoin(groupData.amount, salesLedgerId, cashLedgerId, groupTax, taxLedgerId, billDetail.wood_bill_id);
+                }
+            }
+        }
+
+        private long getSalesLedgerIdFor(long stockTypeId, bool requireBoth)
+        {
             long ballaballiSalesLedger = getBallaballiSalesLedgerId();
             long lakadiSalesLedger = getLakadiSalesLedgerId();
 
@@ -84,23 +115,15 @@ namespace LE.Billing.Service.Services.Implementations
                 throw new ItemNotFoundException("Ballaballi and Lakadi Sales Ledger is not Defined. Please Define it in Ledger Setup and try again.");
             }
 
-
-            long salesLedgerId = 0;
-            long woodDetailId = _woodBillDetailRepository.getQueryable().Where(a => a.wood_bill_id == billDetail.wood_bill_id).Select(a => a.wood_details_id).FirstOrDefault();
-            long woodDetailType = _woodDetailsRepository.getQueryable().Where(a => a.wood_details_id == woodDetailId).Select(a => a.stock_type_id).FirstOrDefault();
-            if (woodDetailType == Convert.ToInt32(StockTypes.BallaBalli))
+            if (stockTypeId == Convert.ToInt32(StockTypes.BallaBalli))
             {
-                salesLedgerId = ballaballiSalesLedger;
+                return ballaballiSalesLedger;
             }
-            if (woodDetailType == Convert.ToInt32(StockTypes.Lakadi))
+            if (stockTypeId == Convert.ToInt32(StockTypes.Lakadi))
             {
-                salesLedgerId = lakadiSalesLedger;
+                return lakadiSalesLedger;
             }
-            if (billDetail.amount > 0)
-            {
-                createReverseTransactoin(billDetail.amount, salesLedgerId, cashLedgerId, billDetail.tax_amount, taxLedgerId, billDetail.wood_bill_id);
-
-            }
+            return 0;
         }
 
         private long getLakadiSalesLedgerId()
@@ -204,92 +227,129 @@ namespace LE.Billing.Service.Services.Implementations
 
         public long insert(WoodBillDto wood_bill_dto)
         {
-            try
+            var woodBill = new WoodBill();
+
+            // P1/B4-related fix: the EF ambient TransactionScope here was a no-op (EF Core 3.1
+            // does not enlist in ambient System.Transactions — the warning is suppressed in
+            // Startup). All writes now happen inside one explicit database transaction on the
+            // shared scoped DbContext, so a failure anywhere rolls the whole bill back.
+            using (var tx = _woodBillRepository.beginTransaction())
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                var IsClosed = _dayCloseRepository.getByDate(wood_bill_dto.bill_date.Date);
+                if (IsClosed != null)
                 {
-                    var IsClosed = _dayCloseRepository.getByDate(wood_bill_dto.bill_date.Date);
-                    if (IsClosed != null)
-                    {
-                        throw new ItemUsedException("Day is already closed. You cannot perform transactions in this date.");
-                    }
-
-                    var woodBill = new WoodBill();
-
-                    _woodBillAssembler.copy(woodBill, wood_bill_dto);
-
-                    _woodBillRepository.insert(woodBill);
-
-                    wood_bill_dto.wood_detail_dto.ForEach(a => a.wood_bill_id = woodBill.wood_bill_id);
-                    _woodBillDetailService.insert(wood_bill_dto.wood_detail_dto);
-
-                    if (wood_bill_dto.wood_bill_member_dto.Count > 0)
-                    {
-
-                        wood_bill_dto.wood_bill_member_dto.ForEach(a => a.wood_bill_id = woodBill.wood_bill_id);
-                        _woodBillMemberService.insert(wood_bill_dto.wood_bill_member_dto);
-
-                    }
-
-                    if (wood_bill_dto.wood_bill_member_transaction_dto.Count > 0)
-                    {
-                        wood_bill_dto.wood_bill_member_transaction_dto.ForEach(a => a.wood_bill_id = woodBill.wood_bill_id);
-                        _woodBillMemberTransactionService.insert(wood_bill_dto.wood_bill_member_transaction_dto);
-
-                    }
-
-
-
-                    //updating woodDetails
-                    foreach (var detail in wood_bill_dto.wood_detail_dto)
-                    {
-                        var woodDetail = _woodDetailsRepository.getById(detail.wood_details_id);
-                        woodDetail.is_sold = true;
-                        woodDetail.sales_id = woodBill.wood_bill_id;
-                        _woodDetailsRepository.update(woodDetail);
-
-                    }
-
-                    var grouped = wood_bill_dto.wood_detail_dto.GroupBy(a => a.stock_type_id).Select(g => new { amount = g.Sum(x => x.amount), salesTypeId = g.Max(a => a.stock_type_id) });
-
-                    long cashLedgerId = getCashLedgerId();
-
-                    long taxLedgerId = getTaxLedgerId();
-
-                    var ballaballiSalesLedger = getBallaballiSalesLedgerId();
-
-                    var lakadiSalesLedger = getLakadiSalesLedgerId();
-
-                    foreach (var groupData in grouped)
-                    {
-                        decimal taxAmount = wood_bill_dto.tax_amount;
-                        decimal salesAmount = groupData.amount;
-                        long salesLedgerId = 0;
-                        DateTime transactionDate = wood_bill_dto.bill_date;
-                        if (Convert.ToInt32(groupData.salesTypeId) == Convert.ToInt32(StockTypes.BallaBalli))
-                        {
-                            salesLedgerId = ballaballiSalesLedger;
-                        }
-                        if (Convert.ToInt32(groupData.salesTypeId) == Convert.ToInt32(StockTypes.Lakadi))
-                        {
-                            salesLedgerId = lakadiSalesLedger;
-                        }
-                        if (salesAmount > 0)
-                        {
-                            createTransactoin(salesAmount, salesLedgerId, cashLedgerId, taxAmount, taxLedgerId, transactionDate, woodBill.wood_bill_id);
-
-                        }
-
-                    }
-
-                    tx.Complete();
-                    return woodBill.wood_bill_id;
+                    throw new ItemUsedException("Day is already closed. You cannot perform transactions in this date.");
                 }
 
+                _woodBillAssembler.copy(woodBill, wood_bill_dto);
+
+                _woodBillRepository.insert(woodBill);
+
+                // P1/B1 fix: double-selling guard. Each wood log must transition from
+                // unsold to sold atomically; the conditional UPDATE claims only rows
+                // still marked unsold, so if another bill just sold the same log it
+                // affects fewer rows than expected and we reject the whole bill.
+                markWoodDetailsAsSold(wood_bill_dto, woodBill);
+
+                wood_bill_dto.wood_detail_dto.ForEach(a => a.wood_bill_id = woodBill.wood_bill_id);
+                _woodBillDetailService.insert(wood_bill_dto.wood_detail_dto);
+
+                if (wood_bill_dto.wood_bill_member_dto.Count > 0)
+                {
+
+                    wood_bill_dto.wood_bill_member_dto.ForEach(a => a.wood_bill_id = woodBill.wood_bill_id);
+                    _woodBillMemberService.insert(wood_bill_dto.wood_bill_member_dto);
+
+                }
+
+                if (wood_bill_dto.wood_bill_member_transaction_dto.Count > 0)
+                {
+                    wood_bill_dto.wood_bill_member_transaction_dto.ForEach(a => a.wood_bill_id = woodBill.wood_bill_id);
+                    _woodBillMemberTransactionService.insert(wood_bill_dto.wood_bill_member_transaction_dto);
+
+                }
+
+                postAccountTransaction(wood_bill_dto, woodBill);
+
+                tx.Commit();
             }
-            catch (Exception ex)
+
+            return woodBill.wood_bill_id;
+        }
+
+        private void markWoodDetailsAsSold(WoodBillDto wood_bill_dto, WoodBill woodBill)
+        {
+            // Atomic claim: rows already sold by a concurrent bill are not updated,
+            // so a row missing from the count means it was double-sold — reject.
+            var ids = wood_bill_dto.wood_detail_dto.Select(a => a.wood_details_id).ToList();
+            int claimed = _woodDetailsRepository.markSoldIfNotSold(ids, woodBill.wood_bill_id);
+            if (claimed != ids.Distinct().Count())
             {
-                throw ex;
+                var claimedIds = _woodDetailsRepository.getQueryable()
+                    .Where(a => ids.Contains(a.wood_details_id) && a.is_sold && a.sales_id != woodBill.wood_bill_id)
+                    .Select(a => a.goliya_number)
+                    .ToList();
+                var goliyaList = string.Join(", ", claimedIds);
+                throw new ItemUsedException($"Goliya {goliyaList} is already sold.");
+            }
+        }
+
+        private void postAccountTransaction(WoodBillDto wood_bill_dto, WoodBill woodBill)
+        {
+            var grouped = wood_bill_dto.wood_detail_dto.GroupBy(a => a.stock_type_id).Select(g => new { amount = g.Sum(x => x.amount), salesTypeId = g.Key });
+
+            // P1/B15 fix: the bill total was trusted from the client and never
+            // reconciled against the detail sums. The ledger now posts the
+            // server-computed sum of details, and a mismatch beyond ±0.02 (float
+            // rounding from the browser) rejects the bill instead of posting a
+            // wrong amount to the ledgers.
+            decimal detailSum = grouped.Sum(g => g.amount);
+            if (Math.Abs(detailSum - wood_bill_dto.amount) > 0.02m)
+            {
+                throw new InvalidValueException($"Bill total ({wood_bill_dto.amount}) does not match the sum of its details ({detailSum}).");
+            }
+            if (wood_bill_dto.tax_amount < 0)
+            {
+                throw new InvalidValueException("Tax amount cannot be negative.");
+            }
+
+            long cashLedgerId = getCashLedgerId();
+
+            long taxLedgerId = getTaxLedgerId();
+
+            var ballaballiSalesLedger = getBallaballiSalesLedgerId();
+
+            var lakadiSalesLedger = getLakadiSalesLedgerId();
+
+            decimal totalSalesAmount = grouped.Sum(g => g.amount);
+            if (totalSalesAmount <= 0)
+            {
+                return;
+            }
+
+            foreach (var groupData in grouped)
+            {
+                decimal salesAmount = groupData.amount;
+                long salesLedgerId = 0;
+                DateTime transactionDate = wood_bill_dto.bill_date;
+                if (Convert.ToInt32(groupData.salesTypeId) == Convert.ToInt32(StockTypes.BallaBalli))
+                {
+                    salesLedgerId = ballaballiSalesLedger;
+                }
+                if (Convert.ToInt32(groupData.salesTypeId) == Convert.ToInt32(StockTypes.Lakadi))
+                {
+                    salesLedgerId = lakadiSalesLedger;
+                }
+                if (salesAmount > 0)
+                {
+                    // P1/B3 fix: the full bill tax was credited to the tax ledger once per
+                    // stock-type group; a mixed bill overstated cash/tax N-1 times. Tax is
+                    // now allocated proportionally to each group so Σgroup tax = bill tax.
+                    decimal taxAmount = totalSalesAmount > 0
+                        ? decimal.Round(wood_bill_dto.tax_amount * (salesAmount / totalSalesAmount), 2)
+                        : 0;
+                    createTransactoin(salesAmount, salesLedgerId, cashLedgerId, taxAmount, taxLedgerId, transactionDate, woodBill.wood_bill_id);
+                }
             }
         }
 

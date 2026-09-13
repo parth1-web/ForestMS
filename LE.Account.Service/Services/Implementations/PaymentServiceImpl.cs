@@ -8,7 +8,6 @@ using LE.Account.Service.Assemblers.Interface;
 using LE.Account.Service.Services.Interface;
 using LE.Common.Exceptions;
 using System;
-using System.Transactions;
 
 namespace LE.Account.Service.Services.Implementations
 {
@@ -31,7 +30,9 @@ namespace LE.Account.Service.Services.Implementations
 
         public void cancel(long payment_id, long user_id)
         {
-            using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+            // P1 fix: ambient TransactionScope was a no-op for EF Core; the reverse
+            // ledger entry + payment update now run in one real database transaction.
+            using (var tx = paymentRepo.beginTransaction())
             {
                 var payment = paymentRepo.getById(payment_id);
                 if (payment == null)
@@ -49,10 +50,8 @@ namespace LE.Account.Service.Services.Implementations
                 payment.cancelled_by = user_id;
                 payment.cancelled_date = DateFunctionsFactory.getDateFunctionsService().getDateTimeByTimeZone();
                 paymentRepo.update(payment);
-                tx.Complete();
+                tx.Commit();
             }
-
-
         }
 
         private TransactionDto getTransactionDtoForReverseEntry(Payment payment)
@@ -62,27 +61,31 @@ namespace LE.Account.Service.Services.Implementations
             transactionDto.voucher_no = payment.payment_id;
             transactionDto.voucher_type = VoucherType.Payment;
             transactionDto.remarks = "Being Payment Cancelled";
-            LedgerTransactionDto debitTransactionDetailDto = new LedgerTransactionDto();
-            LedgerTransactionDto creditTransactionDetailDto = new LedgerTransactionDto();
 
+            // P1/B11 fix: this method mutated 'debitTransactionDetailDto' after adding it
+            // to the transaction (the discount branch overwrote its ledger/amount), so
+            // the original debit line vanished and Dr ≠ Cr. Each line is now its own
+            // separate DTO instance.
+            LedgerTransactionDto creditTransactionDetailDto = new LedgerTransactionDto();
             creditTransactionDetailDto.ledger_id = payment.payment_to;
             creditTransactionDetailDto.amount = payment.amount + payment.discount;
             transactionDto.addCreditData(creditTransactionDetailDto);
 
+            LedgerTransactionDto debitTransactionDetailDto = new LedgerTransactionDto();
             debitTransactionDetailDto.ledger_id = payment.payment_from;
             debitTransactionDetailDto.amount = payment.amount;
             transactionDto.addDebitData(debitTransactionDetailDto);
 
             if (payment.discount > 0)
             {
-                LedgerTransactionDto crTransactionDetailDto = new LedgerTransactionDto();
+                LedgerTransactionDto discountDebitDetailDto = new LedgerTransactionDto();
                 //check whether settings is available or not
                 Entities.LedgerSetup discount_setting = _ledgerSetupRepo.getByKey(LE.Account.Common.Enums.LedgerSetup.discount_received.ToString());
                 if (discount_setting == null)
                     throw new ItemNotFoundException("No setup found for discount received.");
-                debitTransactionDetailDto.ledger_id = Convert.ToInt32(discount_setting.value);
-                debitTransactionDetailDto.amount = payment.discount;
-                transactionDto.addDebitData(debitTransactionDetailDto);
+                discountDebitDetailDto.ledger_id = Convert.ToInt32(discount_setting.value);
+                discountDebitDetailDto.amount = payment.discount;
+                transactionDto.addDebitData(discountDebitDetailDto);
             }
 
             return transactionDto;
@@ -90,25 +93,18 @@ namespace LE.Account.Service.Services.Implementations
 
         public void doPayment(PaymentDto paymentDto)
         {
-            try
+            using (var tx = paymentRepo.beginTransaction())
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
-                {
-                    if (!paymentDto.isValid())
-                        throw new InvalidValueException("The provided data are not valid.");
-                    Payment payment = new Payment();
-                    paymentMaker.copy(payment, paymentDto);
-                    paymentRepo.insert(payment);
-                    paymentDto.payment_id = payment.payment_id;
-                    TransactionDto transactionDto = _transactionDtoMaker.createTransactionDtoFrom(paymentDto);
+                if (!paymentDto.isValid())
+                    throw new InvalidValueException("The provided data are not valid.");
+                Payment payment = new Payment();
+                paymentMaker.copy(payment, paymentDto);
+                paymentRepo.insert(payment);
+                paymentDto.payment_id = payment.payment_id;
+                TransactionDto transactionDto = _transactionDtoMaker.createTransactionDtoFrom(paymentDto);
 
-                    transactionService.addTransaction(transactionDto);
-                    tx.Complete();
-                }
-            }
-            catch (Exception)
-            {
-                throw;
+                transactionService.addTransaction(transactionDto);
+                tx.Commit();
             }
         }
     }

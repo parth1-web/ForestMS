@@ -15,7 +15,6 @@ using LE.Inventory.Infrastructure.Repository.Interface;
 using LE.Inventory.Service.Adapter.Interface;
 using LE.Inventory.Service.Assemblers.Interface;
 using System;
-using System.Transactions;
 
 namespace LE.Billing.Service.Services.Implementations
 {
@@ -46,49 +45,37 @@ namespace LE.Billing.Service.Services.Implementations
 
         public long makeSales(FurnitureSalesDto sales_dto)
         {
-            try
+            // P1 fix: ambient TransactionScope was a no-op for EF Core; bill + details +
+            // ledger entry now run in one real database transaction.
+            using (var tx = _furnitureSalesRepo.beginTransaction())
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
-                {
-                    checkIfDayClosedorNot(sales_dto);
+                checkIfDayClosedorNot(sales_dto);
 
-                    var sales = new FurnitureSales();
-                    _furnitureSalesAssembler.copy(sales, sales_dto);
-                    _furnitureSalesRepo.insert(sales);
+                var sales = new FurnitureSales();
+                _furnitureSalesAssembler.copy(sales, sales_dto);
+                _furnitureSalesRepo.insert(sales);
 
-                    sales_dto.furniture_sales_details.ForEach(a => a.furniture_sales_id = sales.furniture_sales_id);
-                    _furnitureSalesDetailService.save(sales_dto.furniture_sales_details);
+                sales_dto.furniture_sales_details.ForEach(a => a.furniture_sales_id = sales.furniture_sales_id);
+                _furnitureSalesDetailService.save(sales_dto.furniture_sales_details);
 
-                    sales_dto.furniture_sales_id = sales.furniture_sales_id;
-                    makeAccountSalesTransaction(sales_dto);
+                sales_dto.furniture_sales_id = sales.furniture_sales_id;
+                makeAccountSalesTransaction(sales_dto);
 
-                    //recordStockMovement(sales_dto, sales.furniture_sales_id);
-                    tx.Complete();
-                    return sales.furniture_sales_id;
-                }
-            }
-            catch (Exception)
-            {
-                throw;
+                //recordStockMovement(sales_dto, sales.furniture_sales_id);
+                tx.Commit();
+                return sales.furniture_sales_id;
             }
         }
         public void cancel(long furniture_sales_id, long user_id)
         {
-            try
+            using (var tx = _furnitureSalesRepo.beginTransaction())
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
-                {
-                    var furnitureSales = _furnitureSalesRepo.getById(furniture_sales_id);
-                    validateFurnitureSalesData(furnitureSales);
-                    updateFurnitureSales(furnitureSales, user_id);
-                    makeAccountSalesCancelTransaction(furnitureSales);
-                    //recordReverseStockMovement(furnitureSales);
-                    tx.Complete();
-                }
-            }
-            catch (Exception)
-            {
-                throw;
+                var furnitureSales = _furnitureSalesRepo.getById(furniture_sales_id);
+                validateFurnitureSalesData(furnitureSales);
+                updateFurnitureSales(furnitureSales, user_id);
+                makeAccountSalesCancelTransaction(furnitureSales);
+                //recordReverseStockMovement(furnitureSales);
+                tx.Commit();
             }
         }
         private void makeAccountSalesTransaction(FurnitureSalesDto sales_dto)

@@ -22,7 +22,6 @@ using Microsoft.EntityFrameworkCore.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Transactions;
 
 namespace LE.Web.Areas.Billing.Controllers
 {
@@ -126,7 +125,9 @@ namespace LE.Web.Areas.Billing.Controllers
         {
             try
             {
-                using (var tx = new TransactionScope(TransactionScopeOption.Required))
+                // P1 fix: the ambient TransactionScope was a no-op for EF Core; ledger +
+                // membership + validity + members now run in one real DB transaction.
+                using (var tx = _membershipRepo.beginTransaction())
                 {
                     var createdBy = getLoggedInUserId();
 
@@ -175,7 +176,7 @@ namespace LE.Web.Areas.Billing.Controllers
                         memberDto.CreatedBy = createdBy;
                         _memberService.Insert(memberDto);
                     }
-                    tx.Complete();
+                    tx.Commit();
 
                     AlertHelper.setMessage(this, "Membership added successfully", messageType.success);
                     return Json(new { success = true, message = "Membership added successfully." });
@@ -186,7 +187,9 @@ namespace LE.Web.Areas.Billing.Controllers
                 var tole = _toleRepo.getAll();
                 ViewBag.toles = new SelectList(tole, "tole_id", "tole_no");
                 AlertHelper.setMessage(this, ex.Message, messageType.error);
-                return Json(new { success = true, message = "Membership failed to save." });
+                // P1/B15 fix: the failure branch returned success = true ("Membership
+                // failed to save."), so the UI reported every failure as a success.
+                return Json(new { success = false, message = "Membership failed to save." });
             }
         }
 
@@ -257,7 +260,8 @@ namespace LE.Web.Areas.Billing.Controllers
         {
             try
             {
-                using (var tx = new TransactionScope(TransactionScopeOption.Required))
+                // P1 fix: real EF transaction (the ambient scope was a no-op).
+                using (var tx = _membershipRepo.beginTransaction())
                 {
                     var membership = _membershipRepo.getById(model.MembershipId);
                     var checkMembershipCode = _membershipRepo.getQueryable().Where(m => m.MembershipId != model.MembershipId && m.MembershipCode == model.MembershipCode).ToList().Count() > 0;
@@ -290,7 +294,7 @@ namespace LE.Web.Areas.Billing.Controllers
                         }
                     }
 
-                    tx.Complete();
+                    tx.Commit();
 
                     AlertHelper.setMessage(this, "Membership added successfully", messageType.success);
                     return Json(new { success = true, message = "Membership updated successfully." });
@@ -305,7 +309,8 @@ namespace LE.Web.Areas.Billing.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         [Route("enable/{membership_id}")]
         public IActionResult enable(long membership_id)
         {
@@ -322,7 +327,8 @@ namespace LE.Web.Areas.Billing.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         [Route("disable/{membership_id}")]
         public IActionResult disable(long membership_id)
         {
@@ -339,22 +345,24 @@ namespace LE.Web.Areas.Billing.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         [Route("delete/{membership_id}")]
         public IActionResult delete(long membership_id)
         {
             try
             {
-                using (var tx = new TransactionScope(TransactionScopeOption.Required))
-                {
-                    _membershipService.Delete(membership_id);
+                    // P1 fix: real EF transaction (the ambient scope was a no-op).
+                    using (var tx = _membershipRepo.beginTransaction())
+                    {
+                        _membershipService.Delete(membership_id);
 
-                    var ledgerId = _membershipRepo.getById(membership_id).LedgerId;
-                    _ledgerService.delete(ledgerId);
-                    tx.Complete();
+                        var ledgerId = _membershipRepo.getById(membership_id).LedgerId;
+                        _ledgerService.delete(ledgerId);
+                        tx.Commit();
+                    }
                     AlertHelper.setMessage(this, "Membership deleted successfully.");
                     return RedirectToAction("index");
-                }
             }
             catch (Exception ex)
             {
@@ -536,7 +544,8 @@ namespace LE.Web.Areas.Billing.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         [Route("members/enable/{memberId}")]
         public IActionResult EnableMember(long memberId)
         {
@@ -553,7 +562,8 @@ namespace LE.Web.Areas.Billing.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         [Route("members/disable/{memberId}")]
         public IActionResult DisableMember(long memberId)
         {
@@ -570,7 +580,8 @@ namespace LE.Web.Areas.Billing.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         [Route("members/delete/{memberId}")]
         public IActionResult DeleteMember(long memberId)
         {

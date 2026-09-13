@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Transactions;
 
 namespace LE.Account.Service.Services.Implementations
 {
@@ -40,35 +39,24 @@ namespace LE.Account.Service.Services.Implementations
         {
             return transactionDetailRepo.getEndBalance(ledger_id);
         }
-        public void addTransactionDetail(TransactionDetail transaction_detail)
-        {
-            try
-            {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
-                {
-                    decimal old_balance = 0;
-                    if (transaction_detail.ledger_id > 0)
-                    {
-                        old_balance = getOldBalance(transaction_detail.ledger_id, transaction_detail.transaction_date);
-                    }
+		public void addTransactionDetail(TransactionDetail transaction_detail)
+		{
+			// Runs inside the caller's real EF transaction (see beginTransaction());
+			// the previous ambient TransactionScope was a no-op for EF Core.
+			decimal old_balance = 0;
+			if (transaction_detail.ledger_id > 0)
+			{
+				old_balance = getOldBalance(transaction_detail.ledger_id, transaction_detail.transaction_date);
+			}
 
-                    transaction_detail.balance = old_balance + (transaction_detail.dr_amount - transaction_detail.cr_amount);
+			transaction_detail.balance = old_balance + (transaction_detail.dr_amount - transaction_detail.cr_amount);
 
 
-                    transaction_detail.transaction_detail_id = 0;
-                    transactionDetailRepo.insert(transaction_detail);
+			transaction_detail.transaction_detail_id = 0;
+			transactionDetailRepo.insert(transaction_detail);
 
-                    updateBalanceIfBackdateEntryIsMade(transaction_detail.ledger_id, transaction_detail.transaction_date, transaction_detail.balance);
-                    tx.Complete();
-
-                }
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-
-        }
+			updateBalanceIfBackdateEntryIsMade(transaction_detail.ledger_id, transaction_detail.transaction_date, transaction_detail.balance);
+		}
 
         private void updateBalanceIfBackdateEntryIsMade(long ledger_id, DateTime transaction_date, decimal lastbalance)
         {
@@ -88,46 +76,36 @@ namespace LE.Account.Service.Services.Implementations
             }
         }
 
-        public void addTransactionDetail(TransactionDto transaction_dto, long transaction_id)
-        {
-            try
-            {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
-                {
-                    var transaction = _transactionRepo.getById(transaction_id) ?? throw new ItemNotFoundException($"Transaction with id {transaction_id} doesnot exist.");
+		public void addTransactionDetail(TransactionDto transaction_dto, long transaction_id)
+		{
+			// Runs inside the caller's real EF transaction (see beginTransaction());
+			// the previous ambient TransactionScope was a no-op for EF Core.
+			var transaction = _transactionRepo.getById(transaction_id) ?? throw new ItemNotFoundException($"Transaction with id {transaction_id} doesnot exist.");
 
-                    List<TransactionDetailDto> transactionDetailDtos = _transactionDetailDtoAssembler.getTransactionDetails(transaction_dto);
+			List<TransactionDetailDto> transactionDetailDtos = _transactionDetailDtoAssembler.getTransactionDetails(transaction_dto);
 
-                    List<long> ledgerIdsUsedInTransaction = transactionDetailDtos.Select(a => a.ledger_id).Distinct().ToList();
+			List<long> ledgerIdsUsedInTransaction = transactionDetailDtos.Select(a => a.ledger_id).Distinct().ToList();
 
-                    var ledgers = _ledgerRepo.getQueryable().Where(a => ledgerIdsUsedInTransaction.Contains(a.ledger_id)).ToList();
-                    var currentFiscalYearId = GetRunningFinancialYear();
-                    foreach (var transactionDetailDto in transactionDetailDtos)
-                    {
-                        if (transactionDetailDto.ledger_id > 0)
-                        {
-                            TransactionDetail entity = new TransactionDetail();
-                            entity.transaction = transaction;
-                            entity.transaction_id = transaction_id;
-                            entity.transaction_date = transactionDetailDto.transaction_date;
-                            entity.ledger_id = transactionDetailDto.ledger_id;
-                            entity.ref_ledger_id = transactionDetailDto.ref_ledger_id;
-                            entity.dr_amount = transactionDetailDto.debit_amount;
-                            entity.cr_amount = transactionDetailDto.credit_amount;
-                            entity.fiscal_year_id = currentFiscalYearId.Result.Id;
+			var ledgers = _ledgerRepo.getQueryable().Where(a => ledgerIdsUsedInTransaction.Contains(a.ledger_id)).ToList();
+			var currentFiscalYearId = GetRunningFinancialYear();
+			foreach (var transactionDetailDto in transactionDetailDtos)
+			{
+				if (transactionDetailDto.ledger_id > 0)
+				{
+					TransactionDetail entity = new TransactionDetail();
+					entity.transaction = transaction;
+					entity.transaction_id = transaction_id;
+					entity.transaction_date = transactionDetailDto.transaction_date;
+					entity.ledger_id = transactionDetailDto.ledger_id;
+					entity.ref_ledger_id = transactionDetailDto.ref_ledger_id;
+					entity.dr_amount = transactionDetailDto.debit_amount;
+					entity.cr_amount = transactionDetailDto.credit_amount;
+					entity.fiscal_year_id = currentFiscalYearId.Result.Id;
 
-                            addTransactionDetail(entity);
-                        }
-                    }
-                    tx.Complete();
-                }
-            }
-            catch (Exception)
-            {
-
-                throw;
-            }
-        }
+					addTransactionDetail(entity);
+				}
+			}
+		}
 
         public async Task<FinancialYear> GetRunningFinancialYear()
         {

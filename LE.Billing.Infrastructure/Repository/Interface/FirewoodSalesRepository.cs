@@ -1,4 +1,5 @@
 ﻿using LE.Billing.Entities;
+using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +9,8 @@ namespace LE.Billing.Infrastructure.Repository.Interface
 {
     public interface FirewoodSalesRepository
     {
+        // Real transaction boundary on the shared AppDbContext (see BaseRepositoryImpl).
+        IDbContextTransaction beginTransaction();
         void insert(FirewoodSales counterSales);
         void update(FirewoodSales counterSales);
         List<FirewoodSales> getAll();

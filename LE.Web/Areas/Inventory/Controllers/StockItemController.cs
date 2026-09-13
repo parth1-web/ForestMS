@@ -90,7 +90,8 @@ namespace LE.Web.Areas.Inventory.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         [Route("delete/{stock_item_id}")]
         public IActionResult delete(long stock_item_id)
         {
@@ -151,7 +152,8 @@ namespace LE.Web.Areas.Inventory.Controllers
             return View(stockItemModel);
         }
 
-        [HttpGet]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         [Route("enable/{stock_item_id}")]
         public IActionResult enable(long stock_item_id)
         {
@@ -167,7 +169,8 @@ namespace LE.Web.Areas.Inventory.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [HttpGet]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         [Route("disable/{stock_item_id}")]
         public IActionResult disable(long stock_item_id)
         {

@@ -23,6 +23,12 @@ namespace LE.Web.Controllers
             {
                 return View("InternalError");
             }
+            else if (statusCode == 403)
+            {
+                // P1/S3: module permission denials (and cookie auth AccessDeniedPath)
+                // land here.
+                return View("Forbidden");
+            }
             return View("Error");
         }
     }

@@ -8,7 +8,6 @@ using LE.Account.Service.Assemblers.Interface;
 using LE.Account.Service.Services.Interface;
 using LE.Common.Exceptions;
 using System;
-using System.Transactions;
 
 namespace LE.Account.Service.Services.Implementations
 {
@@ -31,7 +30,9 @@ namespace LE.Account.Service.Services.Implementations
 
         public void cancel(long receipt_id, long user_id)
         {
-            using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+            // P1 fix: ambient TransactionScope was a no-op for EF Core; the reverse
+            // ledger entry + receipt update now run in one real database transaction.
+            using (var tx = _receiptRepo.beginTransaction())
             {
                 var receipt = _receiptRepo.getById(receipt_id);
                 if (receipt == null)
@@ -50,7 +51,7 @@ namespace LE.Account.Service.Services.Implementations
                 receipt.cancelled_date = DateFunctionsFactory.getDateFunctionsService().getDateTimeByTimeZone();
                 receipt.cancelled_by = user_id;
                 _receiptRepo.update(receipt);
-                tx.Complete();
+                tx.Commit();
             }
 
         }
@@ -62,27 +63,31 @@ namespace LE.Account.Service.Services.Implementations
             transactionDto.voucher_no = receipt.receipt_id;
             transactionDto.voucher_type = VoucherType.Receipt;
             transactionDto.remarks = "Being Receipt Cancelled";
-            LedgerTransactionDto debitTransactionDetailDto = new LedgerTransactionDto();
-            LedgerTransactionDto creditTransactionDetailDto = new LedgerTransactionDto();
 
+            // P1/B11 fix: this method mutated 'debitTransactionDetailDto' after adding it
+            // to the transaction (the discount branch overwrote its ledger/amount), so
+            // the original debit line vanished and Dr ≠ Cr. Each line is now its own
+            // separate DTO instance.
+            LedgerTransactionDto creditTransactionDetailDto = new LedgerTransactionDto();
             creditTransactionDetailDto.ledger_id = receipt.receipt_to;
             creditTransactionDetailDto.amount = receipt.amount + receipt.discount;
             transactionDto.addCreditData(creditTransactionDetailDto);
 
+            LedgerTransactionDto debitTransactionDetailDto = new LedgerTransactionDto();
             debitTransactionDetailDto.ledger_id = receipt.receipt_from;
             debitTransactionDetailDto.amount = receipt.amount;
             transactionDto.addDebitData(debitTransactionDetailDto);
 
             if (receipt.discount > 0)
             {
-                TransactionDetailDto crTransactionDetailDto = new TransactionDetailDto();
+                LedgerTransactionDto discountDebitDetailDto = new LedgerTransactionDto();
                 //check whether settings is available or not
                 Entities.LedgerSetup discount_setting = _ledgerSetupRepo.getByKey(LE.Account.Common.Enums.LedgerSetup.discount_allowed.ToString());
                 if (discount_setting == null)
                     throw new ItemNotFoundException("No setup found for discount allowed.");
-                debitTransactionDetailDto.ledger_id = Convert.ToInt32(discount_setting.value);
-                debitTransactionDetailDto.amount = receipt.discount;
-                transactionDto.addDebitData(debitTransactionDetailDto);
+                discountDebitDetailDto.ledger_id = Convert.ToInt32(discount_setting.value);
+                discountDebitDetailDto.amount = receipt.discount;
+                transactionDto.addDebitData(discountDebitDetailDto);
             }
 
             return transactionDto;
@@ -90,26 +95,19 @@ namespace LE.Account.Service.Services.Implementations
 
         public long makeReceipt(ReceiptDto receiptDto)
         {
-            try
+            using (var tx = _receiptRepo.beginTransaction())
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
-                {
-                    if (!receiptDto.isValid())
-                        throw new InvalidValueException("The provided data are not valid.");
-                    Receipt receipt = new Receipt();
-                    _receiptMaker.copy(receipt, receiptDto);
-                    _receiptRepo.insert(receipt);
-                    receiptDto.receipt_id = receipt.receipt_id;
-                    TransactionDto transactionDto = _transactionDtoMaker.createTransactionDtoFrom(receiptDto);
+                if (!receiptDto.isValid())
+                    throw new InvalidValueException("The provided data are not valid.");
+                Receipt receipt = new Receipt();
+                _receiptMaker.copy(receipt, receiptDto);
+                _receiptRepo.insert(receipt);
+                receiptDto.receipt_id = receipt.receipt_id;
+                TransactionDto transactionDto = _transactionDtoMaker.createTransactionDtoFrom(receiptDto);
 
-                    _transactionService.addTransaction(transactionDto);
-                    tx.Complete();
-                    return receipt.receipt_id;
-                }
-            }
-            catch (Exception)
-            {
-                throw;
+                _transactionService.addTransaction(transactionDto);
+                tx.Commit();
+                return receipt.receipt_id;
             }
         }
 

@@ -14,6 +14,7 @@ namespace LE.Service.Repository.Interface
         List<Module> getAll();
         Module getById(long area_id);
         Module getByName(string module_name);
+        Module getByCode(string module_code);
         IQueryable<Module> getQueryable();
     }
 }

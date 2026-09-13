@@ -1,4 +1,5 @@
 ﻿using LE.Billing.Entities;
+using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +9,8 @@ namespace LE.Billing.Infrastructure.Repository.Interface
 {
     public interface CounterSalesRepository
     {
+        // Real transaction boundary on the shared AppDbContext (see BaseRepositoryImpl).
+        IDbContextTransaction beginTransaction();
         void insert(CounterSales counterSales);
         void update(CounterSales counterSales);
         List<CounterSales> getAll();

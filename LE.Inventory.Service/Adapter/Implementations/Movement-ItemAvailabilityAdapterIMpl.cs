@@ -4,7 +4,6 @@ using LE.Inventory.Service.Adapter.Interface;
 using LE.Inventory.Service.Services.Interface;
 using System;
 using System.Collections.Generic;
-using System.Transactions;
 
 namespace LE.Inventory.Service.Adapter.Implementations
 {
@@ -21,28 +20,20 @@ namespace LE.Inventory.Service.Adapter.Implementations
 
         public void updateItemAvailability(StockMovementDto stock_movement_dto)
         {
-            try
-            {
-                using (TransactionScope tx=new TransactionScope(TransactionScopeOption.Required))
-                {
-                    List<StockMovementDetailDto> stockMovementDatas = getStockMovementDetails(stock_movement_dto);
+            List<StockMovementDetailDto> stockMovementDatas = getStockMovementDetails(stock_movement_dto);
 
-                    _stockItemAvailabilityService.saveOrUpdate(stockMovementDatas);
-
-                    tx.Complete();
-                }
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            _stockItemAvailabilityService.saveOrUpdate(stockMovementDatas);
         }
 
         private List<StockMovementDetailDto> getStockMovementDetails(StockMovementDto stock_movement_dto)
         {
+            // P1/B7 fix: the 'delete' movement type used to be force-mapped to 'increase',
+            // which made deleting a purchase INCREASE stock. The service layer already
+            // sets the correct operation per detail (purchase -> increase, delete ->
+            // decrease, sales -> decrease), so the mapping only applies the default for
+            // sales when no explicit operation was set and no longer overrides delete.
             switch (stock_movement_dto.movement_type)
             {
-               
                 case Enums.StockMovementType.sales:
                     stock_movement_dto.getStockMovementDetails().ForEach(a => a.operation = Enums.MovementOperation.decrease);
                     break;
@@ -50,7 +41,8 @@ namespace LE.Inventory.Service.Adapter.Implementations
                     stock_movement_dto.getStockMovementDetails().ForEach(a => a.operation = Enums.MovementOperation.increase);
                     break;
                 case Enums.StockMovementType.delete:
-                    stock_movement_dto.getStockMovementDetails().ForEach(a => a.operation = Enums.MovementOperation.increase);
+                    // operation is already set by the caller (delete = decrease);
+                    // keep it as-is.
                     break;
                 default:
                     throw new InvalidValueException("Invalid stock movement type.");

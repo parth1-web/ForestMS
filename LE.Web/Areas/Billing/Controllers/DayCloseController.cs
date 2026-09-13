@@ -42,9 +42,11 @@ namespace LE.Web.Areas.Billing.Controllers
             var clientDate = dateFunction.getDateTimeByTimeZone();
             var engSalesDate = dateService.ToAD(vm.date).getFormattedDate().Add(clientDate.TimeOfDay);
 
-            vm.day_counter_sales = _counterSalesRepo.getQueryable().Where(a => a.sales_date.Date == engSalesDate.Date).Sum(a => a.bill_amount);
+            // P1/B14 fix: screen totals used to include cancelled bills while the posting
+            // logic excluded them, so the numbers shown never matched the ledger entry.
+            vm.day_counter_sales = _counterSalesRepo.getQueryable().Where(a => a.sales_date.Date == engSalesDate.Date && a.is_cancelled == false).Sum(a => a.bill_amount);
 
-            var counterSales = _counterSalesRepo.getQueryable().Where(a => a.sales_date.Date == engSalesDate.Date);
+            var counterSales = _counterSalesRepo.getQueryable().Where(a => a.sales_date.Date == engSalesDate.Date && a.is_cancelled == false);
 
             List<ServiceCount> service_count_list = new List<ServiceCount>();
 
@@ -63,18 +65,21 @@ namespace LE.Web.Areas.Billing.Controllers
 
             vm.service_count = service_count_list.GroupBy(x => x.service_id).Select(a => new ServiceCount { service_id = a.First().service_id, qty = a.Sum(c => c.qty), service = a.First().service }).ToList();
 
-            vm.day_wood_sales = _woodSalesRepo.getQueryable().Where(a => a.bill_date.Date == engSalesDate.Date).Sum(a => a.amount);
-            vm.day_firewood_sales = _firewoodSalesRepo.getQueryable().Where(a => a.sales_date.Date == engSalesDate.Date).Sum(a => a.total_amount);
+            // P1/B14 fix: was null-checking the never-null IQueryable result, so the screen
+            // always showed "closed". A day is closed only when a row actually exists.
+            vm.day_wood_sales = _woodSalesRepo.getQueryable().Where(a => a.bill_date.Date == engSalesDate.Date && a.is_cancelled == false).Sum(a => a.amount);
+            vm.day_firewood_sales = _firewoodSalesRepo.getQueryable().Where(a => a.sales_date.Date == engSalesDate.Date && a.is_cancelled == false).Sum(a => a.total_amount);
             vm.is_closed = true;
-            var dayCloseData = _dayCloseRepo.getQueryable().Where(a => a.eng_close_date == engSalesDate);
-            if (dayCloseData == null)
+            var dayCloseData = _dayCloseRepo.getQueryable().Where(a => a.eng_close_date == engSalesDate).ToList();
+            if (!dayCloseData.Any())
             {
                 vm.is_closed = false;
             }
             return View(vm);
         }
 
-        [HttpGet]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         [Route("save")]
         public IActionResult save(DayCloseIndexViewModel vm)
         {

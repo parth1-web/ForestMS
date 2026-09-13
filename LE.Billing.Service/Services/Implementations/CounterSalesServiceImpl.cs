@@ -6,7 +6,6 @@ using LE.Billing.Service.Assemblers.Interface;
 using LE.Billing.Service.Services.Interface;
 using LE.Common.Exceptions;
 using System;
-using System.Transactions;
 
 namespace LE.Billing.Service.Services.Implementations
 {
@@ -27,59 +26,56 @@ namespace LE.Billing.Service.Services.Implementations
 
         public void cancel(long counter_sales_id, long user_id)
         {
-            try
+            var sales = _counterSalesRepo.getById(counter_sales_id);
+            if (sales == null)
             {
-                var sales = _counterSalesRepo.getById(counter_sales_id);
-                var IsClosed = _dayCloseRepository.getByDate(sales.sales_date.Date);
-                if (IsClosed != null)
-                    throw new ItemUsedException("Day is already closed. You cannot cancel this bill.");
-                sales.cancelled_date = DateFunctionsFactory.getDateFunctionsService().getDateTimeByTimeZone();
-                sales.is_cancelled = true;
-                _counterSalesRepo.update(sales);
+                throw new ItemNotFoundException($"Counter bill with id {counter_sales_id} doesnot exist.");
             }
-            catch (Exception)
+            var IsClosed = _dayCloseRepository.getByDate(sales.sales_date.Date);
+            if (IsClosed != null)
+                throw new ItemUsedException("Day is already closed. You cannot cancel this bill.");
+            if (sales.is_cancelled)
             {
-                throw;
+                throw new ItemUsedException("This bill is already cancelled.");
             }
+
+            sales.cancelled_date = DateFunctionsFactory.getDateFunctionsService().getDateTimeByTimeZone();
+            sales.is_cancelled = true;
+            _counterSalesRepo.update(sales);
         }
 
         public long makeSales(CounterSalesDto sales_dto)
         {
-            try
+            // P1 fix: ambient TransactionScope was a no-op for EF Core; the counter sale
+            // + details now run in one real database transaction.
+            using (var tx = _counterSalesRepo.beginTransaction())
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                sales_dto.sales_date = DateFunctionsFactory.getDateFunctionsService().getDateTimeByTimeZone();
+                var IsClosed = _dayCloseRepository.getByDate(sales_dto.sales_date.Date);
+                if (IsClosed != null)
                 {
-                    sales_dto.sales_date = DateFunctionsFactory.getDateFunctionsService().getDateTimeByTimeZone();
-                    var IsClosed = _dayCloseRepository.getByDate(sales_dto.sales_date.Date);
-                    if (IsClosed != null)
-                    {
-                        throw new ItemUsedException("Day is already closed. You cannot perform transactions in this date.");
-                    }
-
-                    if (!sales_dto.isDiscountAmountValid())
-                    {
-                        throw new InvalidValueException("Discount amount is not valid.");
-                    }
-
-                    if (!sales_dto.isNetTotalValid())
-                    {
-                        throw new InvalidValueException("Net total is not valid.");
-                    }
-
-                    var sales = new CounterSales();
-                    _counterSalesAssembler.copy(sales, sales_dto);
-                    _counterSalesRepo.insert(sales);
-
-                    sales_dto.counter_sales_details.ForEach(a => a.sales_id = sales.sales_id);
-                    _counterSalesDetailService.save(sales_dto.counter_sales_details);
-
-                    tx.Complete();
-                    return sales.sales_id;
+                    throw new ItemUsedException("Day is already closed. You cannot perform transactions in this date.");
                 }
-            }
-            catch (Exception)
-            {
-                throw;
+
+                if (!sales_dto.isDiscountAmountValid())
+                {
+                    throw new InvalidValueException("Discount amount is not valid.");
+                }
+
+                if (!sales_dto.isNetTotalValid())
+                {
+                    throw new InvalidValueException("Net total is not valid.");
+                }
+
+                var sales = new CounterSales();
+                _counterSalesAssembler.copy(sales, sales_dto);
+                _counterSalesRepo.insert(sales);
+
+                sales_dto.counter_sales_details.ForEach(a => a.sales_id = sales.sales_id);
+                _counterSalesDetailService.save(sales_dto.counter_sales_details);
+
+                tx.Commit();
+                return sales.sales_id;
             }
         }
 

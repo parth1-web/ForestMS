@@ -16,7 +16,6 @@ using LE.Inventory.Service.Adapter.Interface;
 using LE.Inventory.Service.Assemblers.Interface;
 using System;
 using System.Linq;
-using System.Transactions;
 
 namespace LE.Billing.Service.Services.Implementations
 {
@@ -48,49 +47,37 @@ namespace LE.Billing.Service.Services.Implementations
 
         public long makeSales(FirewoodSalesDto sales_dto)
         {
-            try
+            // P1 fix: ambient TransactionScope was a no-op for EF Core; bill + details +
+            // ledger entry + stock movement now run in one real database transaction.
+            using (var tx = _firewoodSalesRepo.beginTransaction())
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
-                {
-                    checkIfDayClosedorNot(sales_dto);
+                checkIfDayClosedorNot(sales_dto);
 
-                    var sales = new FirewoodSales();
-                    _firewoodSalesAssembler.copy(sales, sales_dto);
-                    _firewoodSalesRepo.insert(sales);
+                var sales = new FirewoodSales();
+                _firewoodSalesAssembler.copy(sales, sales_dto);
+                _firewoodSalesRepo.insert(sales);
 
-                    sales_dto.firewood_sales_details.ForEach(a => a.firewood_sales_id = sales.firewood_sales_id);
-                    _firewoodSalesDetailService.save(sales_dto.firewood_sales_details);
+                sales_dto.firewood_sales_details.ForEach(a => a.firewood_sales_id = sales.firewood_sales_id);
+                _firewoodSalesDetailService.save(sales_dto.firewood_sales_details);
 
-                    sales_dto.firewood_sales_id = sales.firewood_sales_id;
-                    makeAccountSalesTransaction(sales_dto);
+                sales_dto.firewood_sales_id = sales.firewood_sales_id;
+                makeAccountSalesTransaction(sales_dto);
 
-                    recordStockMovement(sales_dto, sales.firewood_sales_id);
-                    tx.Complete();
-                    return sales.firewood_sales_id;
-                }
-            }
-            catch (Exception)
-            {
-                throw;
+                recordStockMovement(sales_dto, sales.firewood_sales_id);
+                tx.Commit();
+                return sales.firewood_sales_id;
             }
         }
         public void cancel(long firewood_sales_id, long user_id)
         {
-            try
+            using (var tx = _firewoodSalesRepo.beginTransaction())
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
-                {
-                    var firewoodSales = _firewoodSalesRepo.getById(firewood_sales_id);
-                    validateFirewoodSalesData(firewoodSales);
-                    updateFirewoodSales(firewoodSales, user_id);
-                    makeAccountSalesCancelTransaction(firewoodSales);
-                    recordReverseStockMovement(firewoodSales);
-                    tx.Complete();
-                }
-            }
-            catch (Exception)
-            {
-                throw;
+                var firewoodSales = _firewoodSalesRepo.getById(firewood_sales_id);
+                validateFirewoodSalesData(firewoodSales);
+                updateFirewoodSales(firewoodSales, user_id);
+                makeAccountSalesCancelTransaction(firewoodSales);
+                recordReverseStockMovement(firewoodSales);
+                tx.Commit();
             }
         }
         private void makeAccountSalesTransaction(FirewoodSalesDto sales_dto)

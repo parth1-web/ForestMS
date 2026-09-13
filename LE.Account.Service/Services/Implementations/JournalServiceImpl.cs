@@ -2,8 +2,6 @@
 using LE.Account.Infrastructure.Dto;
 using LE.Account.Service.Assemblers.Implementations;
 using LE.Account.Service.Services.Interface;
-using System;
-using System.Transactions;
 
 namespace LE.Account.Service.Services.Implementations
 {
@@ -21,44 +19,33 @@ namespace LE.Account.Service.Services.Implementations
 
         public void makeJournalEntries(JournalDto journalDto)
         {
-            try
+            var transactionDto = new TransactionDto();
+
+            foreach (var dto in journalDto.journalDetailDto)
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                if (dto.dr_amount > 0)
                 {
-                    var transactionDto = new TransactionDto();
-
-                    foreach (var dto in journalDto.journalDetailDto)
+                    transactionDto.addDebitData(new LedgerTransactionDto()
                     {
-                        if (dto.dr_amount > 0)
-                        {
-                            transactionDto.addDebitData(new LedgerTransactionDto()
-                            {
-                                amount = dto.dr_amount,
-                                ledger_id = dto.ledger_id
-                            });
-                        }
+                        amount = dto.dr_amount,
+                        ledger_id = dto.ledger_id
+                    });
+                }
 
-                        if (dto.cr_amount > 0)
-                        {
-                            transactionDto.addCreditData(new LedgerTransactionDto()
-                            {
-                                amount = dto.cr_amount,
-                                ledger_id = dto.ledger_id,
-                            });
-                        }
-                    }
-                    transactionDto.remarks = journalDto.remarks;
-                    transactionDto.voucher_no = journalDto.voucher_no;
-                    transactionDto.voucher_type = VoucherType.Journal;
-                    transactionDto.transaction_date = journalDto.transaction_date;
-                    _transactionService.addTransaction(transactionDto);
-                    tx.Complete();
+                if (dto.cr_amount > 0)
+                {
+                    transactionDto.addCreditData(new LedgerTransactionDto()
+                    {
+                        amount = dto.cr_amount,
+                        ledger_id = dto.ledger_id,
+                    });
                 }
             }
-            catch (Exception)
-            {
-                throw;
-            }
+            transactionDto.remarks = journalDto.remarks;
+            transactionDto.voucher_no = journalDto.voucher_no;
+            transactionDto.voucher_type = VoucherType.Journal;
+            transactionDto.transaction_date = journalDto.transaction_date;
+            _transactionService.addTransaction(transactionDto);
         }
     }
 }

@@ -170,7 +170,12 @@ namespace LE.Web.Areas.Billing.Controllers
 
         private bool IsMemberAlreadyPunished(long MembershipId)
         {
-            return _memPunishmentRepo.getQueryable().Any(p => p.MembershipId == MembershipId);
+            // P1/B6 fix: was 'Any(p => p.MembershipId == MembershipId)' — once a member had
+            // ANY punishment record (even cancelled/expired) no new punishment could be
+            // added. Only a currently-active punishment should block.
+            var today = _dateConverterService.getDateByTimeZone().Date;
+            return _memPunishmentRepo.getQueryable()
+                .Any(p => p.MembershipId == MembershipId && p.IsActive && !p.IsCancelled && p.PunishmentValidity.Date >= today);
         }
 
         [HttpPost]
@@ -209,8 +214,14 @@ namespace LE.Web.Areas.Billing.Controllers
         [HttpGet("validity/{MembershipId}")]
         public bool GetMemberValidity(long MembershipId)
         {
+            // P1/B6 fix: the query was inverted (!p.IsActive flagged INACTIVE punishments)
+            // and ignored the punishment validity date, so expired punishments blocked
+            // billing forever and cancelled ones were the only ones that mattered.
+            // A member is blocked only by an active, non-cancelled punishment that has
+            // not yet expired.
+            var today = _dateConverterService.getDateByTimeZone().Date;
             bool hasActivePunishment = _memPunishmentRepo.getQueryable()
-                .Any(p => p.MembershipId == MembershipId && !p.IsActive);
+                .Any(p => p.MembershipId == MembershipId && p.IsActive && !p.IsCancelled && p.PunishmentValidity.Date >= today);
 
             return !hasActivePunishment;
         }

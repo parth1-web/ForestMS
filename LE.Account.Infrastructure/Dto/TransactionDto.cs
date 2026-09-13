@@ -50,14 +50,17 @@ namespace LE.Account.Infrastructure.Dto
 
         private decimal calculateTransactionAmount()
         {
+            // P1/B12 fix: the equal-count branch had a 'return' inside the loop, so
+            // multi-line journals (N debits = N credits) got the FIRST debit amount as
+            // their header amount instead of the sum of all debits.
             decimal transactionAmount = 0;
-            if (debitLedgers.Count == creditLedgers.Count)
+            foreach (var ta in debitLedgers)
             {
-                foreach (var ta in debitLedgers)
-                {
-                    transactionAmount += ta.amount;
-                    return transactionAmount;
-                }
+                transactionAmount += ta.amount;
+            }
+            if (transactionAmount > 0)
+            {
+                return transactionAmount;
             }
             var dataWithMaximumItem = debitLedgers.Count > creditLedgers.Count ? debitLedgers : creditLedgers;
             foreach (var da in dataWithMaximumItem)
