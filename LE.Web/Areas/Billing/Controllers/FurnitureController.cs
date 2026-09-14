@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using LE.Account.Infrastructure.Repository.Interface;
 using LE.Billing.Entities;
 using LE.Billing.Infrastructure.Dto;
@@ -91,7 +91,7 @@ namespace LE.Web.Areas.Billing.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return RedirectToAction("index");
             }
         }
@@ -111,7 +111,7 @@ namespace LE.Web.Areas.Billing.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return RedirectToAction("index");
             }
         }
@@ -133,7 +133,7 @@ namespace LE.Web.Areas.Billing.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return RedirectToAction("index");
             }
             return View(furnitureModel);
@@ -150,7 +150,7 @@ namespace LE.Web.Areas.Billing.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
             }
             return RedirectToAction(nameof(Index));
         }
@@ -166,7 +166,7 @@ namespace LE.Web.Areas.Billing.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
             }
             return RedirectToAction(nameof(Index));
         }
@@ -183,7 +183,7 @@ namespace LE.Web.Areas.Billing.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return RedirectToAction("index");
             }
         }

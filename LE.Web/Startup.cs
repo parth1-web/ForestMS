@@ -23,7 +23,6 @@ using LE.Common.Repository.Implementations;
 using LE.Common.Repository.Interface;
 using LE.Context.Data;
 using LE.Context.Repository.Implementations;
-using LE.Integration.Common;
 using LE.Inventory.Infrastructure.Repository.Implementations;
 using LE.Inventory.Infrastructure.Repository.Interface;
 using LE.Inventory.Service.Adapter.Implementations;
@@ -57,6 +56,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Rotativa.AspNetCore;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -196,8 +196,21 @@ namespace LE.Web
             else
             {
                 app.UseExceptionHandler("/Error/{0}");
+                // S11: enforce HTTPS in production unless explicitly opted out
+                // (e.g. TLS terminated at a proxy that is not configured here).
+                if (Configuration.GetValue<bool>("Security:EnableHsts", true))
+                {
+                    app.UseHsts();
+                }
             }
-            //app.UseHsts();
+
+            if (Configuration.GetValue<bool>("Security:EnableHttpsRedirect", true))
+            {
+                // Dev runs on plain HTTP by default; turning this off avoids a
+                // redirect loop when the app sits behind a non-HTTPS-aware proxy.
+                app.UseHttpsRedirection();
+            }
+
             app.UseStatusCodePagesWithReExecute("/error/{0}");
 
             app.UseForwardedHeaders(new ForwardedHeadersOptions
@@ -205,7 +218,9 @@ namespace LE.Web
                 ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
             });
 
-            //app.UseHttpsRedirection();
+            // Request-level logging (method, path, status, timing, user id).
+            app.UseSerilogRequestLogging();
+
             app.UseStaticFiles(new StaticFileOptions
             {
                 ServeUnknownFileTypes = true
@@ -291,7 +306,6 @@ namespace LE.Web
         private void registerHelpers(IServiceCollection services)
         {
             services.AddScoped<FileHelper, FileHelperImpl>();
-            services.AddScoped<AccountTransactionHelper, AccountTransactionHelperImpl>();
         }
 
         private void registerAssemblers(IServiceCollection services)

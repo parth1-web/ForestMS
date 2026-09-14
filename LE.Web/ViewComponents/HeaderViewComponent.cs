@@ -26,6 +26,14 @@ namespace LE.Web.ViewComponents
             var loggedInAuthenticationId = Request.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             ViewBag.authenticationId = loggedInAuthenticationId;
 
+            // Error pages can render for anonymous requests; there is no user detail to show then.
+            if (string.IsNullOrEmpty(loggedInAuthenticationId))
+            {
+                ViewBag.userDetail = null;
+                ViewBag.setup = _organizationSetupRepository.getQueryable().ToList();
+                return View();
+            }
+
             long loggedInUserId = _authenticationRepo.getById(Convert.ToInt64(loggedInAuthenticationId)).type_id;
 
             var userDetails = _userRepository.getById(Convert.ToInt32(loggedInUserId));

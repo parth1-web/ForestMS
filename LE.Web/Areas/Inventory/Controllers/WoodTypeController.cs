@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using LE.Inventory.Entities;
 using LE.Inventory.Infrastructure.Dto;
 using LE.Inventory.Infrastructure.Repository.Interface;
@@ -85,7 +85,7 @@ namespace LE.Web.Areas.Inventory.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return RedirectToAction("index");
             }
         }
@@ -113,7 +113,7 @@ namespace LE.Web.Areas.Inventory.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return RedirectToAction("index");
             }
            
@@ -131,7 +131,7 @@ namespace LE.Web.Areas.Inventory.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return RedirectToAction("index");
             }
         }

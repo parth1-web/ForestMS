@@ -1,4 +1,4 @@
-﻿using LE.Entities.User;
+using LE.Entities.User;
 using LE.Infrastructure.Dto;
 using LE.Service.Repository.Interface;
 using LE.Service.Services.Interface;
@@ -54,7 +54,7 @@ namespace LE.Web.Areas.Setup.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return View(new List<ModuleDto>());
             }
         }
@@ -69,7 +69,7 @@ namespace LE.Web.Areas.Setup.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return RedirectToAction("index");
             }
         }
@@ -90,7 +90,7 @@ namespace LE.Web.Areas.Setup.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
             }
             return View(model);
         }
@@ -116,7 +116,7 @@ namespace LE.Web.Areas.Setup.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return RedirectToAction("index");
             }
 
@@ -137,7 +137,7 @@ namespace LE.Web.Areas.Setup.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
             }
             return View(model);
         }

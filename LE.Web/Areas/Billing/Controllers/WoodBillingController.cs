@@ -116,7 +116,7 @@ namespace LE.Web.Areas.Billing.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { error = true, responseText = ex.Message });
+                return Json(ExceptionMessageHelper.buildErrorObject(ex));
             }
         }
 
@@ -304,7 +304,7 @@ namespace LE.Web.Areas.Billing.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return Redirect("/inventory/wood-details");
             }
 
@@ -398,7 +398,7 @@ namespace LE.Web.Areas.Billing.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return RedirectToAction("report");
             }
         }

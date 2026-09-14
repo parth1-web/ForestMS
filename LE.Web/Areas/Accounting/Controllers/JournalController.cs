@@ -61,7 +61,7 @@ namespace LE.Web.Areas.Accounting.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { error = true, responseText = ex.Message });
+                return Json(ExceptionMessageHelper.buildErrorObject(ex));
             }
         }
 

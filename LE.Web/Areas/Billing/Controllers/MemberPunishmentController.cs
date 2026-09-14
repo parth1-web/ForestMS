@@ -163,7 +163,7 @@ namespace LE.Web.Areas.Billing.Controllers
                 var members = _memRepo.getQueryable().Where(a => a.IsActive).ToList();
                 members.ForEach(mem => mem.FullName = $"{mem.FullName} ( {mem.Membership.MembershipCode} )");
                 ViewBag.members = new SelectList(members, "MembershipId", "FullName");
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return View(dto);
             }
         }
@@ -206,7 +206,7 @@ namespace LE.Web.Areas.Billing.Controllers
             }
             catch (Exception ex)
             {
-                return Json(500, new { success = false, message = ex.Message });
+                return Json(500, ExceptionMessageHelper.buildFailObject(ex));
             }
         }
 
@@ -340,7 +340,7 @@ namespace LE.Web.Areas.Billing.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return Redirect("/inventory/wood-details");
             }
         }

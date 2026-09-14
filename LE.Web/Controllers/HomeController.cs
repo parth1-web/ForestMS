@@ -1,4 +1,4 @@
-﻿using LE.Account.Entities;
+using LE.Account.Entities;
 using LE.Account.Infrastructure.Repository.Interface;
 using LE.Account.Service.Services.Interface;
 using LE.Billing.Entities;
@@ -54,7 +54,9 @@ namespace LE.Web.Controllers
         {
             try
             {
-                ViewBag.LoggedInUserName = _userRepo.getById(getLoggedInAuthenticationId())?.full_name;
+                // getLoggedInUserId resolves the authentication row -> user row; the
+                // authentication id only matches a user id by seed coincidence.
+                ViewBag.LoggedInUserName = _userRepo.getById(getLoggedInUserId())?.full_name;
                 ViewBag.organizationName = _orgSetupRepo.getByKey(OrganizationSetup.Organization_Name.ToString())?.value;
                 ViewBag.totalMembers = _memberRepository.getQueryable().Where(a => a.IsActive == true).Count();
 
@@ -82,7 +84,7 @@ namespace LE.Web.Controllers
             }
             catch (Exception e)
             {
-                AlertHelper.setMessage(this, e.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, e, messageType.error);
                 return RedirectToAction("ledger-setup", "accounting");
             }
         }

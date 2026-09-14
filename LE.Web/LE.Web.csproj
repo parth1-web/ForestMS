@@ -1,11 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-
+<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UserSecretsId>04fcf427-2d7d-4ee4-a18a-3933b60614fe</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Remove="Areas\Counter\Data\**" />
     <Compile Remove="Areas\Counter\Models\**" />
@@ -28,7 +26,6 @@
     <None Remove="Areas\Inventory\Data\**" />
     <None Remove="ViewModels\**" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Autofac" Version="5.1.2" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="6.0.0" />
@@ -51,26 +48,24 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.1" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="3.1.0" />
     <PackageReference Include="Rotativa.AspNetCore" Version="1.1.1" />
+    <PackageReference Include="Serilog.AspNetCore" Version="3.4.1" />
+    <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.35.0" />
     <PackageReference Include="System.Drawing.Common" Version="4.7.3" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\LE.Account.Common\LE.Account.Common.csproj" />
     <ProjectReference Include="..\LE.Account.Factories\LE.Account.Factories.csproj" />
     <ProjectReference Include="..\LE.Billing.Factories\LE.Billing.Factories.csproj" />
     <ProjectReference Include="..\LE.Billing.Service\LE.Billing.Service.csproj" />
     <ProjectReference Include="..\LE.Common\LE.Common.csproj" />
-    <ProjectReference Include="..\LE.Integration\LE.Integration.csproj" />
     <ProjectReference Include="..\LE.Inventory.Service\LE.Inventory.Service.csproj" />
     <ProjectReference Include="..\LE.Service\LE.Service.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <Folder Include="Properties\PublishProfiles\" />
     <Folder Include="wwwroot\images\custom\" />
   </ItemGroup>
-
   <ItemGroup>
     <None Include="Views\Shared\Accounting\AccountingReportDecorator.cshtml" />
     <None Include="wwwroot\lib\fontawesome-free\webfonts\fa-brands-400.svg" />
@@ -80,7 +75,6 @@
     <None Include="wwwroot\lib\fontawesome-free\webfonts\fa-solid-900.svg" />
     <None Include="wwwroot\lib\fontawesome-free\webfonts\fa-solid-900.woff2" />
   </ItemGroup>
-
   <ItemGroup>
     <Content Update="Areas\Billing\Views\_ViewImports.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>

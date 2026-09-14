@@ -1,4 +1,4 @@
-﻿using LE.Account.Entities;
+using LE.Account.Entities;
 using LE.Account.Infrastructure.Repository.Interface;
 using LE.Account.Service.Services.Interface;
 using LE.Web.Controllers;
@@ -38,7 +38,7 @@ namespace LE.Web.Areas.Accounting.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
             }
             return View(setups);
         }
@@ -54,7 +54,7 @@ namespace LE.Web.Areas.Accounting.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
             }
             return RedirectToAction(nameof(Index), datas);
         }

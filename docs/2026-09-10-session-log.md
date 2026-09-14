@@ -323,3 +323,72 @@ was removed afterwards; DB restored to pre-test state.
 - Smoke-tooling note: PowerShell `Set-Content -Encoding UTF8` adds a BOM that
   breaks `[FromBody]` JSON model binding (members deserialized to null). The
   UI's own AJAX is unaffected.
+
+---
+
+# Addendum 3 — P2 Core Architecture (2026-09-14)
+
+> First P2 tranche: dead-code removal, DI hygiene, logging, error sanitization,
+> HTTPS enforcement. Build verified **0 errors** after every phase. The unit-of-work
+> migration (SaveChanges removal) is deliberately deferred — see "Deferred" below.
+
+## What was done
+
+### Phase A — Dead code removal
+- **`TransactionManagerImpl` + `TransactionManager` interface deleted** (`LE.Context/Helper/`). Zero references anywhere; class was broken by design ([ThreadStatic] counter, commit-before-save, negative counts possible).
+- **`LE.Integration` project deleted entirely** (solution, `LE.Web.csproj` reference, Startup registrations, Dockerfile COPY). It contained unregistered shadow services (billing wood-bill/member service clones: insert never saved the bill, cancel threw `NotImplementedException`) and `AccountTransactionHelper` which was registered but had **no live consumers** (verified: nothing outside LE.Integration referenced it). ~200 lines of dead money-path code gone.
+
+### Phase B — DI / Autofac hygiene
+- **`AutofacModule` rewritten**: assembly-scans all non-abstract `*Controller` types with `PropertiesAutowired()` — replaces the hand-written list that missed several `BaseController`-derived controllers (latent NREs on `getLoggedInUserId()`), double-registered the abstract `BaseController` itself, and used `AllowCircularDependencies` (now dropped).
+- **`HeaderViewComponent` anonymous-request NRE fixed** (smoke-test known issue): renders with `userDetail = null` when no authenticated user instead of throwing on error pages.
+- Note: `LE.Web.Autofac` namespace collides with the `Autofac` package namespace — base class must be `global::Autofac.Module` (documented in the file).
+
+### Phase C — Serilog logging
+- Packages: `Serilog.AspNetCore 3.4.1` + `Serilog.Sinks.File 4.1.0` (3.1-compatible).
+- `Program.cs`: bootstrap console logger (host start/crash/fatal), `UseSerilog` with config from `Serilog:*` appsettings keys (`MinimumLevel`, `File:path` default `logs/le-web-.log`, `File:retainedFileCountLimit` default 31). `Microsoft`/`System` at Warning.
+- `Startup.Configure`: `UseSerilogRequestLogging()` (method, path, status, timing, user id) after forwarded-headers.
+
+### Phase D — Exception-message sanitization (S11 second half)
+- New **`LE.Web/Helpers/ExceptionMessageHelper.cs`**: `CustomException` (and subclasses) messages shown to users as-is — they are intentionally-written user-facing messages; **all other exceptions get a generic message** (stack contents, PG constraint names, file paths no longer leak). Wire shapes unchanged: alerts/TempData, `{error, responseText}` AJAX, `JsonWrapper` `{error}` JSON (POS client unaffected — same field structure), legacy `{success, message}` shape.
+- **48 leak sites fixed across 38 controllers** (all `ex.Message`/`e.Message` in LE.Web controllers). Remaining `.Message` references in codebase: none outside the helper; vendored JS libs only (their own internals).
+- Full details of unexpected exceptions are now in the Serilog log for support.
+
+### Phase E — HTTPS enforcement (S11 first half) + misc
+- `app.UseHsts()` in the **production** branch (was commented out); `app.UseHttpsRedirection()` restored — both **config-gated**: `Security:EnableHsts` (default true), `Security:EnableHttpsRedirect` (default true). Gates exist for proxies terminating TLS and plain-HTTP LAN deployments (POS client).
+- `appsettings.example.json` updated with `Serilog` + new `Security` keys.
+- **`HomeController.Index` user-lookup bug fixed**: was passing authentication id to `_userRepo.getById()` (only worked because seed ids coincide) — now uses `getLoggedInUserId()`.
+
+## Deliberate trade-offs (P2 tranche 1)
+
+1. HSTS/HTTPS-redirect default **on** in config but HSTS only applied in Production env — dev HTTP workflow unaffected; document the gates for the production reverse-proxy setup.
+2. `ExceptionMessageHelper` shows generic text for unexpected exceptions — operational messages (day-closed, already-sold, reconciliation failures…) are all `CustomException` subclasses and pass through; verify no user-facing message was lost during smoke test.
+3. Serilog file sink writes to `logs/` under the app working dir — Docker volume/hosting setup should mount/rotate that path (retention 31 days default).
+4. `LE.Integration` deleted rather than wired — its features were broken clones; if integration billing is ever needed, reimplement against current service APIs.
+
+## Process note — encoding incident (fixed)
+
+The bulk sed-style replacement script used PowerShell 5.1 `Set-Content` without
+`-Encoding`, which wrote **ANSI** and corrupted em-dashes (U+2014) in UTF-8-BOM
+files (`ReportController.cs`, `MemberPunishmentController.cs` — my own P1
+comments). Caught by a byte-level audit vs `git show HEAD`; both files restored
+from HEAD with UTF-8 BOM and the replacements re-applied. **All 38 modified
+files verified: non-ASCII char counts match HEAD exactly.** Lesson recorded for
+future sessions: never use bare `Set-Content` on repo files in PS 5.1 — use
+`[IO.File]::WriteAllText` with explicit `UTF8Encoding($true)`.
+
+## Deferred from this tranche (P2 continues)
+
+1. **Unit-of-work migration** (remove `SaveChanges()` from `BaseRepositoryImpl` insert/update/delete): touches **219 repo-write call sites** + ~100 legacy ambient `TransactionScope`s (currently no-ops that work only because each write self-commits). Converting all of them to explicit `beginTransaction`/commit — with a runtime smoke test like P1's — is a dedicated session. Money paths already use real transactions from P1, so the risk is in the long tail of setup/admin/catalog services.
+2. .NET 3.1 → LTS 8.x upgrade (clears Magick.NET NU19xxx advisories; blocked until UoW lands to avoid triple merge conflicts)
+3. Async data layer; lazy-loading disable; pager fixes (`href`s, `NextPageService`, clamp `page`, `OrderBy` before `Skip/Take`)
+4. `wwwroot` cleanup (58 MB, 54 jQuery copies); git-history purge of binaries; real README
+5. Menu-level permissions (beyond module-level); global `AutoValidateAntiforgeryToken`
+6. Nepali timezone/`IClock` standardization
+
+## Verification performed this session
+
+- Full solution build after each phase and at end: **0 errors** (~348 pre-existing warnings, unchanged)
+- `git status` audit: only intended files changed; encoding byte-audit of all 38 touched files vs HEAD
+- No runtime smoke test this session (no DB changes, no route/shape changes intended) — recommend a quick manual pass: login, navbar, one bill create/cancel, POS JWT login, forbidden-page for restricted user, and check `logs/` is populated
+
+---

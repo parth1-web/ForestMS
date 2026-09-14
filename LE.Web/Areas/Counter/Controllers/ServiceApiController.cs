@@ -1,4 +1,4 @@
-﻿using LE.Billing.Infrastructure.Repository.Interface;
+using LE.Billing.Infrastructure.Repository.Interface;
 using LE.Web.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -42,7 +42,7 @@ namespace LE.Web.Areas.Counter.Controllers
             }
             catch (Exception ex)
             {
-                return Content(JsonWrapper.buildErrorJson(ex.Message), "application/json");
+                return Content(ExceptionMessageHelper.buildErrorJson(ex), "application/json");
             }
 
         }
@@ -64,7 +64,7 @@ namespace LE.Web.Areas.Counter.Controllers
             }
             catch (Exception ex)
             {
-                return Content(JsonWrapper.buildErrorJson(ex.Message), "application/json");
+                return Content(ExceptionMessageHelper.buildErrorJson(ex), "application/json");
             }
         }
     }

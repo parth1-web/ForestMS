@@ -56,7 +56,7 @@ namespace LE.Web.Areas.Billing.Controllers
             }
             catch (Exception ex)
             {
-                return Content(JsonWrapper.buildErrorJson(ex.Message), "application/json");
+                return Content(ExceptionMessageHelper.buildErrorJson(ex), "application/json");
             }
         }
 
@@ -125,7 +125,7 @@ namespace LE.Web.Areas.Billing.Controllers
             }
             catch (Exception ex)
             {
-                return Content(JsonWrapper.buildErrorJson(ex.Message), "application/json");
+                return Content(ExceptionMessageHelper.buildErrorJson(ex), "application/json");
             }
         }
 

@@ -30,7 +30,6 @@ COPY ["LE.Billing.Infrastructure/LE.Billing.Infrastructure.csproj", "LE.Billing.
 COPY ["LE.Inventory.Service/LE.Inventory.Service.csproj", "LE.Inventory.Service/"]
 COPY ["LE.Inventory.Infrastructure/LE.Inventory.Infrastructure.csproj", "LE.Inventory.Infrastructure/"]
 COPY ["LE.Billing.Factories/LE.Billing.Factories.csproj", "LE.Billing.Factories/"]
-COPY ["LE.Integration/LE.Integration.csproj", "LE.Integration/"]
 COPY ["LE.Invenory.Context/LE.Invenory.Context.csproj", "LE.Invenory.Context/"]
 RUN dotnet restore "./LE.Web/LE.Web.csproj"
 COPY . .

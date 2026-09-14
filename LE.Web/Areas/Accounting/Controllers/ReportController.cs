@@ -528,7 +528,7 @@ namespace LE.Web.Areas.Accounting.Controllers
 			}
 			catch (Exception ex)
 			{
-				AlertHelper.setMessage(this, ex.Message, messageType.error);
+				ExceptionMessageHelper.setMessage(this, ex, messageType.error);
 				return View(trialBalanceDto);
 			}
 		}

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
@@ -75,7 +75,7 @@ namespace LE.Web.Areas.Administration.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return Redirect("/home");
             }
         }
@@ -103,7 +103,7 @@ namespace LE.Web.Areas.Administration.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return Redirect("/home");
             }
         }
@@ -142,7 +142,7 @@ namespace LE.Web.Areas.Administration.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
             }
             finally
             {
@@ -196,7 +196,7 @@ namespace LE.Web.Areas.Administration.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return Redirect("/home");
             }
         }
@@ -224,7 +224,7 @@ namespace LE.Web.Areas.Administration.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
             }
             finally
             {
@@ -254,7 +254,7 @@ namespace LE.Web.Areas.Administration.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
             }
             return RedirectToAction(nameof(Index));
         }
@@ -270,7 +270,7 @@ namespace LE.Web.Areas.Administration.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
             }
             return RedirectToAction(nameof(Index));
         }
@@ -290,7 +290,7 @@ namespace LE.Web.Areas.Administration.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return RedirectToAction(nameof(Index));
             }
         }
@@ -310,7 +310,7 @@ namespace LE.Web.Areas.Administration.Controllers
                 }
                 catch (Exception ex)
                 {
-                    AlertHelper.setMessage(this, ex.Message, messageType.error);
+                    ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 }
             }
             return View(model);

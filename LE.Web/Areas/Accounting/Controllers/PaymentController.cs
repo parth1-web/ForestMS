@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using DateConverter.Core.Service_Factory;
 using LE.Account.Common.Enums;
 using LE.Account.Infrastructure.Dto;
@@ -121,7 +121,7 @@ namespace LE.Web.Areas.Accounting.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return RedirectToAction("add");
             }
         }
@@ -150,7 +150,7 @@ namespace LE.Web.Areas.Accounting.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return RedirectToAction("index");
             }
         }

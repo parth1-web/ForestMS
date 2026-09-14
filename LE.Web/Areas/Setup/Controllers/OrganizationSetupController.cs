@@ -1,4 +1,4 @@
-﻿using LE.Entities.OrganizationSetup;
+using LE.Entities.OrganizationSetup;
 using LE.Service.Repository.Interface;
 using LE.Service.Services.Interface;
 using LE.Web.Controllers;
@@ -71,7 +71,7 @@ namespace LE.Web.Areas.Setup.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
             }
             return RedirectToAction(nameof(Index), datas);
         }

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using DateConverter.Core.Service_Factory;
 using LE.Billing.Infrastructure.Repository.Interface;
 using LE.Billing.Service.Services.Interface;
@@ -61,7 +61,7 @@ namespace LE.Web.Areas.Billing.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return RedirectToAction("index");
             }
         }
@@ -112,7 +112,7 @@ namespace LE.Web.Areas.Billing.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return RedirectToAction("report");
             }
         }

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using ImageMagick;
 using LE.Account.Infrastructure.Dto;
 using LE.Account.Service.Services.Interface;
@@ -186,7 +186,7 @@ namespace LE.Web.Areas.Billing.Controllers
             {
                 var tole = _toleRepo.getAll();
                 ViewBag.toles = new SelectList(tole, "tole_id", "tole_no");
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 // P1/B15 fix: the failure branch returned success = true ("Membership
                 // failed to save."), so the UI reported every failure as a success.
                 return Json(new { success = false, message = "Membership failed to save." });
@@ -304,7 +304,7 @@ namespace LE.Web.Areas.Billing.Controllers
             {
                 var toles = _toleRepo.getAll();
                 ViewBag.toles = toles;
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return RedirectToAction("index");
             }
         }
@@ -322,7 +322,7 @@ namespace LE.Web.Areas.Billing.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return RedirectToAction("index");
             }
         }
@@ -340,7 +340,7 @@ namespace LE.Web.Areas.Billing.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return RedirectToAction("index");
             }
         }
@@ -366,7 +366,7 @@ namespace LE.Web.Areas.Billing.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return RedirectToAction("index");
             }
         }
@@ -539,7 +539,7 @@ namespace LE.Web.Areas.Billing.Controllers
             catch (Exception ex)
             {
                 var memberDetail = _mapper.Map<MemberDetail>(model);
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return View(memberDetail);
             }
         }
@@ -557,7 +557,7 @@ namespace LE.Web.Areas.Billing.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return RedirectToAction("Members");
             }
         }
@@ -575,7 +575,7 @@ namespace LE.Web.Areas.Billing.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return RedirectToAction("Members");
             }
         }
@@ -593,7 +593,7 @@ namespace LE.Web.Areas.Billing.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return RedirectToAction("Members");
             }
         }

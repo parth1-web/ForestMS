@@ -1,4 +1,4 @@
-﻿using LE.Common.Enums;
+using LE.Common.Enums;
 using LE.Entities.User;
 using LE.Service.Repository.Interface;
 using LE.Service.Services.Interface;
@@ -98,7 +98,7 @@ namespace LE.Web.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
             }
             return View(model);
         }
@@ -142,7 +142,7 @@ namespace LE.Web.Controllers
             }
             catch (Exception ex)
             {
-                return Content(JsonWrapper.buildErrorJson(ex.Message), "application/json");
+                return Content(ExceptionMessageHelper.buildErrorJson(ex), "application/json");
             }
 
         }

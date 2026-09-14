@@ -1,4 +1,4 @@
-﻿using DateConverter.Core.Service_Factory;
+using DateConverter.Core.Service_Factory;
 using LE.Billing.Infrastructure.Dto;
 using LE.Billing.Infrastructure.Repository.Interface;
 using LE.Billing.Service.Services.Interface;
@@ -99,7 +99,7 @@ namespace LE.Web.Areas.Billing.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return Redirect("/billing/day-close/new");
             }
         }

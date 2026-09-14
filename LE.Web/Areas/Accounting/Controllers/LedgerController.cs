@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using DateConverter.Core.Service_Factory;
 using LE.Account.Entities;
 using LE.Account.Infrastructure.Dto;
@@ -107,7 +107,7 @@ namespace LE.Web.Areas.Accounting.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return RedirectToAction("index");
             }
             return View(ledgerModel);
@@ -124,7 +124,7 @@ namespace LE.Web.Areas.Accounting.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return RedirectToAction("index");
             }
         }
@@ -143,7 +143,7 @@ namespace LE.Web.Areas.Accounting.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return RedirectToAction("index");
             }
         }
@@ -166,7 +166,7 @@ namespace LE.Web.Areas.Accounting.Controllers
             }
             catch (Exception ex)
             {
-                AlertHelper.setMessage(this, ex.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return RedirectToAction("index");
             }
             return View(ledgerModel);
@@ -205,7 +205,7 @@ namespace LE.Web.Areas.Accounting.Controllers
             }
             catch (Exception e)
             {
-                AlertHelper.setMessage(this, e.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, e, messageType.error);
                 return RedirectToAction("index");
             }
         }
@@ -227,7 +227,7 @@ namespace LE.Web.Areas.Accounting.Controllers
             }
             catch (Exception e)
             {
-                AlertHelper.setMessage(this, e.Message, messageType.error);
+                ExceptionMessageHelper.setMessage(this, e, messageType.error);
                 return RedirectToAction("index");
             }
         }
