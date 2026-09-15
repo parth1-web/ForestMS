@@ -5,7 +5,6 @@ using LE.Billing.Service.Assemblers.Interface;
 using LE.Billing.Service.Services.Interface;
 using LE.Common.Exceptions;
 using System;
-using System.Transactions;
 
 namespace LE.Billing.Service.Services.Implementations
 {
@@ -24,12 +23,13 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _memPunishmentRepo.beginTransaction())
                 {
                     MemberPunishment mp = new MemberPunishment();
                     _memPunishmentAssembler.copy(mp, dto);
                     _memPunishmentRepo.insert(mp);
-                    tx.Complete();
+                    _memPunishmentRepo.saveChanges();
+                    tx.Commit();
                     return mp;
                 }
             }
@@ -43,7 +43,7 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _memPunishmentRepo.beginTransaction())
                 {
                     var mp = _memPunishmentRepo.getById(dto.MemberPunishmentId);
                     if (mp == null)
@@ -55,7 +55,8 @@ namespace LE.Billing.Service.Services.Implementations
                     dto.CreatedDate = mp.CreatedDate;
                     _memPunishmentAssembler.copy(mp, dto);
                     _memPunishmentRepo.update(mp);
-                    tx.Complete();
+                    _memPunishmentRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception ex)
@@ -68,7 +69,7 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _memPunishmentRepo.beginTransaction())
                 {
                     var mp = _memPunishmentRepo.getById(memPunishment_id);
                     if (mp == null)
@@ -76,7 +77,8 @@ namespace LE.Billing.Service.Services.Implementations
                         throw new ItemNotFoundException("Member punishment not found.");
                     }
                     _memPunishmentRepo.delete(mp);
-                    tx.Complete();
+                    _memPunishmentRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception ex)

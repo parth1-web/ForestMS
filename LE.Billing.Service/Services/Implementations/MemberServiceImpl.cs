@@ -6,7 +6,6 @@ using LE.Billing.Service.Assemblers.Interface;
 using LE.Billing.Service.Services.Interface;
 using LE.Common.Exceptions;
 using System;
-using System.Transactions;
 
 namespace LE.Billing.Service.Services.Implementations
 {
@@ -30,12 +29,13 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _memberRepo.beginTransaction())
                 {
                     Member member = new Member();
                     _memberAssembler.copy(member, member_dto);
                     _memberRepo.insert(member);
-                    tx.Complete();
+                    _memberRepo.saveChanges();
+                    tx.Commit();
                     return member;
                 }
             }
@@ -49,7 +49,7 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _memberRepo.beginTransaction())
                 {
                     var member = _memberRepo.getById(member_dto.MemberId);
                     if (member == null)
@@ -59,7 +59,8 @@ namespace LE.Billing.Service.Services.Implementations
                     member_dto.CreatedBy = member.CreatedBy;
                     _memberAssembler.copy(member, member_dto);
                     _memberRepo.update(member);
-                    tx.Complete();
+                    _memberRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -72,7 +73,7 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _memberRepo.beginTransaction())
                 {
                     var member = _memberRepo.getById(member_id);
                     if (member == null)
@@ -81,7 +82,8 @@ namespace LE.Billing.Service.Services.Implementations
                     }
                     member.Disable();
                     _memberRepo.update(member);
-                    tx.Complete();
+                    _memberRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -94,7 +96,7 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _memberRepo.beginTransaction())
                 {
                     var member = _memberRepo.getById(member_id);
                     if (member == null)
@@ -103,7 +105,8 @@ namespace LE.Billing.Service.Services.Implementations
                     }
                     member.Enable();
                     _memberRepo.update(member);
-                    tx.Complete();
+                    _memberRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -116,7 +119,7 @@ namespace LE.Billing.Service.Services.Implementations
 		{
 			try
 			{
-				using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+				using (var tx = _memberRepo.beginTransaction())
 				{
 					var member = _memberRepo.getById(member_id);
 					if (member == null)
@@ -125,7 +128,8 @@ namespace LE.Billing.Service.Services.Implementations
 					}
 					member.Delete();
 					_memberRepo.update(member);
-					tx.Complete();
+					_memberRepo.saveChanges();
+					tx.Commit();
 				}
 			}
 			catch (Exception)

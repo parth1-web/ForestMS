@@ -1,11 +1,14 @@
-﻿using LE.Inventory.Entities;
+using LE.Inventory.Entities;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore.Storage;
 using System.Linq;
 
 namespace LE.Inventory.Infrastructure.Repository.Interface
 {
     public interface DamagedWoodDetailRepository
     {
+        IDbContextTransaction beginTransaction();
+        void saveChanges();
         void insert(DamagedWoodDetail damagedWoodDetail);
         void update(DamagedWoodDetail damagedWoodDetail);
         void delete(DamagedWoodDetail damagedWoodDetail);

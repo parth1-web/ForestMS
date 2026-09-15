@@ -6,7 +6,6 @@ using LE.Common.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Transactions;
 
 namespace LE.Billing.Service.Services.Implementations
 {
@@ -27,7 +26,7 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _serviceRepo.beginTransaction())
                 {
                     var service = _serviceRepo.getById(service_id);
 
@@ -45,7 +44,8 @@ namespace LE.Billing.Service.Services.Implementations
 
                     _serviceRepo.delete(service);
 
-                    tx.Complete();
+                    _serviceRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -58,7 +58,7 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _serviceRepo.beginTransaction())
                 {
                     var service = _serviceRepo.getById(service_id);
 
@@ -70,7 +70,8 @@ namespace LE.Billing.Service.Services.Implementations
                     service.disable();
                     _serviceRepo.update(service);
 
-                    tx.Complete();
+                    _serviceRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -83,7 +84,7 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _serviceRepo.beginTransaction())
                 {
                     var service = _serviceRepo.getById(service_id);
 
@@ -95,7 +96,8 @@ namespace LE.Billing.Service.Services.Implementations
                     service.enable();
                     _serviceRepo.update(service);
 
-                    tx.Complete();
+                    _serviceRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -108,7 +110,7 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _serviceRepo.beginTransaction())
                 {
                     bool isNameValid = checkNameValidity(service_dto);
 
@@ -125,7 +127,8 @@ namespace LE.Billing.Service.Services.Implementations
 
                     _serviceRepo.insert(service);
 
-                    tx.Complete();
+                    _serviceRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -138,7 +141,7 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _serviceRepo.beginTransaction())
                 {
                     var service = _serviceRepo.getById(service_dto.service_id);
 
@@ -160,7 +163,8 @@ namespace LE.Billing.Service.Services.Implementations
 
                     _serviceRepo.update(service);
 
-                    tx.Complete();
+                    _serviceRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)

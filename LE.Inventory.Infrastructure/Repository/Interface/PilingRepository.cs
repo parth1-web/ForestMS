@@ -1,11 +1,14 @@
-﻿using LE.Inventory.Entities;
+using LE.Inventory.Entities;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore.Storage;
 using System.Linq;
 
 namespace LE.Inventory.Infrastructure.Repository.Interface
 {
     public interface PilingRepository
     {
+        IDbContextTransaction beginTransaction();
+        void saveChanges();
         void insert(Piling piling);
         void update(Piling piling);
         void delete(Piling piling);

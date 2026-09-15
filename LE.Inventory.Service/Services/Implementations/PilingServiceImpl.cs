@@ -5,7 +5,6 @@ using LE.Inventory.Infrastructure.Repository.Interface;
 using LE.Inventory.Service.Assemblers.Interface;
 using LE.Inventory.Service.Services.Interface;
 using System;
-using System.Transactions;
 
 namespace LE.Inventory.Service.Services.Implementations
 {
@@ -24,7 +23,7 @@ namespace LE.Inventory.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _pilingRepo.beginTransaction())
                 {
                     var piling = _pilingRepo.getById(piling_id);
 
@@ -35,7 +34,8 @@ namespace LE.Inventory.Service.Services.Implementations
                         throw new ItemUsedException($"The piling with id {piling_id} already has woods. You cannot delete.");
 
                     _pilingRepo.delete(piling);
-                    tx.Complete();
+                    _pilingRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception ex)
@@ -48,7 +48,7 @@ namespace LE.Inventory.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _pilingRepo.beginTransaction())
                 {
                     var piling = _pilingRepo.getById(piling_id);
 
@@ -58,7 +58,8 @@ namespace LE.Inventory.Service.Services.Implementations
                     piling.disable();
                     _pilingRepo.update(piling);
 
-                    tx.Complete();
+                    _pilingRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception ex)
@@ -71,7 +72,7 @@ namespace LE.Inventory.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _pilingRepo.beginTransaction())
                 {
                     var piling = _pilingRepo.getById(piling_id);
 
@@ -81,7 +82,8 @@ namespace LE.Inventory.Service.Services.Implementations
                     piling.enable();
                     _pilingRepo.update(piling);
 
-                    tx.Complete();
+                    _pilingRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception ex)
@@ -94,13 +96,14 @@ namespace LE.Inventory.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _pilingRepo.beginTransaction())
                 {
                     Piling piling = new Piling();
                     _pilingAssembler.copy(ref piling, pilingDto);
                     _pilingRepo.insert(piling);
 
-                    tx.Complete();
+                    _pilingRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception ex)
@@ -113,7 +116,7 @@ namespace LE.Inventory.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _pilingRepo.beginTransaction())
                 {
                     var piling = _pilingRepo.getById(pilingDto.piling_id);
 
@@ -122,7 +125,8 @@ namespace LE.Inventory.Service.Services.Implementations
 
                     _pilingAssembler.copy(ref piling, pilingDto);
                     _pilingRepo.update(piling);
-                    tx.Complete();
+                    _pilingRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception ex)

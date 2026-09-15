@@ -2,10 +2,11 @@
 @inject IHtmlLocalizer<SharedResource> Localizer
 
 @{
-    var setups = (List<LE.Entities.OrganizationSetup.OrganizationSetup>)ViewBag.setup;
+    var setups = (List<LE.Entities.OrganizationSetup.OrganizationSetup>)ViewBag.setup ?? new List<LE.Entities.OrganizationSetup.OrganizationSetup>();
     var orgName = setups.Where(a => a.key == LE.Web.Areas.Setup.Models.OrganizationSetupKeys.getOrganizationNameKey).SingleOrDefault()?.value;
     var logo = setups.Where(a => a.key == LE.Web.Areas.Setup.Models.OrganizationSetupKeys.getLogoKey).SingleOrDefault()?.value;
-    var details = ViewBag.userDetail;
+    // Null for anonymous requests (error pages can render without a login).
+    var details = ViewBag.userDetail as LE.Entities.User.User;
 }
 
 <div class="topbar-main navbar m-b-0 b-0">
@@ -32,27 +33,30 @@
                     </div>
                 </li>
                 <li class="dropdown user-box list-inline-item">
-                    <a href="index.html" class="dropdown-toggle waves-effect user-link" data-toggle="dropdown" aria-expanded="true">
-                        @{
-                            var image = "user.png";
-                            if (details.image_path != null)
-                            {
-                                image = "/custom/" + details.image_path;
+                    @if (details != null)
+                    {
+                        <a href="index.html" class="dropdown-toggle waves-effect user-link" data-toggle="dropdown" aria-expanded="true">
+                            @{
+                                var image = "user.png";
+                                if (details.image_path != null)
+                                {
+                                    image = "/custom/" + details.image_path;
+                                }
                             }
-                        }
-                        <img src="~/images/@image" alt="user-img" class="rounded-circle user-img">
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-right arrow-dropdown-menu arrow-menu-right user-list notify-list">
-                        <li>
-                            <a href="/administration/user/edit/@details.user_id" class="dropdown-item">
-                                @Localizer["Profile"]
-                            </a>
-                        </li>
-                        <li><a href="/administration/user/change-password/@ViewBag.authenticationId" class="dropdown-item">@Localizer["Change Password"]</a></li>
-                        <li><a href="/setup/org-setup" class="dropdown-item">@Localizer["Setup"]</a></li>
-                        <li class="dropdown-divider"></li>
-                        <li><a href="/account/logout" class="dropdown-item" onclick="return postLogout(this.href);">@Localizer["Logout"]</a></li>
-                    </ul>
+                            <img src="~/images/@image" alt="user-img" class="rounded-circle user-img">
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-right arrow-dropdown-menu arrow-menu-right user-list notify-list">
+                            <li>
+                                <a href="/administration/user/edit/@details.user_id" class="dropdown-item">
+                                    @Localizer["Profile"]
+                                </a>
+                            </li>
+                            <li><a href="/administration/user/change-password/@ViewBag.authenticationId" class="dropdown-item">@Localizer["Change Password"]</a></li>
+                            <li><a href="/setup/org-setup" class="dropdown-item">@Localizer["Setup"]</a></li>
+                            <li class="dropdown-divider"></li>
+                            <li><a href="/account/logout" class="dropdown-item" onclick="return postLogout(this.href);">@Localizer["Logout"]</a></li>
+                        </ul>
+                    }
                 </li>
             </ul>
 

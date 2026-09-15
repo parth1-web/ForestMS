@@ -5,7 +5,6 @@ using LE.Inventory.Infrastructure.Repository.Interface;
 using LE.Inventory.Service.Assemblers.Interface;
 using LE.Inventory.Service.Services.Interface;
 using System;
-using System.Transactions;
 
 namespace LE.Inventory.Service.Services.Implementations
 {
@@ -24,7 +23,7 @@ namespace LE.Inventory.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _woodTypeRepo.beginTransaction())
                 {
                     var woodType = _woodTypeRepo.getById(wood_type_id);
 
@@ -35,7 +34,8 @@ namespace LE.Inventory.Service.Services.Implementations
                         throw new ItemUsedException($"The Wood Type with id {wood_type_id} already has stock.You cannot delete at this moment.");
 
                     _woodTypeRepo.delete(woodType);
-                    tx.Complete();
+                    _woodTypeRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception ex)
@@ -48,7 +48,7 @@ namespace LE.Inventory.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _woodTypeRepo.beginTransaction())
                 {
                     var woodType = _woodTypeRepo.getById(wood_type_id);
 
@@ -58,7 +58,8 @@ namespace LE.Inventory.Service.Services.Implementations
                     woodType.disable();
                     _woodTypeRepo.update(woodType);
 
-                    tx.Complete();
+                    _woodTypeRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -71,7 +72,7 @@ namespace LE.Inventory.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _woodTypeRepo.beginTransaction())
                 {
                     var woodType = _woodTypeRepo.getById(wood_type_id);
                     if (woodType == null)
@@ -79,7 +80,8 @@ namespace LE.Inventory.Service.Services.Implementations
 
                     woodType.enable();
                     _woodTypeRepo.update(woodType);
-                    tx.Complete();
+                    _woodTypeRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -93,12 +95,13 @@ namespace LE.Inventory.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _woodTypeRepo.beginTransaction())
                 {
                     WoodType wood_type = new WoodType();
                     _woodTypeAssembler.copy(wood_type, wood_type_dto);
                     _woodTypeRepo.insert(wood_type);
-                    tx.Complete();
+                    _woodTypeRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -111,7 +114,7 @@ namespace LE.Inventory.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _woodTypeRepo.beginTransaction())
                 {
                     WoodType woodType = _woodTypeRepo.getById(wood_type_dto.wood_type_id);
                     if (woodType == null)
@@ -119,7 +122,8 @@ namespace LE.Inventory.Service.Services.Implementations
 
                     _woodTypeAssembler.copy(woodType, wood_type_dto);
                     _woodTypeRepo.update(woodType);
-                    tx.Complete();
+                    _woodTypeRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)

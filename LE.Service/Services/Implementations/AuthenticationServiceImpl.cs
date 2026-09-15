@@ -7,7 +7,6 @@ using LE.Service.Assembler.Interface;
 using LE.Service.Repository.Interface;
 using LE.Service.Services.Interface;
 using System;
-using System.Transactions;
 
 namespace LE.Service.Services.Implementations
 {
@@ -28,14 +27,15 @@ namespace LE.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _authenticationRepo.beginTransaction())
                 {
 
                     var authentication = _authenticationRepo.getByType(type_id, type) ?? throw new ItemNotFoundException($"Authentication detail doesnot exist.");
 
                     authentication.deactivate();
                     _authenticationRepo.update(authentication);
-                    tx.Complete();
+                    _authenticationRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -48,13 +48,14 @@ namespace LE.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _authenticationRepo.beginTransaction())
                 {
                     var authentication = _authenticationRepo.getByType(type_id, type) ?? throw new ItemNotFoundException($"Authentication detail doesnot exist.");
 
                     authentication.activate();
                     _authenticationRepo.update(authentication);
-                    tx.Complete();
+                    _authenticationRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -67,7 +68,7 @@ namespace LE.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _authenticationRepo.beginTransaction())
                 {
                     var authentication = _authenticationRepo.getByType(authentication_dto.type_id, authentication_dto.type);
 
@@ -91,7 +92,8 @@ namespace LE.Service.Services.Implementations
 
                     _authenticationRepo.insert(authentication);
 
-                    tx.Complete();
+                    _authenticationRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -104,7 +106,7 @@ namespace LE.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _authenticationRepo.beginTransaction())
                 {
                     var authentication = _authenticationRepo.getByType(dto.type_id, dto.type);
 
@@ -119,7 +121,8 @@ namespace LE.Service.Services.Implementations
 
                     _authenticationRepo.update(authentication);
 
-                    tx.Complete();
+                    _authenticationRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -133,7 +136,7 @@ namespace LE.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _authenticationRepo.beginTransaction())
                 {
                     var authentication = _authenticationRepo.getByType(type_id, type) ?? throw new ItemNotFoundException($"Authentication detail doesnot exist.");
 
@@ -149,7 +152,8 @@ namespace LE.Service.Services.Implementations
                     authentication.username = new_name;
                     _authenticationRepo.update(authentication);
 
-                    tx.Complete();
+                    _authenticationRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -182,6 +186,7 @@ namespace LE.Service.Services.Implementations
             {
                 authentication.password = _passwordHash.CreateHash(password);
                 _authenticationRepo.update(authentication);
+                _authenticationRepo.saveChanges();
             }
 
             return authentication;

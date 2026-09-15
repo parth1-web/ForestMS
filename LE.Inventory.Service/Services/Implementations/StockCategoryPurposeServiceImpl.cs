@@ -5,7 +5,6 @@ using LE.Inventory.Infrastructure.Repository.Interface;
 using LE.Inventory.Service.Assemblers.Interface;
 using LE.Inventory.Service.Services.Interface;
 using System;
-using System.Transactions;
 
 namespace LE.Inventory.Service.Services.Implementations
 {
@@ -24,7 +23,7 @@ namespace LE.Inventory.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _stockCategoryPurposeRepo.beginTransaction())
                 {
                     var stockCategoryPurpose = _stockCategoryPurposeRepo.getById(stock_category_purpose_id);
 
@@ -35,7 +34,8 @@ namespace LE.Inventory.Service.Services.Implementations
                         throw new ItemUsedException($"The Purpose Category with id {stock_category_purpose_id} already has Woods.You cannot delete at this moment.");
 
                     _stockCategoryPurposeRepo.delete(stockCategoryPurpose);
-                    tx.Complete();
+                    _stockCategoryPurposeRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception ex)
@@ -48,7 +48,7 @@ namespace LE.Inventory.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _stockCategoryPurposeRepo.beginTransaction())
                 {
                     var ballaballiCategory = _stockCategoryPurposeRepo.getById(stock_category_purpose_id);
 
@@ -58,7 +58,8 @@ namespace LE.Inventory.Service.Services.Implementations
                     ballaballiCategory.disable();
                     _stockCategoryPurposeRepo.update(ballaballiCategory);
 
-                    tx.Complete();
+                    _stockCategoryPurposeRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -71,7 +72,7 @@ namespace LE.Inventory.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _stockCategoryPurposeRepo.beginTransaction())
                 {
                     var stockCategoryPurpose = _stockCategoryPurposeRepo.getById(stock_category_purpose_id);
                     if (stockCategoryPurpose == null)
@@ -79,7 +80,8 @@ namespace LE.Inventory.Service.Services.Implementations
 
                     stockCategoryPurpose.enable();
                     _stockCategoryPurposeRepo.update(stockCategoryPurpose);
-                    tx.Complete();
+                    _stockCategoryPurposeRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -93,12 +95,13 @@ namespace LE.Inventory.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _stockCategoryPurposeRepo.beginTransaction())
                 {
                     StockCategoryPurpose stock_category_purpose = new StockCategoryPurpose();
                     _stockCategoryPurposeAssembler.copy(stock_category_purpose, stock_category_purpose_dto);
                     _stockCategoryPurposeRepo.insert(stock_category_purpose);
-                    tx.Complete();
+                    _stockCategoryPurposeRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -111,7 +114,7 @@ namespace LE.Inventory.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _stockCategoryPurposeRepo.beginTransaction())
                 {
                     StockCategoryPurpose stock_category_purpose = _stockCategoryPurposeRepo.getById(stock_category_purpose_dto.stock_category_purpose_id);
                     if (stock_category_purpose == null)
@@ -119,7 +122,8 @@ namespace LE.Inventory.Service.Services.Implementations
 
                     _stockCategoryPurposeAssembler.copy(stock_category_purpose, stock_category_purpose_dto);
                     _stockCategoryPurposeRepo.update(stock_category_purpose);
-                    tx.Complete();
+                    _stockCategoryPurposeRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)

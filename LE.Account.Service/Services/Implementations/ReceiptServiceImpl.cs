@@ -1,4 +1,4 @@
-﻿using DateConverter.Core.Service_Factory;
+using DateConverter.Core.Service_Factory;
 using LE.Account.Common.Enums;
 using LE.Account.Entities;
 using LE.Account.Infrastructure.Dto;
@@ -51,6 +51,7 @@ namespace LE.Account.Service.Services.Implementations
                 receipt.cancelled_date = DateFunctionsFactory.getDateFunctionsService().getDateTimeByTimeZone();
                 receipt.cancelled_by = user_id;
                 _receiptRepo.update(receipt);
+                _receiptRepo.saveChanges();
                 tx.Commit();
             }
 
@@ -106,6 +107,7 @@ namespace LE.Account.Service.Services.Implementations
                 TransactionDto transactionDto = _transactionDtoMaker.createTransactionDtoFrom(receiptDto);
 
                 _transactionService.addTransaction(transactionDto);
+                _receiptRepo.saveChanges();
                 tx.Commit();
                 return receipt.receipt_id;
             }

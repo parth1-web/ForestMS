@@ -1,5 +1,6 @@
-﻿using LE.Billing.Entities;
+using LE.Billing.Entities;
 using System;
+using Microsoft.EntityFrameworkCore.Storage;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,8 @@ namespace LE.Billing.Infrastructure.Repository.Interface
 {
     public interface WoodBillMemberTransactionRepository
     {
+        IDbContextTransaction beginTransaction();
+        void saveChanges();
         void insert(WoodBillMemberTransaction woodBillMemberTransaction);
         void update(WoodBillMemberTransaction woodBillMemberTransaction);
         List<WoodBillMemberTransaction> getAll();

@@ -1,11 +1,14 @@
-﻿using LE.Entities.User;
+using LE.Entities.User;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore.Storage;
 using System.Linq;
 
 namespace LE.Service.Repository.Interface
 {
     public interface RolePermissionMapRepository
     {
+        IDbContextTransaction beginTransaction();
+        void saveChanges();
         void insert(RolePermissionMap role_permission_map);
         void update(RolePermissionMap role_permission_map);
         void delete(RolePermissionMap role_permission_map);

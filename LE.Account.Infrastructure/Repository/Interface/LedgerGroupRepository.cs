@@ -1,5 +1,6 @@
-﻿using LE.Account.Common.Enums;
+using LE.Account.Common.Enums;
 using LE.Account.Entities;
+using Microsoft.EntityFrameworkCore.Storage;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,6 +8,8 @@ namespace LE.Account.Infrastructure.Repository.Interface
 {
     public interface LedgerGroupRepository
     {
+        IDbContextTransaction beginTransaction();
+        void saveChanges();
         void insert(LedgerGroup ledger_group);
         void update(LedgerGroup ledger_group);
         void delete(LedgerGroup ledger_group);

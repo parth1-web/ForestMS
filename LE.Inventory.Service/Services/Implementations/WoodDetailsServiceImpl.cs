@@ -1,4 +1,4 @@
-﻿using LE.Common.Exceptions;
+using LE.Common.Exceptions;
 using LE.Inventory.Common.Enums;
 using LE.Inventory.Entities;
 using LE.Inventory.Infrastructure.Dto;
@@ -39,6 +39,7 @@ namespace LE.Inventory.Service.Services.Implementations
                 }
 
                 _woodDetailsRepo.delete(woodDetails);
+                _woodDetailsRepo.saveChanges();
                 tx.Commit();
             }
         }
@@ -66,6 +67,7 @@ namespace LE.Inventory.Service.Services.Implementations
                     _damagedWoodDetailService.save(wood_details_dto.DamagedWoodDetailDtos);
                 }
 
+                _woodDetailsRepo.saveChanges();
                 tx.Commit();
             }
         }
@@ -128,61 +130,9 @@ namespace LE.Inventory.Service.Services.Implementations
                     _damagedWoodDetailService.update(wood_details_dto.DamagedWoodDetailDtos);
                 }
 
+                _woodDetailsRepo.saveChanges();
                 tx.Commit();
             }
         }
-
-        //public void transferredToChairan(long wood_details_id)
-        //{
-        //    try
-        //    {
-        //        using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
-        //        {
-        //            var woodDetails = _woodDetailsRepo.getById(wood_details_id);
-
-        //            if(woodDetails == null)
-        //            {
-        //                throw new ItemNotFoundException($"Wood Details with id {wood_details_id} is not found.");
-        //            }
-        //            woodDetails.transferredToChiran();
-        //            _woodDetailsRepo.update(woodDetails);
-        //            tx.Complete();
-
-        //        }
-
-        //        }
-        //    catch (Exception ex)
-        //    {
-
-        //        throw ex;
-        //    }
-        //}
-
-        //  public void cancelTransferredToChairan(long wood_details_id)
-        //{
-        //    try
-        //    {
-        //        using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
-        //        {
-        //            var woodDetails = _woodDetailsRepo.getById(wood_details_id);
-
-        //            if(woodDetails == null)
-        //            {
-        //                throw new ItemNotFoundException($"Wood Details with id {wood_details_id} is not found.");
-        //            }
-        //            woodDetails.cancelTransferredToChiran();
-        //            woodDetails.ifTransferedCanceledToChiran();
-        //            _woodDetailsRepo.update(woodDetails);
-        //            tx.Complete();
-
-        //        }
-
-        //        }
-        //    catch (Exception ex)
-        //    {
-
-        //        throw ex;
-        //    }
-        //}
     }
 }

@@ -5,7 +5,6 @@ using LE.Account.Service.Services.Interface;
 using LE.Common.Exceptions;
 using System;
 using System.Linq;
-using System.Transactions;
 
 namespace LE.Account.Service.Services.Implementations
 {
@@ -24,7 +23,7 @@ namespace LE.Account.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _ledgerBalanceRepo.beginTransaction())
                 {
                     var ledgerBalance = _ledgerBalanceRepo.getQueryable().Where(a => a.ledger_id == ledgerBalanceDto.ledger_id).FirstOrDefault();
                     if (ledgerBalance == null)
@@ -33,7 +32,8 @@ namespace LE.Account.Service.Services.Implementations
                     ledgerBalanceDto.ledger_balance_id = ledgerBalance.ledger_balance_id;
                     _ledgerBalanceMaker.copy(ledgerBalance, ledgerBalanceDto);
                     _ledgerBalanceRepo.update(ledgerBalance);
-                    tx.Complete();
+                    _ledgerBalanceRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -46,25 +46,19 @@ namespace LE.Account.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _ledgerBalanceRepo.beginTransaction())
                 {
-                    try
-                    {
-                        var ledgerBalance = new Entities.LedgerBalance();
+                    var ledgerBalance = new Entities.LedgerBalance();
 
-                        _ledgerBalanceMaker.copy(ledgerBalance, ledgerBalanceDto);
-                        _ledgerBalanceRepo.insert(ledgerBalance);
-                        tx.Complete();
-                    }
-                    catch (Exception ex)
-                    {
-                        throw ex;
-                    }
+                    _ledgerBalanceMaker.copy(ledgerBalance, ledgerBalanceDto);
+                    _ledgerBalanceRepo.insert(ledgerBalance);
+                    _ledgerBalanceRepo.saveChanges();
+                    tx.Commit();
                 }
             }
-            catch (TransactionAbortedException ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
     }

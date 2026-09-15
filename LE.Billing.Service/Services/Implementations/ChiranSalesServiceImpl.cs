@@ -1,4 +1,4 @@
-﻿using DateConverter.Core.Service_Factory;
+using DateConverter.Core.Service_Factory;
 using LE.Account.Common.Enums;
 using LE.Account.Infrastructure.Dto;
 using LE.Account.Service.Services.Interface;
@@ -63,6 +63,7 @@ namespace LE.Billing.Service.Services.Implementations
                 _chiranSalesRepo.update(chiranSale);
 
                 createReverseTransaction(chiranSale);
+                _chiranSalesRepo.saveChanges();
                 tx.Commit();
             }
         }
@@ -132,6 +133,7 @@ namespace LE.Billing.Service.Services.Implementations
 
                 }
 
+                _chiranSalesRepo.saveChanges();
                 tx.Commit();
                 return chiranSales.chiran_sales_id;
             }

@@ -1,4 +1,4 @@
-﻿using DateConverter.Core.Service_Factory;
+using DateConverter.Core.Service_Factory;
 using LE.Account.Common.Enums;
 using LE.Account.Infrastructure.Dto;
 using LE.Account.Service.Services.Interface;
@@ -59,6 +59,7 @@ namespace LE.Billing.Service.Services.Implementations
 
                 //entry to account
                 makeEntryToAccount(day_close_dto);
+                _dayCloseRepo.saveChanges();
                 tx.Commit();
             }
         }

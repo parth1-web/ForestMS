@@ -5,7 +5,6 @@ using LE.Service.Assembler.Interface;
 using LE.Service.Repository.Interface;
 using LE.Service.Services.Interface;
 using System;
-using System.Transactions;
 
 namespace LE.Service.Services.Implementations
 {
@@ -24,7 +23,7 @@ namespace LE.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _dynamicMenuRepo.beginTransaction())
                 {
                     var dynamicMenu = _dynamicMenuRepo.getById(menu_id) ?? throw new ItemNotFoundException($"Dynamic menu with id {menu_id} doesnot exist.");
 
@@ -34,7 +33,8 @@ namespace LE.Service.Services.Implementations
                     }
 
                     _dynamicMenuRepo.delete(dynamicMenu);
-                    tx.Complete();
+                    _dynamicMenuRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -47,7 +47,7 @@ namespace LE.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _dynamicMenuRepo.beginTransaction())
                 {
                     bool isMenuNameNotAllowed = isMenuNameDuplicateInSameModule(dto);
 
@@ -60,7 +60,8 @@ namespace LE.Service.Services.Implementations
                     _dynamicMenuAssembler.copy(dynamicMenu, dto);
                     _dynamicMenuRepo.insert(dynamicMenu);
 
-                    tx.Complete();
+                    _dynamicMenuRepo.saveChanges();
+                    tx.Commit();
                     return dynamicMenu;
                 }
             }
@@ -74,7 +75,7 @@ namespace LE.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _dynamicMenuRepo.beginTransaction())
                 {
                     var dynamicMenu = _dynamicMenuRepo.getById(dto.dynamic_menu_id) ?? throw new ItemNotFoundException($"Dynamic menu with id {dto.dynamic_menu_id} doesnot exist.");
 
@@ -87,7 +88,8 @@ namespace LE.Service.Services.Implementations
 
                     _dynamicMenuAssembler.copy(dynamicMenu, dto);
                     _dynamicMenuRepo.update(dynamicMenu);
-                    tx.Complete();
+                    _dynamicMenuRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception ex)

@@ -1,5 +1,6 @@
-﻿using LE.Account.Entities;
+using LE.Account.Entities;
 using System;
+using Microsoft.EntityFrameworkCore.Storage;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,6 +8,8 @@ namespace LE.Account.Infrastructure.Repository.Interface
 {
     public interface TransactionDetailRepository
     {
+        IDbContextTransaction beginTransaction();
+        void saveChanges();
         void insert(TransactionDetail transaction_detail);
         void update(TransactionDetail transaction_detail);
         void delete(TransactionDetail transaction_detail);

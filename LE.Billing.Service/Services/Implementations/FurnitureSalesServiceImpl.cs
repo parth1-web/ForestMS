@@ -1,4 +1,4 @@
-﻿using DateConverter.Core.Service_Factory;
+using DateConverter.Core.Service_Factory;
 using LE.Account.Common.Enums;
 using LE.Account.Infrastructure.Dto;
 using LE.Account.Service.Services.Interface;
@@ -62,6 +62,7 @@ namespace LE.Billing.Service.Services.Implementations
                 makeAccountSalesTransaction(sales_dto);
 
                 //recordStockMovement(sales_dto, sales.furniture_sales_id);
+                _furnitureSalesRepo.saveChanges();
                 tx.Commit();
                 return sales.furniture_sales_id;
             }
@@ -75,6 +76,7 @@ namespace LE.Billing.Service.Services.Implementations
                 updateFurnitureSales(furnitureSales, user_id);
                 makeAccountSalesCancelTransaction(furnitureSales);
                 //recordReverseStockMovement(furnitureSales);
+                _furnitureSalesRepo.saveChanges();
                 tx.Commit();
             }
         }

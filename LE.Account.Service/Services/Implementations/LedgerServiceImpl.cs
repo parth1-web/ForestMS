@@ -1,4 +1,4 @@
-﻿using DateConverter.Core.Service_Factory;
+using DateConverter.Core.Service_Factory;
 using LE.Account.Common.Enums;
 using LE.Account.Entities;
 using LE.Account.Infrastructure.Dto;
@@ -40,6 +40,7 @@ namespace LE.Account.Service.Services.Implementations
                 throw new ItemUsedException("Specified Ledger has already performed transactions.You cannot delete at this moment.");
 
             _ledgerRepo.delete(ledger);
+            _ledgerRepo.saveChanges();
         }
 
         public void update(LedgerDto ledgerDto)
@@ -79,6 +80,7 @@ namespace LE.Account.Service.Services.Implementations
                 }
                 _ledgerMaker.copy(ledger, ledgerDto);
                 _ledgerRepo.update(ledger);
+                _ledgerRepo.saveChanges();
                 tx.Commit();
             }
         }
@@ -130,6 +132,7 @@ namespace LE.Account.Service.Services.Implementations
                     _transactionService.addTransaction(transactionDto);
                 }
 
+                _ledgerRepo.saveChanges();
                 tx.Commit();
                 return _ledger;
             }

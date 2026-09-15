@@ -1,11 +1,14 @@
-﻿using LE.Account.Entities;
+using LE.Account.Entities;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore.Storage;
 using System.Linq;
 
 namespace LE.Account.Infrastructure.Repository.Interface
 {
     public interface AccountSettingsRepository
     {
+        IDbContextTransaction beginTransaction();
+        void saveChanges();
         void insert(AccountSettings transaction_sequence);
         void update(AccountSettings transaction_sequence);
         void delete(AccountSettings transaction_sequence);

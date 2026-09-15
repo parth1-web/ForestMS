@@ -5,7 +5,6 @@ using LE.Billing.Service.Assemblers.Interface;
 using LE.Billing.Service.Services.Interface;
 using LE.Common.Exceptions;
 using System;
-using System.Transactions;
 
 namespace LE.Billing.Service.Services.Implementations
 {
@@ -24,7 +23,7 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _toleRepo.beginTransaction())
                 {
                     var tole = _toleRepo.getById(tole_id);
 
@@ -35,7 +34,8 @@ namespace LE.Billing.Service.Services.Implementations
 
                     _toleRepo.delete(tole);
 
-                    tx.Complete();
+                    _toleRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -48,7 +48,7 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _toleRepo.beginTransaction())
                 {
                     var tole = _toleRepo.getByToleNo(tole_dto.tole_no);
 
@@ -63,7 +63,8 @@ namespace LE.Billing.Service.Services.Implementations
 
                     _toleRepo.insert(tole);
 
-                    tx.Complete();
+                    _toleRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -76,7 +77,7 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _toleRepo.beginTransaction())
                 {
                     var tole = _toleRepo.getById(tole_dto.tole_id);
 
@@ -96,7 +97,8 @@ namespace LE.Billing.Service.Services.Implementations
 
                         _toleRepo.update(tole);
 
-                        tx.Complete();
+                        _toleRepo.saveChanges();
+                        tx.Commit();
                     }
                 }
             }

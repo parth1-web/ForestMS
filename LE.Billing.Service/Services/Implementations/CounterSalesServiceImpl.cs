@@ -1,4 +1,4 @@
-﻿using DateConverter.Core.Service_Factory;
+using DateConverter.Core.Service_Factory;
 using LE.Billing.Entities;
 using LE.Billing.Infrastructure.Dto;
 using LE.Billing.Infrastructure.Repository.Interface;
@@ -42,6 +42,7 @@ namespace LE.Billing.Service.Services.Implementations
             sales.cancelled_date = DateFunctionsFactory.getDateFunctionsService().getDateTimeByTimeZone();
             sales.is_cancelled = true;
             _counterSalesRepo.update(sales);
+            _counterSalesRepo.saveChanges();
         }
 
         public long makeSales(CounterSalesDto sales_dto)
@@ -74,6 +75,7 @@ namespace LE.Billing.Service.Services.Implementations
                 sales_dto.counter_sales_details.ForEach(a => a.sales_id = sales.sales_id);
                 _counterSalesDetailService.save(sales_dto.counter_sales_details);
 
+                _counterSalesRepo.saveChanges();
                 tx.Commit();
                 return sales.sales_id;
             }

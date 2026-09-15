@@ -6,7 +6,6 @@ using LE.Service.Services.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Transactions;
 
 namespace LE.Service.Services.Implementations
 {
@@ -36,7 +35,7 @@ namespace LE.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _rolePermissionMapRepo.beginTransaction())
                 {
                     if (dto.module_ids.Count == 0)
                     {
@@ -52,7 +51,8 @@ namespace LE.Service.Services.Implementations
                     {
                         update(dto);
                     }
-                    tx.Complete();
+                    _rolePermissionMapRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)

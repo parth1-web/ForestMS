@@ -6,7 +6,6 @@ using LE.Service.Services.Interface;
 using Microsoft.AspNetCore.Hosting;
 using System;
 using System.IO;
-using System.Transactions;
 
 namespace LE.Service.Services.Implementations
 {
@@ -37,7 +36,7 @@ namespace LE.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _userRepo.beginTransaction())
                 {
                     var user = _userRepo.getById(user_id) ?? throw new ItemNotFoundException($"User with the id {user_id} doesnot exist.");
 
@@ -45,7 +44,8 @@ namespace LE.Service.Services.Implementations
                     _userRepo.update(user);
 
                     _authenticationService.disable(user_id, LE.Common.Enums.UserType.user);
-                    tx.Complete();
+                    _userRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -58,7 +58,7 @@ namespace LE.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _userRepo.beginTransaction())
                 {
                     var user = _userRepo.getById(user_id) ?? throw new ItemNotFoundException($"User with the id {user_id} doesnot exist.");
 
@@ -66,7 +66,8 @@ namespace LE.Service.Services.Implementations
                     _userRepo.update(user);
 
                     _authenticationService.enable(user_id, LE.Common.Enums.UserType.user);
-                    tx.Complete();
+                    _userRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -79,7 +80,7 @@ namespace LE.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _userRepo.beginTransaction())
                 {
                     if (user_dto.role_ids.Count == 0)
                     {
@@ -109,7 +110,8 @@ namespace LE.Service.Services.Implementations
                     };
 
                     _authenticationService.save(authenticationDto);
-                    tx.Complete();
+                    _userRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -122,7 +124,7 @@ namespace LE.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _userRepo.beginTransaction())
                 {
                     if (user_dto.role_ids.Count == 0)
                     {
@@ -149,7 +151,8 @@ namespace LE.Service.Services.Implementations
                     });
 
                     _authenticationService.updateUsername(user_dto.username, user_dto.user_id);
-                    tx.Complete();
+                    _userRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)

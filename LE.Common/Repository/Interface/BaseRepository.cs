@@ -12,6 +12,7 @@ namespace LE.Common.Repository.Interface
         void delete(T entity);
         void insert(T entity);
         void update(T entity);
+        void saveChanges();
         List<T> getAll();
         T getById(long id);
         IQueryable<T> getQueryable();

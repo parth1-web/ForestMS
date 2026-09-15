@@ -3,7 +3,6 @@ using LE.Service.Repository.Interface;
 using LE.Service.Services.Interface;
 using System;
 using System.Collections.Generic;
-using System.Transactions;
 
 namespace LE.Service.Services.Implementations
 {
@@ -20,13 +19,14 @@ namespace LE.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _orgSetupRepo.beginTransaction())
                 {
                     foreach (var kvp in keyValue)
                     {
                         saveOrUpdate(kvp.key, kvp.value);
                     }
-                    tx.Complete();
+                    _orgSetupRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -39,7 +39,7 @@ namespace LE.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _orgSetupRepo.beginTransaction())
                 {
                     var orgSetup = _orgSetupRepo.getByKey(key);
 
@@ -51,7 +51,8 @@ namespace LE.Service.Services.Implementations
                     {
                         update(orgSetup, value);
                     }
-                    tx.Complete();
+                    _orgSetupRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)

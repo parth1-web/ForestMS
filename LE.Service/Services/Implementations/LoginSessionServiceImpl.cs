@@ -4,7 +4,6 @@ using LE.Infrastructure.Dto;
 using LE.Service.Assembler.Interface;
 using LE.Service.Repository.Interface;
 using LE.Service.Services.Interface;
-using System.Transactions;
 
 namespace LE.Service.Services.Implementations
 {
@@ -25,7 +24,7 @@ namespace LE.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _loginSessionRepo.beginTransaction())
                 {
                     var authentication = _authenticationRepo.getById(session_dto.authentication_id);
                     LoginSession sessionDetail = new LoginSession();
@@ -34,7 +33,8 @@ namespace LE.Service.Services.Implementations
                     sessionDetail.authentication = authentication ?? throw new ItemNotFoundException($"Authentication with the id {session_dto.authentication_id} doesnot exist.");
 
                     _loginSessionRepo.insert(sessionDetail);
-                    tx.Complete();
+                    _loginSessionRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (System.Exception)

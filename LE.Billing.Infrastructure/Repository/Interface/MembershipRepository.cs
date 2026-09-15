@@ -1,4 +1,4 @@
-﻿using LE.Billing.Entities;
+using LE.Billing.Entities;
 using Microsoft.EntityFrameworkCore.Storage;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +8,7 @@ namespace LE.Billing.Infrastructure.Repository.Interface
 {
     public interface MembershipRepository
     {
+        void saveChanges();
         // Real transaction boundary on the shared AppDbContext (see BaseRepositoryImpl).
         IDbContextTransaction beginTransaction();
         void insert(Membership membership);

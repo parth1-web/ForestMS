@@ -5,7 +5,6 @@ using LE.Inventory.Infrastructure.Repository.Interface;
 using LE.Inventory.Service.Assemblers.Interface;
 using LE.Inventory.Service.Services.Interface;
 using System;
-using System.Transactions;
 
 namespace LE.Inventory.Service.Services.Implementations
 {
@@ -24,7 +23,7 @@ namespace LE.Inventory.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _stockUnitRepo.beginTransaction())
                 {
                     var stockUnit = _stockUnitRepo.getById(stock_unit_id);
 
@@ -35,7 +34,8 @@ namespace LE.Inventory.Service.Services.Implementations
                         throw new ItemUsedException($"The Stock Unit with id {stock_unit_id} already has stock.You cannot delete at this moment.");
 
                     _stockUnitRepo.delete(stockUnit);
-                    tx.Complete();
+                    _stockUnitRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception ex)
@@ -48,7 +48,7 @@ namespace LE.Inventory.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _stockUnitRepo.beginTransaction())
                 {
                     var stockUnit = _stockUnitRepo.getById(stock_unit_id);
 
@@ -58,7 +58,8 @@ namespace LE.Inventory.Service.Services.Implementations
                     stockUnit.disable();
                     _stockUnitRepo.update(stockUnit);
 
-                    tx.Complete();
+                    _stockUnitRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -71,7 +72,7 @@ namespace LE.Inventory.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _stockUnitRepo.beginTransaction())
                 {
                     var stockUnit = _stockUnitRepo.getById(stock_unit_id);
                     if (stockUnit == null)
@@ -79,7 +80,8 @@ namespace LE.Inventory.Service.Services.Implementations
 
                     stockUnit.enable();
                     _stockUnitRepo.update(stockUnit);
-                    tx.Complete();
+                    _stockUnitRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -93,12 +95,13 @@ namespace LE.Inventory.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _stockUnitRepo.beginTransaction())
                 {
                     StockUnit stock_unit = new StockUnit();
                     _stockUnitAssembler.copy(ref stock_unit, stock_unit_dto);
                     _stockUnitRepo.insert(stock_unit);
-                    tx.Complete();
+                    _stockUnitRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -111,7 +114,7 @@ namespace LE.Inventory.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _stockUnitRepo.beginTransaction())
                 {
                     StockUnit stockCategory = _stockUnitRepo.getById(stock_unit_dto.stock_unit_id);
                     if (stockCategory == null)
@@ -119,7 +122,8 @@ namespace LE.Inventory.Service.Services.Implementations
 
                     _stockUnitAssembler.copy(ref stockCategory, stock_unit_dto);
                     _stockUnitRepo.update(stockCategory);
-                    tx.Complete();
+                    _stockUnitRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)

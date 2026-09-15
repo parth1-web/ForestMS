@@ -5,7 +5,6 @@ using LE.Service.Repository.Interface;
 using LE.Service.Services.Interface;
 using System;
 using System.Linq;
-using System.Transactions;
 
 namespace LE.Service.Services.Implementations
 {
@@ -27,7 +26,7 @@ namespace LE.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _roleRepo.beginTransaction())
                 {
                     var role = _roleRepo.getById(role_id);
 
@@ -45,7 +44,8 @@ namespace LE.Service.Services.Implementations
                     }
                     _roleRepo.delete(role);
                     _rolePermissionMapService.deletePermissionsByRoleId(role_id);
-                    tx.Complete();
+                    _roleRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -58,7 +58,7 @@ namespace LE.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _roleRepo.beginTransaction())
                 {
                     var role = _roleRepo.getById(role_id);
 
@@ -68,7 +68,8 @@ namespace LE.Service.Services.Implementations
                     }
                     role.disable();
                     _roleRepo.update(role);
-                    tx.Complete();
+                    _roleRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -81,7 +82,7 @@ namespace LE.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _roleRepo.beginTransaction())
                 {
                     var role = _roleRepo.getById(role_id);
 
@@ -92,7 +93,8 @@ namespace LE.Service.Services.Implementations
                     role.enable();
 
                     _roleRepo.update(role);
-                    tx.Complete();
+                    _roleRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -106,7 +108,7 @@ namespace LE.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _roleRepo.beginTransaction())
                 {
                     var roleWithSameName = _roleRepo.getByName(role_dto.name.Trim());
 
@@ -130,7 +132,8 @@ namespace LE.Service.Services.Implementations
                     }
                     _rolePermissionMapService.saveOrUpdate(rolePermissionDto);
 
-                    tx.Complete();
+                    _roleRepo.saveChanges();
+                    tx.Commit();
                 }
 
             }
@@ -144,7 +147,7 @@ namespace LE.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _roleRepo.beginTransaction())
                 {
                     var roleWithSameName = _roleRepo.getByName(role_dto.name.Trim());
 
@@ -159,7 +162,8 @@ namespace LE.Service.Services.Implementations
 
                     updateRolePermissions(role_dto);
 
-                    tx.Complete();
+                    _roleRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)

@@ -1,5 +1,6 @@
-﻿using LE.Entities.User;
+using LE.Entities.User;
 using System;
+using Microsoft.EntityFrameworkCore.Storage;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,8 @@ namespace LE.Service.Repository.Interface
 {
     public interface DynamicMenuRepository
     {
+        IDbContextTransaction beginTransaction();
+        void saveChanges();
         void insert(DynamicMenu dynamic_menu);
         void update(DynamicMenu dynamic_menu);
         void delete(DynamicMenu dynamic_menu);

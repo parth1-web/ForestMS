@@ -1,5 +1,6 @@
-﻿using LE.Common.Enums;
+using LE.Common.Enums;
 using LE.Entities.User;
+using Microsoft.EntityFrameworkCore.Storage;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,6 +8,8 @@ namespace LE.Service.Repository.Interface
 {
     public interface UserRoleRepository
     {
+        IDbContextTransaction beginTransaction();
+        void saveChanges();
         void insert(UserRole user_role);
         void update(UserRole user_role);
         void delete(UserRole user_role);

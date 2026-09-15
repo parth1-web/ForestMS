@@ -1,11 +1,14 @@
-﻿using LE.Billing.Entities;
+using LE.Billing.Entities;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore.Storage;
 using System.Linq;
 
 namespace LE.Billing.Infrastructure.Repository.Interface
 {
     public interface BillingSettingsRepository
     {
+        IDbContextTransaction beginTransaction();
+        void saveChanges();
         void insert(BillingSettings billing_setting);
         void update(BillingSettings billing_setting);
         void delete(BillingSettings billing_setting);

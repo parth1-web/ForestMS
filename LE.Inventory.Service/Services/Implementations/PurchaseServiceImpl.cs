@@ -1,4 +1,4 @@
-﻿using LE.Common.Exceptions;
+using LE.Common.Exceptions;
 using LE.Inventory.Common.Enums;
 using LE.Inventory.Entities;
 using LE.Inventory.Infrastructure.Dto;
@@ -44,6 +44,7 @@ namespace LE.Inventory.Service.Services.Implementations
 
                 long purchaseId = newPurchase.purchase_id;
                 recordStockMovement(purchase_dto, purchaseId, StockMovementType.purchase);
+                _purchaseRepo.saveChanges();
                 tx.Commit();
             }
         }
@@ -75,6 +76,7 @@ namespace LE.Inventory.Service.Services.Implementations
                 // P1/B7 fix: 'delete' no longer forces 'increase' in the adapter, so this
                 // correctly decreases the availability row when a purchase is removed.
                 recordStockMovement(purchaseDto, purchases.purchase_id, StockMovementType.delete);
+                _purchaseRepo.saveChanges();
                 tx.Commit();
             }
         }

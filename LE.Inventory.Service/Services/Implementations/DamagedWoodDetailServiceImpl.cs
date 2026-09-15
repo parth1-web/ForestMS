@@ -29,6 +29,7 @@ namespace LE.Inventory.Service.Services.Implementations
                     throw new ItemNotFoundException("Damaged Wood Detail not found.");
                 }
                 _damagedWoodDetailRepository.delete(detail);
+                _damagedWoodDetailRepository.saveChanges();
             }
             catch (Exception)
             {
@@ -64,6 +65,7 @@ namespace LE.Inventory.Service.Services.Implementations
                     _damagedWoodDetailAssembler.copy(damagedData, detail);
                     _damagedWoodDetailRepository.update(damagedData);
                 }
+                _damagedWoodDetailRepository.saveChanges();
             }
             catch (Exception)
             {

@@ -5,7 +5,6 @@ using LE.Billing.Service.Assemblers.Interface;
 using LE.Billing.Service.Services.Interface;
 using LE.Common.Exceptions;
 using System;
-using System.Transactions;
 
 namespace LE.Billing.Service.Services.Implementations
 {
@@ -24,12 +23,13 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _memPeriodRepo.beginTransaction())
                 {
                     MembershipValidity msp = new MembershipValidity();
                     _memPeriodAssembler.copy(msp, dto);
                     _memPeriodRepo.insert(msp);
-                    tx.Complete();
+                    _memPeriodRepo.saveChanges();
+                    tx.Commit();
                     return msp;
                 }
             }
@@ -43,7 +43,7 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _memPeriodRepo.beginTransaction())
                 {
                     var msp = _memPeriodRepo.getById(dto.MembershipValidityId);
 
@@ -57,7 +57,8 @@ namespace LE.Billing.Service.Services.Implementations
                     dto.IsCurrent = msp.IsCurrent;
 					_memPeriodAssembler.copy(msp, dto);
 					_memPeriodRepo.update(msp);
-                    tx.Complete();
+                    _memPeriodRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception ex)
@@ -70,7 +71,7 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _memPeriodRepo.beginTransaction())
                 {
                     var msp = _memPeriodRepo.getById(membership_id);
                     if (msp == null)
@@ -79,7 +80,8 @@ namespace LE.Billing.Service.Services.Implementations
                     }
                     msp.Expire();
                     _memPeriodRepo.update(msp);
-                    tx.Complete();
+                    _memPeriodRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception ex)
@@ -92,7 +94,7 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _memPeriodRepo.beginTransaction())
                 {
                     var msp = _memPeriodRepo.getById(membership_id);
                     if (msp == null)
@@ -101,7 +103,8 @@ namespace LE.Billing.Service.Services.Implementations
                     }
                     msp.Unexpire();
                     _memPeriodRepo.update(msp);
-                    tx.Complete();
+                    _memPeriodRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception ex)
@@ -114,7 +117,7 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _memPeriodRepo.beginTransaction())
                 {
                     var msp = _memPeriodRepo.getById(membership_id);
                     if (msp == null)
@@ -123,7 +126,8 @@ namespace LE.Billing.Service.Services.Implementations
                     }
                     msp.IsCancelled = true;
                     _memPeriodRepo.update(msp);
-                    tx.Complete();
+                    _memPeriodRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception ex)

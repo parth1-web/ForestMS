@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace LE.Service.Repository.Interface
 {
@@ -7,6 +8,8 @@ namespace LE.Service.Repository.Interface
 
     public interface UserRepository
     {
+        IDbContextTransaction beginTransaction();
+        void saveChanges();
         void insert(userEntity user);
         void update(userEntity user);
         List<userEntity> getAll();

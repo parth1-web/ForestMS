@@ -75,6 +75,7 @@ namespace LE.Billing.Service.Services.Implementations
                 udateWoodDetails(billDetail);
                 updateMemberTransactions(billDetail);
                 makeReverseEntryToAccount(billDetail);
+                _woodBillRepository.saveChanges();
                 tx.Commit();
             }
         }
@@ -271,6 +272,9 @@ namespace LE.Billing.Service.Services.Implementations
 
                 postAccountTransaction(wood_bill_dto, woodBill);
 
+                // UoW: flush the tracked bill/details/members writes (markSoldIfNotSold's
+                // raw SQL already flushed itself) before committing the transaction.
+                _woodBillRepository.saveChanges();
                 tx.Commit();
             }
 

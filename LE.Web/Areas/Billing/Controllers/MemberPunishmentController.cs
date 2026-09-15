@@ -24,7 +24,6 @@ using Microsoft.Identity.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Transactions;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using static LE.Common.Library.DateConverter.Entity.NepaliDate;
 

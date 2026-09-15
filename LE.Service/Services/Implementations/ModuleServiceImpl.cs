@@ -7,7 +7,6 @@ using LE.Service.Services.Interface;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Transactions;
 
 namespace LE.Service.Services.Implementations
 {
@@ -26,7 +25,7 @@ namespace LE.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _moduleRepo.beginTransaction())
                 {
                     var module = _moduleRepo.getById(module_id) ?? throw new ItemNotFoundException($"Module with the id {module_id} doesnot exist.");
 
@@ -36,7 +35,8 @@ namespace LE.Service.Services.Implementations
                     }
 
                     _moduleRepo.delete(module);
-                    tx.Complete();
+                    _moduleRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -49,7 +49,7 @@ namespace LE.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _moduleRepo.beginTransaction())
                 {
                     bool isNameAllowed = isModuleNameAllowed(module_dto);
                     if (!isNameAllowed)
@@ -61,7 +61,8 @@ namespace LE.Service.Services.Implementations
                     _moduleAssembler.copy(module, module_dto);
 
                     _moduleRepo.insert(module);
-                    tx.Complete();
+                    _moduleRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -74,7 +75,7 @@ namespace LE.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _moduleRepo.beginTransaction())
                 {
                     var module = _moduleRepo.getById(module_dto.module_id) ?? throw new ItemNotFoundException($"Module with the id {module_dto.module_id} doesnot exist.");
 
@@ -87,7 +88,8 @@ namespace LE.Service.Services.Implementations
 
                     _moduleAssembler.copy(module, module_dto);
                     _moduleRepo.update(module);
-                    tx.Complete();
+                    _moduleRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)

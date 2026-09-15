@@ -5,7 +5,6 @@ using LE.Inventory.Infrastructure.Repository.Interface;
 using LE.Inventory.Service.Assemblers.Interface;
 using LE.Inventory.Service.Services.Interface;
 using System;
-using System.Transactions;
 
 namespace LE.Inventory.Service.Services.Implementations
 {
@@ -28,7 +27,7 @@ namespace LE.Inventory.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _stockItemRepo.beginTransaction())
                 {
                     var stockItem = _stockItemRepo.getById(stock_item_id);
 
@@ -38,7 +37,8 @@ namespace LE.Inventory.Service.Services.Implementations
                     if (stockItem.hasPurchases())
                         throw new ItemUsedException($"The Stock Item with id {stock_item_id} already has purchases .You cannot delete at this moment.");
                     _stockItemRepo.delete(stockItem);
-                    tx.Complete();
+                    _stockItemRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception ex)
@@ -51,7 +51,7 @@ namespace LE.Inventory.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _stockItemRepo.beginTransaction())
                 {
                     var stockItem = _stockItemRepo.getById(stock_item_id);
 
@@ -61,7 +61,8 @@ namespace LE.Inventory.Service.Services.Implementations
                     stockItem.disable();
                     _stockItemRepo.update(stockItem);
 
-                    tx.Complete();
+                    _stockItemRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -74,7 +75,7 @@ namespace LE.Inventory.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _stockItemRepo.beginTransaction())
                 {
                     var stockItem = _stockItemRepo.getById(stock_item_id);
                     if (stockItem == null)
@@ -82,7 +83,8 @@ namespace LE.Inventory.Service.Services.Implementations
 
                     stockItem.enable();
                     _stockItemRepo.update(stockItem);
-                    tx.Complete();
+                    _stockItemRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -96,7 +98,7 @@ namespace LE.Inventory.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _stockItemRepo.beginTransaction())
                 {
                     StockItem stock_item = new StockItem();
                     _stockItemAssembler.copy(ref stock_item, stock_item_dto);
@@ -110,7 +112,8 @@ namespace LE.Inventory.Service.Services.Implementations
                     dto.stock_item_id = stock_item.stock_item_id;
                     _stockItemAvailabilityAssembler.copy(stockItemAvailability, dto);
                     _stockItemAvailabilityRepo.insert(stockItemAvailability);
-                    tx.Complete();
+                    _stockItemRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -123,7 +126,7 @@ namespace LE.Inventory.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _stockItemRepo.beginTransaction())
                 {
                     StockItem stockItem = _stockItemRepo.getById(stock_item_dto.stock_item_id);
                     if (stockItem == null)
@@ -131,7 +134,8 @@ namespace LE.Inventory.Service.Services.Implementations
 
                     _stockItemAssembler.copy(ref stockItem, stock_item_dto);
                     _stockItemRepo.update(stockItem);
-                    tx.Complete();
+                    _stockItemRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)

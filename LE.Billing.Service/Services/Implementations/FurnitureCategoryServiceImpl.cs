@@ -5,7 +5,6 @@ using LE.Billing.Service.Assemblers.Interface;
 using LE.Billing.Service.Services.Interface;
 using LE.Common.Exceptions;
 using System;
-using System.Transactions;
 
 namespace LE.Billing.Service.Services.Implementations
 {
@@ -24,7 +23,7 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _furnitureCategoryRepo.beginTransaction())
                 {
                     var furnitureCategory = _furnitureCategoryRepo.getById(furniture_category_id);
 
@@ -40,7 +39,8 @@ namespace LE.Billing.Service.Services.Implementations
 
                     _furnitureCategoryRepo.delete(furnitureCategory);
 
-                    tx.Complete();
+                    _furnitureCategoryRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -53,7 +53,7 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _furnitureCategoryRepo.beginTransaction())
                 {
                     var furnitureCategory = _furnitureCategoryRepo.getById(furniture_category_id);
 
@@ -65,7 +65,8 @@ namespace LE.Billing.Service.Services.Implementations
                     furnitureCategory.disable();
                     _furnitureCategoryRepo.update(furnitureCategory);
 
-                    tx.Complete();
+                    _furnitureCategoryRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -78,7 +79,7 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _furnitureCategoryRepo.beginTransaction())
                 {
                     var furnitureCategory = _furnitureCategoryRepo.getById(furniture_category_id);
 
@@ -90,7 +91,8 @@ namespace LE.Billing.Service.Services.Implementations
                     furnitureCategory.enable();
                     _furnitureCategoryRepo.update(furnitureCategory);
 
-                    tx.Complete();
+                    _furnitureCategoryRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -103,7 +105,7 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _furnitureCategoryRepo.beginTransaction())
                 {
                     var furnitureCategory = _furnitureCategoryRepo.getByName(furniture_category_dto.name);
 
@@ -118,7 +120,8 @@ namespace LE.Billing.Service.Services.Implementations
 
                     _furnitureCategoryRepo.insert(furnitureCategory);
 
-                    tx.Complete();
+                    _furnitureCategoryRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -131,7 +134,7 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _furnitureCategoryRepo.beginTransaction())
                 {
                     var furnitureCategory = _furnitureCategoryRepo.getById(furniture_category_dto.furniture_category_id);
 
@@ -144,7 +147,8 @@ namespace LE.Billing.Service.Services.Implementations
 
                     _furnitureCategoryRepo.update(furnitureCategory);
 
-                    tx.Complete();
+                    _furnitureCategoryRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)

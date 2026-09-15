@@ -1,4 +1,4 @@
-﻿using LE.Inventory.Entities;
+using LE.Inventory.Entities;
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
@@ -8,6 +8,7 @@ namespace LE.Inventory.Infrastructure.Repository.Interface
 {
     public interface PurchaseRepository
     {
+        void saveChanges();
         void insert(Purchase purchase);
         void update(Purchase purchase);
         List<Purchase> getAll();

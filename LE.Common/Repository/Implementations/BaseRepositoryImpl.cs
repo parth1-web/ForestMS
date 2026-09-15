@@ -46,10 +46,19 @@ namespace LE.Common.Repository.Implementations
 			public System.Threading.Tasks.ValueTask DisposeAsync() => default;
 		}
 
+		// Unit-of-work (P2): update/delete no longer SaveChanges by themselves — batched
+		// tracked changes are flushed by saveChanges() (single-write operations) or before
+		// tx.Commit() (transactional operations). insert() still flushes because PKs are
+		// DB-generated (PostgreSQL RETURNING): callers read entity.<pk> immediately after
+		// insert to wire up child rows (bill -> details), and deferring would give them 0.
+		public void saveChanges()
+		{
+			appDbContext.SaveChanges();
+		}
+
 		public void delete(T entity)
 		{
 			appDbContext.Set<T>().Remove(entity);
-			appDbContext.SaveChanges();
 		}
 
 		public List<T> getAll()
@@ -72,6 +81,7 @@ namespace LE.Common.Repository.Implementations
 			if (entity == null)
 				throw new ArgumentNullException(nameof(entity));
 			appDbContext.Set<T>().Add(entity);
+			// PKs are DB-generated; flush so callers can read entity.<pk> right away.
 			appDbContext.SaveChanges();
 		}
 
@@ -80,7 +90,6 @@ namespace LE.Common.Repository.Implementations
 			if (entity == null)
 				throw new ArgumentNullException(nameof(entity));
 			appDbContext.Set<T>().Update(entity);
-			appDbContext.SaveChanges();
 		}
 	}
 }

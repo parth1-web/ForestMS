@@ -1,11 +1,14 @@
-﻿using LE.Inventory.Entities;
+using LE.Inventory.Entities;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore.Storage;
 using System.Linq;
 
 namespace LE.Inventory.Infrastructure.Repository.Interface
 {
     public interface StockItemRepository
     {
+        IDbContextTransaction beginTransaction();
+        void saveChanges();
         void insert(StockItem stock_item);
         void update(StockItem stock_item);
         void delete(StockItem stock_item);

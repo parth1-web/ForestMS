@@ -392,3 +392,94 @@ future sessions: never use bare `Set-Content` on repo files in PS 5.1 — use
 - No runtime smoke test this session (no DB changes, no route/shape changes intended) — recommend a quick manual pass: login, navbar, one bill create/cancel, POS JWT login, forbidden-page for restricted user, and check `logs/` is populated
 
 ---
+
+# Addendum 4 — P2 Unit-of-Work Migration (2026-09-14/15, completed from WIP)
+
+> The UoW migration deferred in Addendum 3 was found in progress in the working
+> tree (96 modified files, uncommitted) and completed this session.
+> Build verified **0 errors** after every fix.
+
+## What the WIP did (audited and accepted)
+
+- **`BaseRepositoryImpl`**: `update()`/`delete()` no longer call `SaveChanges()` —
+  tracked changes flush via the new `saveChanges()` primitive (single-write
+  operations) or before `tx.Commit()` (transactional operations). `insert()`
+  still flushes because PKs are DB-generated (PostgreSQL `RETURNING`) and callers
+  read `entity.<pk>` immediately after insert to wire child rows.
+- **`saveChanges()` added to `BaseRepository` interface** and every repo interface
+  signature (the bulk of the 96 files).
+- **All services rewritten**: every remaining ambient `TransactionScope` (the
+  ~100 legacy no-op scopes) removed and replaced with real
+  `beginTransaction()` + `saveChanges()` + `Commit()` on the shared scoped
+  `AppDbContext`; nested `beginTransaction` calls join the outer transaction
+  via the no-op placeholder (introduced in the P1 EF-version fix).
+
+## Defects found in the WIP by audit (fixed this session)
+
+1. **`updateBalanceAmount` silent no-op** (`TransactionDetailServiceImpl`) — the
+   admin "update ledger balances" endpoints (`/accounting/update-balance/{id}`,
+   `update-balance-all`) call `updateLedgerBalances` → `this.update()`, which no
+   longer self-saves, and nothing else in that chain flushed. Fixed: wrapped in
+   `beginTransaction()` + `saveChanges()` + `Commit()`.
+2. **Voucher-number race + no-flush** (`AccountSettingsRepositoryImpl.getTransactionSequence`) —
+   accounting vouchers use the same racy counter-row read-modify-write that
+   P1/B2 fixed for bill numbers; under UoW it was also never flushed (relying on
+   the caller's `saveChanges`). Fixed: atomic `INSERT ... ON CONFLICT DO NOTHING`
+   + `UPDATE ... RETURNING` (same pattern as `billing_settings`).
+3. **Missing unique index on `account_settings.key`** — required for the
+   `ON CONFLICT` insert to be race-free. New migration
+   `20260914000000_p2_account_settings_unique_key` (de-dupes legacy racy rows
+   keeping the highest value, then creates `IX_account_settings_key`), snapshot
+   updated. **Run `dotnet ef database update` before first use.**
+4. **`LE.Account.Context` shadow project deleted** — not in the solution, not
+   referenced by any csproj, contained stale duplicate repo implementations
+   (same profile as the deleted `LE.Integration`). Its
+   `getTransactionSequence` variant still had the old racy non-flushing code.
+
+## Audit methodology (reusable)
+
+- Script scanned all `*Repo*.update()/delete()` call sites (95) and flagged those
+  whose enclosing method had no `saveChanges()`/`Commit()` — 11 hits, all traced
+  to private helpers invoked inside committing outer transactions (verified safe).
+- Manual pass over non-`Repo`-named writes, `this.update/insert/delete` self-calls,
+  and direct `appDbContext.Set<T>().Update/Remove` — none remaining.
+- `StockItemAvailabilityServiceImpl.saveOrUpdate` deliberately flushes inside its
+  loop: same stock item on multiple bill lines requires each iteration to see
+  the previous write (stale-read guard documented in the file).
+
+## Verification performed this session
+
+- Full solution build after each fix and at end: **0 errors** (~332–350 warnings,
+  all pre-existing Magick.NET NU19xxx advisories; count varies with incremental
+  build passes)
+- Encoding byte-audit on every file touched (BOM preserved; no ANSI corruption)
+
+## Runtime smoke-test checklist (manual, next run)
+
+- [ ] Apply migration `20260914000000_p2_account_settings_unique_key` before first use
+- [ ] Journal/voucher creation (uses the new atomic `getTransactionSequence`) —
+      verify `transaction_id` increments and concurrent vouchers don't collide
+- [ ] Ledger update-balance endpoints actually persist (were the silent no-op)
+- [ ] Re-run P1 smoke matrix (bill create/cancel, day-close, POS save) — UoW
+      changed every write path's flush timing
+- [ ] Setup screens (org-setup, ledger-setup, fiscal-year-setup) save correctly
+
+## Deliberate trade-offs (P2 UoW)
+
+1. `insert()` still self-flushes (DB-generated PKs are read immediately by
+   callers); a future pass could return generated ids explicitly and defer
+   these too — out of scope for 219 call sites.
+2. `markSoldIfNotSold` flushes pending tracked changes before its raw UPDATE
+   (unchanged from P1) — noted as intentional in the file.
+3. Single-write `saveChanges()` calls are non-transactional by design (single
+   row, no multi-step invariant) — matching pre-UoW behavior exactly.
+
+## Remaining P2 backlog (unchanged from Addendum 3)
+
+- .NET 3.1 → LTS 8.x upgrade (Magick.NET advisories) — unblocked now that UoW landed
+- Async data layer; lazy-loading disable; pager fixes
+- `wwwroot` cleanup; git-history purge of binaries; real README
+- Menu-level permissions; global `AutoValidateAntiforgeryToken`
+- Nepali timezone/`IClock` standardization
+
+---

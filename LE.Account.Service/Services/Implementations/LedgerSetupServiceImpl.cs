@@ -3,7 +3,6 @@ using LE.Account.Infrastructure.Repository.Interface;
 using LE.Account.Service.Services.Interface;
 using System;
 using System.Collections.Generic;
-using System.Transactions;
 
 namespace LE.Account.Service.Services.Implementations
 {
@@ -20,13 +19,14 @@ namespace LE.Account.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _ledgerSetupRepo.beginTransaction())
                 {
                     foreach (var kvp in keyValue)
                     {
                         saveOrUpdate(kvp.key, kvp.value);
                     }
-                    tx.Complete();
+                    _ledgerSetupRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -39,7 +39,7 @@ namespace LE.Account.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _ledgerSetupRepo.beginTransaction())
                 {
                     var ledgerSetup = _ledgerSetupRepo.getByKey(key);
 
@@ -51,7 +51,8 @@ namespace LE.Account.Service.Services.Implementations
                     {
                         update(ledgerSetup, value);
                     }
-                    tx.Complete();
+                    _ledgerSetupRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)

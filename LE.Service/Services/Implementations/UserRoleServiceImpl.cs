@@ -5,7 +5,6 @@ using LE.Service.Repository.Interface;
 using LE.Service.Services.Interface;
 using System;
 using System.Linq;
-using System.Transactions;
 
 namespace LE.Service.Services.Implementations
 {
@@ -24,7 +23,7 @@ namespace LE.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _userRoleRepo.beginTransaction())
                 {
                     var previousAssignedRoles = _userRoleRepo.getByTypeId(dto.type, dto.type_id);
 
@@ -44,8 +43,9 @@ namespace LE.Service.Services.Implementations
                         user_role.type = dto.type;
                         user_role.type_id = dto.type_id;
                         _userRoleRepo.insert(user_role);
-                        tx.Complete();
                     }
+                    _userRoleRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -58,7 +58,7 @@ namespace LE.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _userRoleRepo.beginTransaction())
                 {
                     var previousAssignedRoles = _userRoleRepo.getByTypeId(dto.type, dto.type_id);
 
@@ -81,7 +81,8 @@ namespace LE.Service.Services.Implementations
                         user_role.type_id = dto.type_id;
                         _userRoleRepo.insert(user_role);
                     }
-                    tx.Complete();
+                    _userRoleRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)

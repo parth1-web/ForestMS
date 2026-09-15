@@ -1,4 +1,4 @@
-﻿using LE.Account.Entities;
+using LE.Account.Entities;
 using Microsoft.EntityFrameworkCore.Storage;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,6 +7,7 @@ namespace LE.Account.Infrastructure.Repository.Interface
 {
     public interface TransactionRepository
     {
+        void saveChanges();
         void insert(Transaction transaction);
         void update(Transaction transaction);
         void delete(Transaction transaction);

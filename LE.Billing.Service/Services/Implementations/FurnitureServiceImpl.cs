@@ -5,7 +5,6 @@ using LE.Billing.Service.Assemblers.Interface;
 using LE.Billing.Service.Services.Interface;
 using LE.Common.Exceptions;
 using System;
-using System.Transactions;
 
 namespace LE.Billing.Service.Services.Implementations
 {
@@ -26,7 +25,7 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _furnitureRepo.beginTransaction())
                 {
                     var furniture = _furnitureRepo.getById(furniture_id);
 
@@ -44,7 +43,8 @@ namespace LE.Billing.Service.Services.Implementations
 
                     _furnitureRepo.delete(furniture);
 
-                    tx.Complete();
+                    _furnitureRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -57,7 +57,7 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _furnitureRepo.beginTransaction())
                 {
                     var furniture = _furnitureRepo.getById(furniture_id);
 
@@ -69,7 +69,8 @@ namespace LE.Billing.Service.Services.Implementations
                     furniture.disable();
                     _furnitureRepo.update(furniture);
 
-                    tx.Complete();
+                    _furnitureRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -82,7 +83,7 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _furnitureRepo.beginTransaction())
                 {
                     var furniture = _furnitureRepo.getById(furniture_id);
 
@@ -94,7 +95,8 @@ namespace LE.Billing.Service.Services.Implementations
                     furniture.enable();
                     _furnitureRepo.update(furniture);
 
-                    tx.Complete();
+                    _furnitureRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -107,7 +109,7 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _furnitureRepo.beginTransaction())
                 {
                     bool isNameValid = checkNameValidity(furniture_dto);
 
@@ -124,7 +126,8 @@ namespace LE.Billing.Service.Services.Implementations
 
                     _furnitureRepo.insert(furniture);
 
-                    tx.Complete();
+                    _furnitureRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -137,7 +140,7 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _furnitureRepo.beginTransaction())
                 {
                     var furniture = _furnitureRepo.getById(furniture_dto.furniture_id);
 
@@ -159,7 +162,8 @@ namespace LE.Billing.Service.Services.Implementations
 
                     _furnitureRepo.update(furniture);
 
-                    tx.Complete();
+                    _furnitureRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)

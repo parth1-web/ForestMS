@@ -1,5 +1,6 @@
-﻿using LE.Billing.Entities;
+using LE.Billing.Entities;
 using System;
+using Microsoft.EntityFrameworkCore.Storage;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,8 @@ namespace LE.Billing.Infrastructure.Repository.Interface
 {
     public interface ChiranSalesDetailRepository
     {
+        IDbContextTransaction beginTransaction();
+        void saveChanges();
         void insert(ChiranSalesDetail chiranSalesDetail);
         void update(ChiranSalesDetail chiranSalesDetail);
         void delete(ChiranSalesDetail chiranSalesDetail);

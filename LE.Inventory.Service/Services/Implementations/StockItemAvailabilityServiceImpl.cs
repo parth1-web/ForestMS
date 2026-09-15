@@ -26,6 +26,11 @@ namespace LE.Inventory.Service.Services.Implementations
 
         public void saveOrUpdate(List<StockMovementDetailDto> stock_movement_details)
         {
+            // UoW note: update()/delete() are deferred on the shared context, but this
+            // loop reads the availability row from the database each iteration. A bill
+            // can list the same stock item on several lines, so each iteration must see
+            // the previous iteration's write — flush before the next read or duplicate
+            // lines would each read the same stale row and double-spend / double-add stock.
             foreach (var stockMovementDetail in stock_movement_details)
             {
                 var alreadyRecordedStockItemAvailability = _stockItemAvailabilityRepo.getByStockItemId(stockMovementDetail.stock_item_id);
@@ -46,6 +51,7 @@ namespace LE.Inventory.Service.Services.Implementations
                 {
                     update(stockMovementDetail, alreadyRecordedStockItemAvailability);
                 }
+                _stockItemAvailabilityRepo.saveChanges();
             }
         }
 

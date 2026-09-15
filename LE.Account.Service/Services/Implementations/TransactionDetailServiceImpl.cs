@@ -115,15 +115,23 @@ namespace LE.Account.Service.Services.Implementations
 
         public void updateBalanceAmount(long ledger_id)
         {
-			decimal lastBalance = 0;
-			var currentDate = DateTime.UtcNow.Date;
-			var lastYear = currentDate.AddYears(-1).Date;
-			var transactionList = transactionDetailRepo.getQueryable().Where(a => a.transaction_date.Date <= lastYear && a.ledger_id == ledger_id).OrderBy(a => a.transaction_date).ToList();
-			if (transactionList.Any())
-			{
-				lastBalance = transactionList[transactionList.Count() - 1].balance;
-			}
-			updateBalanceIfBackdateEntryIsMade(ledger_id, lastYear, lastBalance);
+            // UoW fix: update()/delete() on the shared context no longer self-save, and this
+            // path is invoked directly by the controller (no outer transaction/saveChanges).
+            // Without an explicit flush here the recalculation was a silent no-op.
+            using (var tx = transactionDetailRepo.beginTransaction())
+            {
+                decimal lastBalance = 0;
+                var currentDate = DateTime.UtcNow.Date;
+                var lastYear = currentDate.AddYears(-1).Date;
+                var transactionList = transactionDetailRepo.getQueryable().Where(a => a.transaction_date.Date <= lastYear && a.ledger_id == ledger_id).OrderBy(a => a.transaction_date).ToList();
+                if (transactionList.Any())
+                {
+                    lastBalance = transactionList[transactionList.Count() - 1].balance;
+                }
+                updateBalanceIfBackdateEntryIsMade(ledger_id, lastYear, lastBalance);
+                transactionDetailRepo.saveChanges();
+                tx.Commit();
+            }
         }
     }
 }

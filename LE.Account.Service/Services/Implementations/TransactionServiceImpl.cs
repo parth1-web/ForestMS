@@ -76,6 +76,7 @@ namespace LE.Account.Service.Services.Implementations
 					transactionRepo.insert(transactionEntity);
 
 					transactionDetailService.addTransactionDetail(transactionDto, tran_id);
+					transactionRepo.saveChanges();
 					tx.Commit();
 				}
 			}

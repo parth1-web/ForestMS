@@ -6,7 +6,6 @@ using LE.Billing.Service.Assemblers.Interface;
 using LE.Billing.Service.Services.Interface;
 using LE.Common.Exceptions;
 using System;
-using System.Transactions;
 
 namespace LE.Billing.Service.Services.Implementations
 {
@@ -27,12 +26,13 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _membershipRepo.beginTransaction())
                 {
                     Membership membership = new Membership();
                     _membershipAssembler.copy(membership, membershipDto);
                     _membershipRepo.insert(membership);
-                    tx.Complete();
+                    _membershipRepo.saveChanges();
+                    tx.Commit();
                     return membership;
                 }
             }
@@ -46,7 +46,7 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _membershipRepo.beginTransaction())
                 {
                     var membership = _membershipRepo.getById(membershipDto.MembershipId);
                     if (membership == null)
@@ -55,7 +55,8 @@ namespace LE.Billing.Service.Services.Implementations
                     }
                     _membershipAssembler.copy(membership, membershipDto);
                     _membershipRepo.update(membership);
-                    tx.Complete();
+                    _membershipRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception ex)
@@ -68,7 +69,7 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _membershipRepo.beginTransaction())
                 {
                     var membership = _membershipRepo.getById(membershipId);
                     if (membership == null)
@@ -78,7 +79,8 @@ namespace LE.Billing.Service.Services.Implementations
 
                     membership.IsCancelled = true;
                     _membershipRepo.update(membership);
-                    tx.Complete();
+                    _membershipRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception ex)
@@ -91,7 +93,7 @@ namespace LE.Billing.Service.Services.Implementations
         {
             try
             {
-                using (var tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _membershipRepo.beginTransaction())
                 {
                     var membership = _membershipRepo.getById(membershipId);
                     if (membership == null)
@@ -101,7 +103,8 @@ namespace LE.Billing.Service.Services.Implementations
 
                     membership.IsActive = true;
                     _membershipRepo.update(membership);
-                    tx.Complete();
+                    _membershipRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception ex)
@@ -114,7 +117,7 @@ namespace LE.Billing.Service.Services.Implementations
 		{
 			try
 			{
-				using (var tx = new TransactionScope(TransactionScopeOption.Required))
+				using (var tx = _membershipRepo.beginTransaction())
 				{
 					var membership = _membershipRepo.getById(membershipId);
 					if (membership == null)
@@ -124,7 +127,8 @@ namespace LE.Billing.Service.Services.Implementations
 
 					membership.IsActive = false;
 					_membershipRepo.update(membership);
-					tx.Complete();
+					_membershipRepo.saveChanges();
+					tx.Commit();
 				}
 			}
 			catch (Exception ex)
@@ -137,7 +141,7 @@ namespace LE.Billing.Service.Services.Implementations
 		{
 			try
 			{
-				using (var tx = new TransactionScope(TransactionScopeOption.Required))
+				using (var tx = _membershipRepo.beginTransaction())
 				{
 					var membership = _membershipRepo.getById(membershipId);
 					if (membership == null)
@@ -148,7 +152,8 @@ namespace LE.Billing.Service.Services.Implementations
 					membership.IsCancelled = true;
 					membership.CancelledDate = DateTime.Now;
 					_membershipRepo.update(membership);
-					tx.Complete();
+					_membershipRepo.saveChanges();
+					tx.Commit();
 				}
 			}
 			catch (Exception ex)

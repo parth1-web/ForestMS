@@ -50,6 +50,7 @@ namespace LE.Account.Service.Services.Implementations
                 payment.cancelled_by = user_id;
                 payment.cancelled_date = DateFunctionsFactory.getDateFunctionsService().getDateTimeByTimeZone();
                 paymentRepo.update(payment);
+                paymentRepo.saveChanges();
                 tx.Commit();
             }
         }
@@ -104,6 +105,7 @@ namespace LE.Account.Service.Services.Implementations
                 TransactionDto transactionDto = _transactionDtoMaker.createTransactionDtoFrom(paymentDto);
 
                 transactionService.addTransaction(transactionDto);
+                paymentRepo.saveChanges();
                 tx.Commit();
             }
         }

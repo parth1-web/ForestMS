@@ -4,7 +4,6 @@ using LE.Account.Service.Services.Interface;
 using LE.Common.Exceptions;
 using System;
 using System.Linq;
-using System.Transactions;
 
 namespace LE.Account.Service.Services.Implementations
 {
@@ -21,7 +20,7 @@ namespace LE.Account.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _ledgerGroupRepo.beginTransaction())
                 {
                     var ledgerGroup = _ledgerGroupRepo.getById(ledger_group_id);
                     if (ledgerGroup == null)
@@ -35,7 +34,8 @@ namespace LE.Account.Service.Services.Implementations
                         throw new Exception("You are not allowed to delete primary Group.");
                     }
                     _ledgerGroupRepo.delete(ledgerGroup);
-                    tx.Complete();
+                    _ledgerGroupRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -48,7 +48,7 @@ namespace LE.Account.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _ledgerGroupRepo.beginTransaction())
                 {
 
                     var ledgerGroupWithSameName = _ledgerGroupRepo.getByName(ledger_group.name);
@@ -67,7 +67,8 @@ namespace LE.Account.Service.Services.Implementations
                     ledger_group.code = newCode;
 
                     _ledgerGroupRepo.insert(ledger_group);
-                    tx.Complete();
+                    _ledgerGroupRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
@@ -97,7 +98,7 @@ namespace LE.Account.Service.Services.Implementations
         {
             try
             {
-                using (TransactionScope tx = new TransactionScope(TransactionScopeOption.Required))
+                using (var tx = _ledgerGroupRepo.beginTransaction())
                 {
 
                     var ledgerGroup = _ledgerGroupRepo.getById(ledger_group.ledger_group_id);
@@ -130,7 +131,8 @@ namespace LE.Account.Service.Services.Implementations
                     }
                     ledgerGroup.ledger_group_type = ledger_group.ledger_group_type;
                     _ledgerGroupRepo.update(ledgerGroup);
-                    tx.Complete();
+                    _ledgerGroupRepo.saveChanges();
+                    tx.Commit();
                 }
             }
             catch (Exception)
