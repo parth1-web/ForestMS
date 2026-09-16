@@ -244,7 +244,7 @@ namespace LE.Web
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
             });
-            RotativaConfiguration.Setup(env);
+            RotativaConfiguration.Setup(env, "Rotativa");
         }
 
         private void registerElements(IServiceCollection services)

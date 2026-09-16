@@ -1,92 +1,155 @@
-# jukekhadibaan
+# ForestMS — Jukekhadi/Jamunkhadi Community Forest User Group Management System
 
+A comprehensive management system for community forest user groups in Nepal, handling billing, inventory, accounting, and administration.
 
+## Overview
 
-## Getting started
+| Item | Detail |
+|------|--------|
+| **Product** | ForestMS — Community Forest User Group Management System (Nepal) |
+| **Stack** | ASP.NET Core 3.1 MVC (Areas) · EF Core + Npgsql (PostgreSQL) · Autofac · Rotativa (wkhtmltopdf) |
+| **Modules** | Billing (wood/firewood/chiran/counter/furniture), Inventory, Accounting, Administration, Setup |
+| **Special Features** | Nepali BS/AD date conversion · en/ne localization · External ClickOnce WinForms POS client (JWT-authenticated) |
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+## Architecture
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/leadingedgesoft/jukekhadibaan.git
-git branch -M main
-git push -uf origin main
+LE.Web                 → Main MVC application (Areas: Billing, Accounting, Inventory, Administration, Setup)
+LE.Service             → Business logic services
+LE.Entities            → Domain entities
+LE.Common              → Shared utilities, helpers, base classes
+LE.Context             → EF Core DbContext, repositories
+LE.Infrastructure      → Infrastructure services
+LE.Account.*           → Account module (Common, Entities, Factories, Infrastructure, Service, Providers)
+LE.Billing.*           → Billing module (Common, Context, Entities, Factories, Infrastructure, Service)
+LE.Inventory.*         → Inventory module (Common, Context, Entities, Infrastructure, Service)
 ```
 
-## Integrate with your tools
+## Key Features
 
-- [ ] [Set up project integrations](https://gitlab.com/leadingedgesoft/jukekhadibaan/-/settings/integrations)
+### Billing Module
+- Wood billing (member/counter sales, goliya tracking, double-sell prevention)
+- Firewood billing
+- Chiran billing
+- Furniture billing
+- Counter billing (POS integration via JWT)
+- Membership management
+- Member punishment tracking
+- Day-close operations
 
-## Collaborate with your team
+### Inventory Module
+- Stock management (items, units, types)
+- Purchase management
+- Wood details (goliya tracking, transfer to chiran)
+- Stock piling
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+### Accounting Module
+- Ledger setup & groups
+- Journal vouchers
+- Payment/Receipt vouchers
+- Fiscal year management
+- Financial reports (Day Book, Trial Balance, P&L, Balance Sheet, Cash/Bank Book, Ledger Statement)
 
-## Test and Deploy
+### Administration
+- User management
+- Role-based access control
+- Module/permission mapping
 
-Use the built-in continuous integration in GitLab.
+## Security Status
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+| Phase | Status | Key Fixes |
+|-------|--------|-----------|
+| **P0** | ✅ Complete | Admin password rotation, 7 anonymous controllers secured, JWT key externalized, PBKDF2 1000→310k iterations (SHA-256), login rate limiting, CSRF on money paths, IDOR fixes, disabled-user login blocked |
+| **P1** | ✅ Complete | Double-sell guard (atomic), bill numbers via PG sequences, tax allocation per stock-type, cancel+day-close transactional, punishment logic fixed, stock deletion bug fixed, voucher aliasing bugs fixed, year-close corrected, membership reconciliation, mutating GETs→POST+antiforgery, module-level permission enforcement |
+| **P2** | 🚧 In Progress | Dead code removal, Autofac hygiene, Serilog logging, exception sanitization, HTTPS/HSTS enforcement, Unit-of-Work migration (219 repo-write sites) |
 
-***
+## Getting Started
 
-# Editing this README
+### Prerequisites
+- .NET SDK 3.1+ (upgrade to 8.x planned)
+- PostgreSQL 12+
+- wkhtmltopdf (for PDF reports via Rotativa)
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
+### Configuration
+1. Copy `LE.Web/appsettings.example.json` → `LE.Web/appsettings.json`
+2. Update connection string (`DefaultConnection`)
+3. Set strong `Jwt:Key`, `Jwt:Issuer`, `Jwt:Audience`
+4. Set `Security:CookieExpirationHours` (default 8)
+5. Set `Serilog:MinimumLevel`, `Serilog:File:path` (default `logs/le-web-.log`)
 
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+### Database Setup
+```bash
+cd LE.Web
+dotnet ef database update
+```
+**Required migrations** (run in order):
+- `20260911000000_p1_billing_settings_unique_key` — billing settings unique index
+- `20260914000000_p2_account_settings_unique_key` — account settings unique index
 
-## Name
-Choose a self-explaining name for your project.
+### Running
+```bash
+cd LE.Web
+dotnet run
+```
+Access at `https://localhost:5001` (HTTPS enforced by default in Production).
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+### POS Desktop Client
+The ClickOnce WinForms counter-POS client authenticates via JWT to `/account/jwtlogin` and calls:
+- `GET /billing/counter-billing/current-day`
+- `POST /billing/counter-billing/save` (antiforgery exempt — JWT + server-derived identity)
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+## Development
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+### Build
+```bash
+dotnet build LE.Forest.sln
+```
+Expected: **0 errors**, ~330-350 warnings (pre-existing Magick.NET NU19xxx advisories).
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+### Project Structure (Key Files)
+```
+LE.Web/
+├── Controllers/           → Area controllers (Billing, Accounting, Inventory, Admin, Setup)
+├── Views/                 → Razor views per area
+├── wwwroot/               → Static assets (58 MB, cleanup in progress)
+├── Helpers/               → LoginAttemptTracker, ModulePermissionFilter, ExceptionMessageHelper, etc.
+├── Seed Data/             → SeedData.txt (admin password placeholder)
+├── appsettings.example.json
+├── Program.cs             → Serilog bootstrap
+└── Startup.cs             → DI, auth, middleware pipeline
+```
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+### Key Conventions
+- **Transactions**: Use `BaseRepository.beginTransaction()` → `saveChanges()` → `Commit()` (no `TransactionScope`)
+- **Permissions**: `ModulePermissionFilter` (global TypeFilter) checks `role_permission_maps` via user roles
+- **Antiforgery**: Per-action `[ValidateAntiForgeryToken]` on money paths; `post-link.js` converts `a.post-link` to token-protected POST
+- **Dates**: Nepali BS/AD conversion throughout; timezone = NPT (UTC+5:45)
+- **Errors**: `CustomException` messages shown to users; all others sanitized via `ExceptionMessageHelper`
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+## Deployment Checklist
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+1. **Set strong `Jwt:Key`** via environment variable / secret store
+2. **Rotate admin password** on any DB seeded from old `SeedData.txt` (was `admin`)
+3. Copy `appsettings.example.json` → `appsettings.json`; fill DB password + JWT key
+4. Apply EF migrations (`dotnet ef database update`)
+5. Configure reverse proxy (nginx/IIS) for TLS termination — HSTS/HTTPS redirect gated by `Security:EnableHsts` / `Security:EnableHttpsRedirect`
+6. Mount `logs/` volume for Serilog file sink (retention 31 days default)
+7. Communicate to POS users: no change needed; next app restart picks up new JWT iss/aud
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+## Roadmap (P2 Remaining)
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+- [ ] .NET 3.1 → LTS 8.x upgrade (clears Magick.NET NU19xxx advisories)
+- [ ] Async data layer; disable lazy loading; fix pager (`href`s, `NextPageService`, `OrderBy` before `Skip/Take`)
+- [ ] wwwroot cleanup (58 MB, 54 jQuery copies, unused libs) via libman/bundling
+- [ ] Git history purge of binaries (`wkhtmltopdf.exe`, `counter_billing.zip`, `obj/` artifacts)
+- [ ] Menu-level permissions (beyond module-level); global `AutoValidateAntiforgeryToken`
+- [ ] Nepali timezone/`IClock` standardization (single time abstraction)
+- [ ] Real documentation beyond this README
 
 ## License
-For open source projects, say how it is licensed.
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+Proprietary — Leading Edge Software, Nepal.
+
+## Contact
+
+For support or inquiries, contact the development team.
