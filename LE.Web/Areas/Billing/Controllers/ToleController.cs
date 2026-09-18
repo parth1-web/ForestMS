@@ -36,7 +36,7 @@ namespace LE.Web.Areas.Billing.Controllers
 
 
         [Route("")]
-        [Route("index")]
+        [Route("index", Name = "billing_tole_index")]
         public IActionResult Index(ToleFilter filter)
         {
             var tole = _toleRepo.getQueryable();

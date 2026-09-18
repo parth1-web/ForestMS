@@ -6,9 +6,6 @@ namespace LE.Entities.User
 {
     public class RolePermissionMap
     {
-        private long _roleId;
-        private string _permissionName;
-
         [Key]
         public long role_permission_map_id { get; set; }
 
@@ -17,10 +14,15 @@ namespace LE.Entities.User
 
         public long module_id { get; set; }
 
+        public long? menu_id { get; set; }
+
         [ForeignKey("role_id")]
         public virtual Role role { get; set; }
 
         [ForeignKey(nameof(module_id))]
         public virtual Module module { get; set; }
+
+        [ForeignKey(nameof(menu_id))]
+        public virtual DynamicMenu menu { get; set; }
     }
 }

@@ -35,7 +35,7 @@ namespace LE.Web.Areas.Inventory.Controllers
         }
 
         [Route("")]
-        [Route("index")]
+        [Route("index", Name = "inventory_woodtype_index")]
         public IActionResult Index(WoodTypeFilter filter)
         {
             var woodType = _woodTypeRepo.getQueryable();
@@ -44,9 +44,7 @@ namespace LE.Web.Areas.Inventory.Controllers
                 woodType = woodType.Where(a => a.name.Contains(filter.name));
             }
             ViewBag.pagerInfo = _paginatedMetaService.GetMetaData(woodType.Count(), filter.page, filter.number_of_rows);
-            woodType = woodType.Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows);
-
-            var woodTypes = woodType.ToList();
+            var woodTypes = woodType.OrderBy(a => a.wood_type_id).Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows).ToList();
 
             WoodTypeIndexViewModel woodTypeVM = getViewModelFrom(woodTypes);
             return View(woodTypeVM);

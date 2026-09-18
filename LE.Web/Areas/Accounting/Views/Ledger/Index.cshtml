@@ -64,8 +64,8 @@
                                         <td>@sn</td>
                                         <td>@ledger.name (@ledger.code)</td>
                                         <td>@ledger.nep_created_date</td>
-                                        <td>@ledger.ledger_group.name</td>
-                                        <td>@ledger.ledger_group.ledger_group_type</td>
+                                        <td>@(ledger.ledger_group?.name ?? "N/A")</td>
+                                        <td>@(ledger.ledger_group?.ledger_group_type != null ? ledger.ledger_group.ledger_group_type.ToString() : "N/A")</td>
                                         <td>@Math.Abs(ledger.balance) @prefix</td>
                                         <td>
                                             <div class="btn-group">
@@ -87,7 +87,7 @@
                             }
                         </tbody>
                     </table>
-                    <LeadingEdgePager info="@ViewBag.pagerInfo"></LeadingEdgePager>
+                    <LeadingEdgePager info="@ViewBag.pagerInfo" route="accounting_ledger_index"></LeadingEdgePager>
                 </div>
             </div>
         </div>

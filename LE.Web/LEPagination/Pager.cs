@@ -1,4 +1,7 @@
 ﻿using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Routing;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +19,10 @@ namespace LE.Web.LEPagination
         public string NextPageText { get; set; } = "Next";
 
         public string Route { get; set; }
+
+        [ViewContext]
+        [HtmlAttributeNotBound]
+        public ViewContext ViewContext { get; set; }
 
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
@@ -41,9 +48,10 @@ namespace LE.Web.LEPagination
         /// </summary>
         private void AddPreviousPage(TagHelperOutput output)
         {
+            var href = BuildPageUrl(Info.PreviousPage.PageNumber);
             var html =
 $@"<li class=""pagination-previous"">
-    <a href="" aria-label=""{PreviousPageText} page"">{PreviousPageText} <span class=""show-for-sr"">page</span></a>
+    <a href=""{href}"" aria-label=""{PreviousPageText} page"">{PreviousPageText} <span class=""show-for-sr"">page</span></a>
 </li>";
 
             output.Content.SetHtmlContent(output.Content.GetContent() + html);
@@ -54,9 +62,10 @@ $@"<li class=""pagination-previous"">
         /// </summary>
         private void AddNextPage(TagHelperOutput output)
         {
+            var href = BuildPageUrl(Info.NextPage.PageNumber);
             var html =
 $@"<li class=""pagination-next"">
-    <a href="" aria-label=""{NextPageText} page"">{NextPageText} <span class=""show-for-sr"">page</span></a>
+    <a href=""{href}"" aria-label=""{NextPageText} page"">{NextPageText} <span class=""show-for-sr"">page</span></a>
 </li>";
 
             output.Content.SetHtmlContent(output.Content.GetContent() + html);
@@ -73,9 +82,31 @@ $@"<li class=""pagination-next"">
                     output.Content.SetHtmlContent(output.Content.GetContent() + html);
                     continue;
                 }
-                html = $@"<li><a href="" aria-label=""Page {infoPage.PageNumber}"">{infoPage.PageNumber}</a></li>";
+                var href = BuildPageUrl(infoPage.PageNumber);
+                html = $@"<li><a href=""{href}"" aria-label=""Page {infoPage.PageNumber}"">{infoPage.PageNumber}</a></li>";
                 output.Content.SetHtmlContent(output.Content.GetContent() + html);
             }
+        }
+
+        private string BuildPageUrl(int pageNumber)
+        {
+            if (string.IsNullOrEmpty(Route))
+            {
+                return "#";
+            }
+
+            // Build URL manually to avoid version-specific UrlHelper issues
+            var path = ViewContext.HttpContext.Request.Path.Value ?? "/";
+            var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString("", 
+                ViewContext.HttpContext.Request.Query
+                    .Where(kvp => kvp.Key != "page")
+                    .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToString()));
+            
+            // Add/update page parameter
+            var separator = query.Contains('?') ? '&' : '?';
+            query = $"{query}{separator}page={pageNumber}";
+            
+            return path + query;
         }
     }
 }

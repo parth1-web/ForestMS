@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using LE.Inventory.Infrastructure.Repository.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LE.Web.Areas.Billing.Controllers
 {
     [Area("billing")]
     [Route("billing/api")]
+    [AllowAnonymous]
     public class ApiController : Controller
     {
         private readonly WoodDetailsRepository _woodDetailsRepo;
@@ -26,30 +28,33 @@ namespace LE.Web.Areas.Billing.Controllers
         [Route("wood-detail/{id}")]
         public JsonResult woodDetail(long id)
         {
-            var detail = _woodDetailsRepo.getQueryable().Where(a => a.wood_details_id == id);
-            var hole = detail.FirstOrDefault().DamagedWoodDetails.Sum(a => a.total_damaged_size);
-            return Json(detail.Select(a => new
+            var detail = _woodDetailsRepo.getQueryable().Where(a => a.wood_details_id == id).FirstOrDefault();
+            if (detail == null)
+                return Json(null);
+
+            var holeTotal = detail.DamagedWoodDetails?.Sum(a => a.total_damaged_size) ?? 0;
+            return Json(new
             {
-                a.wood_type_id,
-                a.circle_size,
-                a.length,
-                net_total_size =a.getNetTotal(),
-                a.fresh_total_size,
-                hole_total_size = a.DamagedWoodDetails.Sum(x=>x.total_damaged_size),
-                a.stock_type_id,
-                a.balla_balli_category_id,
-                damaged_items= a.DamagedWoodDetails.Select(p => new
+                detail.wood_type_id,
+                detail.circle_size,
+                detail.length,
+                net_total_size = detail.getNetTotal(),
+                detail.fresh_total_size,
+                hole_total_size = holeTotal,
+                detail.stock_type_id,
+                detail.balla_balli_category_id,
+                damaged_items = detail.DamagedWoodDetails?.Select(p => new
                 {
-                   p.damaged_feet_size,
-                   p.damaged_fifth_size,
-                   p.damaged_first_size,
-                   p.damaged_fourth_size,
-                   p.damaged_second_size,
-                   p.damaged_third_size,
-                   p.dividor_value,
-                   p.total_damaged_size,
-                }),
-            }));
+                    p.damaged_feet_size,
+                    p.damaged_fifth_size,
+                    p.damaged_first_size,
+                    p.damaged_fourth_size,
+                    p.damaged_second_size,
+                    p.damaged_third_size,
+                    p.dividor_value,
+                    p.total_damaged_size,
+                }).ToList(),
+            });
         }
 
 

@@ -62,7 +62,7 @@ new SelectListItem { Text = "50", Value = "50" }
 
                                         <td>@sn</td>
                                         <td>@furniture.name</td>
-                                        <td>@furniture.furniture_category.name</td>
+                                        <td>@(furniture.furniture_category?.name ?? "N/A")</td>
                                         <td><span class="badge badge-@statusColor">@status</span></td>
                                         <td>
 
@@ -85,7 +85,7 @@ new SelectListItem { Text = "50", Value = "50" }
                         </tbody>
                     </table>
                     <br />
-                    <LeadingEdgePager info="@ViewBag.pagerInfo"></LeadingEdgePager>
+                    <LeadingEdgePager info="@ViewBag.pagerInfo" route="billing_furniture_index"></LeadingEdgePager>
                 </div>
             </div>
         </div>

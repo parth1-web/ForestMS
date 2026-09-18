@@ -35,9 +35,6 @@ namespace LE.Web.Migrations
 
                     b.HasKey("settings_id");
 
-                    b.HasIndex("key")
-                        .IsUnique();
-
                     b.ToTable("account_settings");
                 });
 
@@ -339,9 +336,6 @@ namespace LE.Web.Migrations
                         .HasColumnType("bigint")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<int>("FiscalYearId")
-                        .HasColumnType("integer");
-
                     b.Property<decimal>("balance")
                         .HasColumnType("numeric");
 
@@ -350,6 +344,9 @@ namespace LE.Web.Migrations
 
                     b.Property<decimal>("dr_amount")
                         .HasColumnType("numeric");
+
+                    b.Property<int>("fiscal_year_id")
+                        .HasColumnType("integer");
 
                     b.Property<long>("ledger_id")
                         .HasColumnType("bigint");
@@ -1401,6 +1398,9 @@ namespace LE.Web.Migrations
                         .HasColumnType("bigint")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
+                    b.Property<long?>("menu_id")
+                        .HasColumnType("bigint");
+
                     b.Property<long>("module_id")
                         .HasColumnType("bigint");
 
@@ -1408,6 +1408,8 @@ namespace LE.Web.Migrations
                         .HasColumnType("bigint");
 
                     b.HasKey("role_permission_map_id");
+
+                    b.HasIndex("menu_id");
 
                     b.HasIndex("module_id");
 
@@ -2058,6 +2060,10 @@ namespace LE.Web.Migrations
 
             modelBuilder.Entity("LE.Entities.User.RolePermissionMap", b =>
                 {
+                    b.HasOne("LE.Entities.User.DynamicMenu", "menu")
+                        .WithMany()
+                        .HasForeignKey("menu_id");
+
                     b.HasOne("LE.Entities.User.Module", "module")
                         .WithMany()
                         .HasForeignKey("module_id")
@@ -2145,4 +2151,3 @@ namespace LE.Web.Migrations
         }
     }
 }
-

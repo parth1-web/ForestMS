@@ -35,6 +35,8 @@ namespace LE.Web.Areas.Billing.Controllers
             _paginatedMetaService = paginatedMetaService;
         }
 
+        [Route("")]
+        [Route("index", Name = "billing_furniturecategory_index")]
         public IActionResult Index(FurnitureCategoryFilter filter)
         {
             var furnitureCategory = _furnitureCategoryRepo.getQueryable();
@@ -43,9 +45,7 @@ namespace LE.Web.Areas.Billing.Controllers
                 furnitureCategory = furnitureCategory.Where(a => a.name.Contains(filter.name));
             }
             ViewBag.pagerInfo = _paginatedMetaService.GetMetaData(furnitureCategory.Count(), filter.page, filter.number_of_rows);
-            furnitureCategory = furnitureCategory.Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows);
-
-            var furnitureCategories = furnitureCategory.ToList();
+            var furnitureCategories = furnitureCategory.OrderBy(a => a.furniture_category_id).Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows).ToList();
 
             FurnitureCategoryIndexViewModel furnitureCategoryIndexVM = getViewModelFrom(furnitureCategories);
             return View(furnitureCategoryIndexVM);

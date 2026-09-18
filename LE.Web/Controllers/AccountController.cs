@@ -26,7 +26,6 @@ namespace LE.Web.Controllers
         private readonly userNS.AuthenticationService _authenticationService;
         private LoginSessionService _loginSessionService;
         private OrganizationSetupRepository _orgSetupRepo;
-        private UserRepository _userRepo;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         private readonly LoginAttemptTracker _loginAttemptTracker;
 

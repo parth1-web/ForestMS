@@ -35,7 +35,7 @@ namespace LE.Web.Areas.Inventory.Controllers
         }
 
         [Route("")]
-        [Route("index")]
+        [Route("index", Name = "inventory_categorypurpose_index")]
         public IActionResult Index(CategoryPurposeFilter filter)
         {
             var category = _categoryPurposeRepo.getQueryable();
@@ -44,7 +44,7 @@ namespace LE.Web.Areas.Inventory.Controllers
                 category = category.Where(a => a.name.Contains(filter.name));
             }
             ViewBag.pagerInfo = _paginatedMetaService.GetMetaData(category.Count(), filter.page, filter.number_of_rows);
-            category = category.Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows);
+            category = category.OrderBy(a => a.stock_category_purpose_id).Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows);
 
             var categories = category.ToList();
 

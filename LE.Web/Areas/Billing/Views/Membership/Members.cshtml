@@ -72,7 +72,7 @@
 
 									<tr class="bg-white">
 										<td>@sn</td>
-										<td class="memCode">@member.Membership.MembershipCode</td>
+										<td class="memCode">@(member.Membership?.MembershipCode ?? "N/A")</td>
 										<td>
 											@Html.Raw(!string.IsNullOrEmpty(member.ImageName)
 											? $"<a href='/images/custom/{member.ImageName}' target='_blank' rel='noopener noreferer'><img src='/images/custom/{member.ImageName}' style='object-fit:contain;' height='50' width='50' alt='member image'/></a>"
@@ -105,7 +105,7 @@
 						</tbody>
 					</table>
 					<br />
-					<LeadingEdgePager info="@ViewBag.pagerInfo"></LeadingEdgePager>
+					<LeadingEdgePager info="@ViewBag.pagerInfo" route="billing_membership_members"></LeadingEdgePager>
 				</div>
 			</div>
 		</div>

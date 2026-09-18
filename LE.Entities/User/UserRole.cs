@@ -6,8 +6,6 @@ namespace LE.Entities.User
 {
     public class UserRole
     {
-        private long _typeId, _roleId;
-
         [Key]
         public long user_role_id { get; set; }
 

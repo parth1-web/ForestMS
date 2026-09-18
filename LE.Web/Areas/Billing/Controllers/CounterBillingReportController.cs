@@ -18,7 +18,6 @@ namespace LE.Web.Areas.Billing.Controllers
     [Route("billing/counter")]
     public class CounterBillingReportController : BaseController
     {
-        private readonly UserRepository _userRepo;
         private readonly CounterSalesRepository _counterSalesRepo;
         private readonly OrganizationSetupRepository _organizationSetupRepository;
         private IMapper _mapper;

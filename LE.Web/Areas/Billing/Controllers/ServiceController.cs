@@ -12,6 +12,7 @@ using LE.Web.LEPagination;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,18 +41,24 @@ namespace LE.Web.Areas.Billing.Controllers
             _paginatedMetaService = paginatedMetaService;
         }
 
+        [Route("")]
+        [Route("index", Name = "billing_service_index")]
         public IActionResult Index(ServiceFilter filter)
-
         {
-            var service = _serviceRepo.getQueryable();
+            var service = _serviceRepo.getQueryable()
+                .Include(a => a.service_category)
+                .Include(a => a.ledger);
+
+            IQueryable<LE.Billing.Entities.Service> query = service;
             if (!string.IsNullOrWhiteSpace(filter.name))
             {
-                service = service.Where(a => a.name.Contains(filter.name));
+                query = query.Where(a => a.name.Contains(filter.name));
             }
-            ViewBag.pagerInfo = _paginatedMetaService.GetMetaData(service.Count(), filter.page, filter.number_of_rows);
-            service = service.Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows);
 
-            var services = service.ToList();
+            ViewBag.pagerInfo = _paginatedMetaService.GetMetaData(query.Count(), filter.page, filter.number_of_rows);
+            var pagedResult = query.OrderBy(a => a.service_id).Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows);
+
+            var services = pagedResult.ToList();
 
             ServiceIndexViewModel serviceIndexVM = getViewModelFrom(services);
             return View(serviceIndexVM);

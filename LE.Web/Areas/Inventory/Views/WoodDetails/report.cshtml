@@ -82,24 +82,27 @@
                                     <tr>
                                         <td>@sn</td>
                                         <td>@item.year</td>
-                                        <td>@item.piling.title</td>
+                                        <td>@(item.piling?.title ?? "N/A")</td>
                                         <td>@item.goliya_number</td>
                                         <td>@item.tuna_no</td>
-                                        <td>@item.wood_type.name</td>
-                                        <td>@item.category_purpose.name</td>
+                                        <td>@(item.wood_type?.name ?? "N/A")</td>
+                                        <td>@(item.category_purpose?.name ?? "N/A")</td>
                                         <td>@Enum.GetName(typeof(LE.Inventory.Common.Enums.StockTypes), item.stock_type_id)</td>
                                         <td>@item.circle_size</td>
                                         <td>@item.length</td>
                                         <td>@item.fresh_total_size</td>
-                                        <td>
-                                            @{
-                                                foreach (var damage in item.DamagedWoodDetails)
-                                                {
-                                                    <span>@damage.damaged_first_size + @damage.damaged_second_size + @damage.damaged_third_size + @damage.damaged_fourth_size + @damage.damaged_fifth_size X @damage.damaged_feet_size</span>
-                                                    <br />
+<td>
+                                                @{
+                                                    if (item.DamagedWoodDetails != null)
+                                                    {
+                                                        foreach (var damage in item.DamagedWoodDetails)
+                                                        {
+                                                            <span>@damage.damaged_first_size + @damage.damaged_second_size + @damage.damaged_third_size + @damage.damaged_fourth_size + @damage.damaged_fifth_size X @damage.damaged_feet_size</span>
+                                                            <br />
+                                                        }
+                                                    }
                                                 }
-                                            }
-                                        </td>
+                                            </td>
                                         <td>@item.getDamagedsize()</td>
                                         <td>@item.getNetTotal()</td>
                                         <td>@item.grade</td>
@@ -115,7 +118,7 @@
                         </tbody>
                     </table>
                     <br />
-                    <LeadingEdgePager info="@ViewBag.pagerInfo"></LeadingEdgePager>
+                    <LeadingEdgePager info="@ViewBag.pagerInfo" route="inventory_wooddetails_report"></LeadingEdgePager>
                 </div>
             </div>
         </div>

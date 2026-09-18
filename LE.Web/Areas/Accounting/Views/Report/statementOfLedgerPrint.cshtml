@@ -49,7 +49,6 @@
                     decimal lastBalance = 0;
                     decimal crAmt = 0;
                     decimal drAmt = 0;
-                    string opBalanceText = "CR";
 
                     if (openingBalance >= 0)
                     {
@@ -62,7 +61,6 @@
                         crAmt = Math.Abs(openingBalance);
                         drAmt = 0;
                         crTotal += Math.Abs(openingBalance);
-                        opBalanceText = "DR";
                     }
 
 
@@ -76,11 +74,9 @@
                     </tr>
                     if (Model.transactionDetail != null)
                     {
-                        int sn = 1;
                         foreach (var transactionData in Model.transactionDetail)
                         {
                             string prefix = "To ";
-                            string balanceText = "CR";
 
                             if (transactionData.dr_amount > 0)
                             {
@@ -93,10 +89,6 @@
 
                             lastBalance = totBalance;
 
-                            if (lastBalance < 0)
-                            {
-                                balanceText = "DR";
-                            }
                             <tr>
                                 <td>@DateConverter.Core.Service_Factory.DateConverterFactory.getDateConverterService().ToBS(transactionData.transaction_date.Date, LE.Common.Library.DateConverter.Entity.NepaliDate.DateFormats.yMd).getFormattedDate().ConvertNumerals()</td>
                                 <td><b>@prefix @transactionData.name</b></td>

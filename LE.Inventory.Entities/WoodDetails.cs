@@ -193,7 +193,7 @@ namespace LE.Inventory.Entities
         public decimal getDamagedsize()
         {
             decimal result = 0;
-            if (DamagedWoodDetails.Count > 0)
+            if (DamagedWoodDetails?.Count > 0)
             {
                 foreach (var detail in DamagedWoodDetails)
                 {

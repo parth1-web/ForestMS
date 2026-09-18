@@ -38,7 +38,7 @@ namespace LE.Web.Areas.Inventory.Controllers
         }
 
         [HttpGet]
-        [Route("sales-report")]
+        [Route("sales-report", Name = "inventory_reports_salesreport")]
         public IActionResult salesReport(WoodDetailsIndexViewModel vm)
         {
             var categoryPurpose = _stockCategoryPurposeRepo.getQueryable().Where(a => a.is_enabled == true).ToList();
@@ -50,9 +50,7 @@ namespace LE.Web.Areas.Inventory.Controllers
             var woodDetails = getSalesReport(vm);
 
             ViewBag.pagerInfo = _paginatedMetaService.GetMetaData(woodDetails.Count(), vm.page, vm.number_of_rows);
-            woodDetails = woodDetails.Skip(vm.number_of_rows * (vm.page - 1)).Take(vm.number_of_rows);
-
-            var res = woodDetails.OrderByDescending(a => a.created_date).ToList();
+            var res = woodDetails.OrderByDescending(a => a.created_date).Skip(vm.number_of_rows * (vm.page - 1)).Take(vm.number_of_rows).ToList();
             vm = getViewModelFrom(res);
             return View(vm);
         }
@@ -124,7 +122,7 @@ namespace LE.Web.Areas.Inventory.Controllers
         }
 
         [HttpGet]
-        [Route("piling-wise-report")]
+        [Route("piling-wise-report", Name = "inventory_reports_pilingwisereport")]
         public IActionResult pilingWiseReport(WoodDetailsIndexViewModel vm)
         {
             var piling = _pilingRepo.getQueryable().Where(a => a.is_enabled == true).ToList();
@@ -138,9 +136,7 @@ namespace LE.Web.Areas.Inventory.Controllers
             }
 
             ViewBag.pagerInfo = _paginatedMetaService.GetMetaData(woodDetails.Count(), vm.page, vm.number_of_rows);
-            woodDetails = woodDetails.Skip(vm.number_of_rows * (vm.page - 1)).Take(vm.number_of_rows);
-
-            var res = woodDetails.OrderByDescending(a => a.created_date).ToList();
+            var res = woodDetails.OrderByDescending(a => a.created_date).Skip(vm.number_of_rows * (vm.page - 1)).Take(vm.number_of_rows).ToList();
             var VM = getViewModelFrom(res);
             VM.piling_title = vm.piling_id > 0 ? _pilingRepo.getById(vm.piling_id).title : "N/A";
 

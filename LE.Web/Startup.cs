@@ -18,7 +18,10 @@ using LE.Billing.Service.Assemblers.Implementations;
 using LE.Billing.Service.Assemblers.Interface;
 using LE.Billing.Service.Services.Implementations;
 using LE.Billing.Service.Services.Interface;
+using Microsoft.Extensions.Logging;
 using LE.Common.Library;
+using LE.Common.Library.DateConverter.Library;
+using LE.Common.Library.DateConverter.Library.Interface;
 using LE.Common.Repository.Implementations;
 using LE.Common.Repository.Interface;
 using LE.Context.Data;
@@ -43,11 +46,13 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -93,8 +98,7 @@ namespace LE.Web
         {
             services.AddDbContext<AppDbContext>(options =>
             {
-                options.UseLazyLoadingProxies()
-                       .UseNpgsql(Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("LE.Web"));
+                options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("LE.Web"));
                 options.ConfigureWarnings(x => x.Ignore(RelationalEventId.AmbientTransactionWarning));
             });
 
@@ -150,6 +154,9 @@ namespace LE.Web
                 // resolved through DI (TypeFilter) so it can take repository dependencies;
                 // it only guards requests routed to a permissioned MVC area.
                 options.Filters.Add(new Microsoft.AspNetCore.Mvc.TypeFilterAttribute(typeof(Helpers.ModulePermissionFilter)));
+
+                // P2: global antiforgery token validation for all mutating actions
+                options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
             }).AddControllersAsServices()
               .AddNewtonsoftJson(jsonOptions =>
               {
@@ -185,7 +192,7 @@ namespace LE.Web
            });
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifetime)
+        public void Configure(IApplicationBuilder app, Microsoft.AspNetCore.Hosting.IWebHostEnvironment env, Microsoft.Extensions.Hosting.IHostApplicationLifetime appLifetime)
         {
 
             if (env.IsDevelopment())
@@ -234,6 +241,38 @@ namespace LE.Web
             var options = app.ApplicationServices.GetService<IOptions<RequestLocalizationOptions>>();
             app.UseRequestLocalization(options.Value);
 
+            using (var scope = app.ApplicationServices.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<LE.Context.Data.AppDbContext>();
+                var logger = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<LE.Web.Startup>>();
+                logger.LogInformation("Updating fn_get_fiscal_year_id function...");
+                try
+                {
+                    context.Database.ExecuteSqlRaw(@"
+DROP FUNCTION IF EXISTS fn_get_fiscal_year_id(timestamp without time zone);
+CREATE FUNCTION fn_get_fiscal_year_id(p_date timestamp without time zone)
+RETURNS integer AS $$
+DECLARE
+    v_fiscal_year_id integer;
+BEGIN
+    SELECT id INTO v_fiscal_year_id
+    FROM financial_year
+    WHERE DATE(p_date) BETWEEN DATE(startdate) AND DATE(enddate)
+    ORDER BY id DESC
+    LIMIT 1;
+    
+    RETURN v_fiscal_year_id;
+END;
+$$ LANGUAGE plpgsql;
+");
+                    logger.LogInformation("fn_get_fiscal_year_id function updated successfully");
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Failed to update fn_get_fiscal_year_id function");
+                }
+            }
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
@@ -244,7 +283,7 @@ namespace LE.Web
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
             });
-            RotativaConfiguration.Setup(env, "Rotativa");
+            RotativaConfiguration.Setup((Microsoft.AspNetCore.Hosting.IHostingEnvironment)env, "Rotativa");
         }
 
         private void registerElements(IServiceCollection services)
@@ -295,6 +334,7 @@ namespace LE.Web
             services.AddSingleton<PaginatedMetaService, PaginatedMetaServiceImpl>();
             services.AddSingleton<DateConverterService, DateConverterServiceImpl>();
             services.AddSingleton<LoginAttemptTracker, LoginAttemptTracker>();
+            services.AddSingleton<iDateFunctions, DateFunctions>();
         }
 
         private void registerUserLibraries(IServiceCollection services)

@@ -39,7 +39,7 @@ namespace LE.Web.Areas.Administration.Controllers
         }
 
         [Route("")]
-        [Route("index")]
+        [Route("index", Name = "administration_role_index")]
         public IActionResult Index(RoleFilter filter)
         {
             try
@@ -51,9 +51,7 @@ namespace LE.Web.Areas.Administration.Controllers
                 }
                 ViewBag.pagerInfo = _paginatedMetaService.GetMetaData(role.Count(), filter.page, filter.number_of_rows);
 
-                role = role.Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows);
-
-                var roles = role.ToList();
+                var roles = role.OrderBy(a => a.role_id).Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows).ToList();
                 var roleIndexVM = getViewModelFrom(roles);
                 return View(roleIndexVM);
             }

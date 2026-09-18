@@ -23,8 +23,6 @@ namespace LE.Web.Areas.Billing.Controllers
         private readonly CounterSalesService _counterSalesService;
         private readonly CounterSalesRepository _counterSalesRepo;
         private readonly ServiceRepository _serviceRepo;
-        private readonly AuthenticationRepository _authenticationRepo;
-        private readonly UserRepository _userRepo;
 
         public CounterBillingController(CounterSalesService counterSalesService, CounterSalesRepository counterSalesRepo, ServiceRepository serviceRepo, AuthenticationRepository authenticationRepo, UserRepository userRepo)
         {

@@ -31,7 +31,7 @@ namespace LE.Web.Areas.Setup.Controllers
 
         [HttpGet]
         [Route("")]
-        [Route("index")]
+        [Route("index", Name = "setup_module_index")]
         public IActionResult Index([FromQuery]ModuleFilter filter = null)
         {
             try
@@ -44,7 +44,7 @@ namespace LE.Web.Areas.Setup.Controllers
 
                 ViewBag.pagerInfo = _paginatedMetaService.GetMetaData(moduleQueryable.Count(), filter.page, filter.number_of_rows);
 
-                moduleQueryable = moduleQueryable.Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows);
+                moduleQueryable = moduleQueryable.OrderBy(a => a.module_id).Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows);
 
 
                 var modules = moduleQueryable.ToList();

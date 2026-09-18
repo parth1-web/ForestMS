@@ -67,19 +67,20 @@ namespace LE.Web.Areas.Billing.Controllers
         }
 
         [Route("")]
-        [Route("index")]
+        [Route("index", Name = "billing_membership_index")]
         public IActionResult Index(MemberFilter filter)
         {
-            var membership = _membershipRepo.getQueryable().Where(m => !m.IsCancelled);
+            var membership = _membershipRepo.getQueryable()
+                .Include(m => m.MemberDetails)
+                .Include(m => m.MembershipValidity)
+                .Where(m => !m.IsCancelled);
 
             if (!string.IsNullOrWhiteSpace(filter.name))
             {
                 membership = membership.Where(a => a.MembershipCode.Contains(filter.name) || a.MemberDetails.Any(x => x.FullName.Contains(filter.name)));
             }
             ViewBag.pagerInfo = _paginatedMetaService.GetMetaData(membership.Count(), filter.page, filter.number_of_rows);
-            membership = membership.Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows);
-
-            var membershipList = membership.ToList();
+            var membershipList = membership.OrderBy(a => a.MembershipId).Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows).ToList();
 
             var model = getViewModelFrom(membershipList);
             return View(model);
@@ -138,6 +139,8 @@ namespace LE.Web.Areas.Billing.Controllers
                     }
 
                     var memberLedger = membershipModel.MemberDetails.Where(x => x.IsGharmuli).FirstOrDefault();
+                    if (memberLedger == null)
+                        return Json(new { success = false, message = "No Gharmuli member found." });
 
                     //Create Ledger
                     var ledgerDto = new LedgerDto();
@@ -467,7 +470,7 @@ namespace LE.Web.Areas.Billing.Controllers
         }
 
         [HttpGet]
-        [Route("members")]
+        [Route("members", Name = "billing_membership_members")]
         public IActionResult Members(MemberFilter filter)
         {
             var members = _memberRepo.getAll().Where(m => m.IsDeleted == false);
@@ -477,7 +480,7 @@ namespace LE.Web.Areas.Billing.Controllers
             }
 
             ViewBag.pagerInfo = _paginatedMetaService.GetMetaData(members.Count(), filter.page, filter.number_of_rows);
-            var membersList = members.Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows).ToList();
+            var membersList = members.OrderBy(a => a.MemberId).Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows).ToList();
             return View(membersList);
         }
 

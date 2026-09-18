@@ -13,6 +13,7 @@ using LE.Web.LEPagination;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,9 +40,13 @@ namespace LE.Web.Areas.Inventory.Controllers
             _mapper = mapper;
         }
 
+        [Route("")]
+        [Route("index", Name = "inventory_purchase_index")]
         public IActionResult Index(PurchaseFilter filter)
         {
-            var purchase = _purchaseRepo.getQueryable().Where(a => a.is_deleted == false);
+            var purchase = _purchaseRepo.getQueryable()
+                .Include(a => a.stock_items)
+                .Where(a => a.is_deleted == false);
             if (!string.IsNullOrWhiteSpace(filter.name))
             {
                 purchase = purchase.Where(a => a.stock_items.name.Contains(filter.name));

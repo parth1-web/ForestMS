@@ -17,7 +17,11 @@ namespace LE.Web.Areas.Inventory.AutomapperProfiles
             CreateMap<StockUnitModel, StockUnitDto>().ReverseMap();
             CreateMap<StockUnitModel, StockUnit>().ReverseMap();
             CreateMap<WoodDetailsModel, WoodDetailsDto>().ReverseMap();
-            CreateMap<WoodsItemDetail, WoodDetails>().ReverseMap();
+            CreateMap<WoodDetails, WoodsItemDetail>()
+                .ForMember(dest => dest.wood_type, opt => opt.MapFrom(src => src.wood_type))
+                .ForMember(dest => dest.piling, opt => opt.MapFrom(src => src.piling))
+                .ForMember(dest => dest.category_purpose, opt => opt.MapFrom(src => src.category_purpose))
+                .ReverseMap();
             CreateMap<Piling, Pilings>().ReverseMap();
             CreateMap<Piling, PilingDto>().ReverseMap();
             CreateMap<WoodDetails, WoodDetailsIndexViewModel>().ReverseMap();

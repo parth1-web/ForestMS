@@ -16,6 +16,7 @@ using LE.Web.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -56,7 +57,10 @@ namespace LE.Web.Areas.Billing.Controllers
         public IActionResult add()
         {
             FurnitureBillModel model = new FurnitureBillModel();
-            var membersList = _memberRepo.getQueryable().Where(a => a.IsActive && a.Membership.MembershipValidity.ValidityDate.Date >= DateTime.Now.Date).ToList();
+            var membersList = _memberRepo.getQueryable()
+                .Include(a => a.Membership)
+                    .ThenInclude(m => m.MembershipValidity)
+                .Where(a => a.IsActive && a.Membership != null && a.Membership.MembershipValidity != null && a.Membership.MembershipValidity.ValidityDate.Date >= DateTime.Now.Date).ToList();
             ViewBag.members = new SelectList(membersList, "MemberId", "FullName");
 
             var furnitureItem = _furnitureRepo.getQueryable().Where(a => a.is_enabled == true).ToList();

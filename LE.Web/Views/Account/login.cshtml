@@ -36,7 +36,7 @@
 	<div class="w3layouts-two-grids">
 		<div class="mid-class">
 			<div class="txt-left-side">
-				@Html.Partial("message")
+				@await Html.PartialAsync("message")
 				<h2> Login Here </h2>
 				<p>Please provide your login credentials.</p>
 			@using (Html.BeginForm())

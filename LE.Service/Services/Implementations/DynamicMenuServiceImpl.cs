@@ -65,7 +65,7 @@ namespace LE.Service.Services.Implementations
                     return dynamicMenu;
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 throw;
             }
@@ -92,7 +92,7 @@ namespace LE.Service.Services.Implementations
                     tx.Commit();
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 throw;
             }

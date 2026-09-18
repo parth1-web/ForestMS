@@ -18,6 +18,7 @@ using LE.Web.Controllers;
 using LE.Web.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -76,7 +77,10 @@ namespace LE.Web.Areas.Billing.Controllers
         public IActionResult add(long type)
         {
             WoodBillModel model = new WoodBillModel();
-            var membersList = _memberRepo.getQueryable().Where(a => a.IsActive && a.Membership.MembershipValidity.ValidityDate.Date >= DateTime.Now.Date).ToList();
+            var membersList = _memberRepo.getQueryable()
+                .Include(a => a.Membership)
+                    .ThenInclude(m => m.MembershipValidity)
+                .Where(a => a.IsActive && a.Membership != null && a.Membership.MembershipValidity != null && a.Membership.MembershipValidity.ValidityDate.Date >= DateTime.Now.Date).ToList();
             ViewBag.members = membersList;
             var woodDetail = _woodDetailRepo.getQueryable().Where(a => a.is_sold == false && a.stock_type_id == type).Select(s => new { id = s.wood_details_id, name = string.Format("{0}--{1}", s.goliya_number, (StockTypes)s.stock_type_id) }).ToList();
             ViewBag.woodDetails = new SelectList(woodDetail, "id", "name");
@@ -93,7 +97,11 @@ namespace LE.Web.Areas.Billing.Controllers
                 var isMembershipValid = true;
                 foreach (var member in model.members)
                 {
-                    var membershipId = _memberRepo.getQueryable().Where(a => a.MemberId == member.MemberId).FirstOrDefault().MembershipId; 
+                    var memberEntity = _memberRepo.getQueryable().Where(a => a.MemberId == member.MemberId).FirstOrDefault();
+                    if (memberEntity == null)
+                        return Json(new { error = true, responseText = "Member not found." });
+
+                    var membershipId = memberEntity.MembershipId;
                     isMembershipValid = _memberPunishmentController.GetMemberValidity(membershipId);
                     if (!isMembershipValid)
                     {
@@ -254,7 +262,14 @@ namespace LE.Web.Areas.Billing.Controllers
                 ViewBag.Address = _organizationSetupRepository.getByKey(OrganizationSetup.Address.ToString()).value;
 
                 var dateConverterService = DateConverterFactory.getDateConverterService();
-                var billData = _woodBillDetailRepo.getQueryable().Where(a => a.wood_bill_id == wood_bill_id).ToList();
+                var billData = _woodBillDetailRepo.getQueryable()
+                    .Include(a => a.woodDetails)
+                        .ThenInclude(wd => wd.wood_type)
+                    .Include(a => a.woodDetails)
+                        .ThenInclude(wd => wd.category_purpose)
+                    .Include(a => a.woodDetails)
+                        .ThenInclude(wd => wd.piling)
+                    .Where(a => a.wood_bill_id == wood_bill_id).ToList();
 
                 List<string> name = new List<string>();
                 List<string> address = new List<string>();
@@ -264,7 +279,7 @@ namespace LE.Web.Areas.Billing.Controllers
                 if (bill.sales_type == SalesType.Member)
                 {
 
-                    var members = _woodBillMemberRepo.getQueryable().Where(a => a.wood_bill_id == bill.wood_bill_id);
+                    var members = _woodBillMemberRepo.getQueryable().Where(a => a.wood_bill_id == bill.wood_bill_id).ToList();
                     foreach (var member in members)
                     {
                         name.Add(member.member.FullName + " (" + member.member.Membership.MembershipCode + ")");
@@ -365,7 +380,7 @@ namespace LE.Web.Areas.Billing.Controllers
                         var str = "";
                         if (detail.sales_type == SalesType.Member)
                         {
-                            var memberIds = _woodBillMemberRepo.getQueryable().Where(a => a.wood_bill_id == detail.wood_bill_id);
+                            var memberIds = _woodBillMemberRepo.getQueryable().Where(a => a.wood_bill_id == detail.wood_bill_id).ToList();
                             foreach (var member in memberIds)
                             {
                                 str = str + "" + member.member.FullName;

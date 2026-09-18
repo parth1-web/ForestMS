@@ -6,7 +6,7 @@ namespace LE.Entities.OrganizationSetup
 {
     public class OrganizationSetup
     {
-        private string _key, _value;
+        private string _key;
 
         [Key]
         public long organization_setup_id { get; set; }

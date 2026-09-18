@@ -64,13 +64,13 @@
                                     }
                                     <tr>
                                         <td>@sn</td>
-                                        <td>@item.Membership.MemberDetails.Where(a=>a.IsGharmuli).FirstOrDefault().FullName</td>
-                                        <td>@item.Membership.MembershipCode</td>
+                                        <td>@(item.Membership != null && item.Membership.MemberDetails != null ? item.Membership.MemberDetails.Where(a=>a.IsGharmuli).FirstOrDefault()?.FullName ?? "N/A" : "N/A")</td>
+                                        <td>@(item.Membership?.MembershipCode ?? "N/A")</td>
                                         <td>@item.IllegalActivity</td>
                                         <td><span class="@badge">@item.NepPunishmentValidity</span></td>
-                                        <td>@item.Membership.MemberDetails.Where(a => a.IsGharmuli).FirstOrDefault().ContactNo</td>
-                                        <td>@item.Membership.Area</td>
-                                        <td>@item.Membership.ToleNo</td>
+                                        <td>@(item.Membership != null && item.Membership.MemberDetails != null ? item.Membership.MemberDetails.Where(a => a.IsGharmuli).FirstOrDefault()?.ContactNo ?? "N/A" : "N/A")</td>
+                                        <td>@(item.Membership?.Area ?? "N/A")</td>
+                                        <td>@(item.Membership?.ToleNo ?? "N/A")</td>
                                         <td>@item.Remarks</td>
                                                 
                                         <td>
@@ -91,7 +91,7 @@
                         </tbody>
                     </table>
                     <br />
-                    <LeadingEdgePager info="@ViewBag.pagerInfo"></LeadingEdgePager>
+                    <LeadingEdgePager info="@ViewBag.pagerInfo" route="billing_memberpunishment_index"></LeadingEdgePager>
                 </div>
 
 

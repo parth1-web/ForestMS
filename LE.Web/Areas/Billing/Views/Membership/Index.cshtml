@@ -135,7 +135,7 @@
 									string statusColor = "success";
 									string renewBtn = "";
 
-									if (@membership.MembershipValidity.ValidityDate.Date < DateTime.Now.Date)
+									if (membership.MembershipValidity?.ValidityDate.Date < DateTime.Now.Date)
 									{
 										status = "Expired";
 										statusColor = "danger";
@@ -162,13 +162,13 @@
 										<td>@sn</td>
 										<td class="memCode">@membership.MembershipCode</td>
 										<td>
-											<span class="gharmuliName">@membership.MemberDetails.Where(a => a.IsGharmuli).FirstOrDefault().FullName</span>
+											<span class="gharmuliName">@(membership.MemberDetails.Where(a => a.IsGharmuli).FirstOrDefault()?.FullName ?? "N/A")</span>
 										</td>
 										<td class="area">@(!string.IsNullOrEmpty(membership.Area) ? membership.Area : "-")</td>
 										<td class="tole">@membership.ToleNo</td>
 										<td class="religion">@EnumExtensions.GetDisplayName(membership.Religion)</td>
 										<td class="validity">@membership.CreatedDate</td>
-										<td class="created">@membership.MembershipValidity.NepValidityDate</td>
+										<td class="created">@(membership.MembershipValidity?.NepValidityDate ?? "N/A")</td>
 										<td><span class="badge badge-@statusColor status mr-2">@status</span> @Html.Raw(renewBtn)</td>
 										<td>
 											<button data-toggle="modal" data-target="#membershipDetail" data-index="@membership.MembershipId" class="btn btn-icon waves-effect waves-light btn-info btn-sm viewDetail" title="View Details"><i class="fa fa-eye"></i></button>
@@ -195,7 +195,7 @@
 						</tbody>
 					</table>
 					<br />
-					<LeadingEdgePager info="@ViewBag.pagerInfo"></LeadingEdgePager>
+					<LeadingEdgePager info="@ViewBag.pagerInfo" route="billing_membership_index"></LeadingEdgePager>
 				</div>
 			</div>
 		</div>

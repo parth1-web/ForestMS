@@ -35,6 +35,8 @@ namespace LE.Web.Areas.Accounting.Controllers
             _mapper = mapper;
         }
 
+        [Route("")]
+        [Route("index", Name = "accounting_ledgergroup_index")]
         public IActionResult Index(LedgerGroupFilter filter = null)
         {
             var ledgerGroup = _ledgerGroupRepo.getQueryable();

@@ -10,13 +10,11 @@ namespace LE.Web.Helpers
 {
     public class FileHelperImpl : FileHelper
     {
-        [Obsolete]
-        private IHostingEnvironment hostingEnvironment;
+        private readonly IWebHostEnvironment _hostingEnvironment;
 
-        [Obsolete]
-        public FileHelperImpl(IHostingEnvironment _hostingEnvironment)
+        public FileHelperImpl(IWebHostEnvironment hostingEnvironment)
         {
-            hostingEnvironment = _hostingEnvironment;
+            _hostingEnvironment = hostingEnvironment;
         }
         public bool isImageValid(string file_name)
         {
@@ -57,7 +55,7 @@ namespace LE.Web.Helpers
                 file_name = plainFilePrefix + random.Next(1, 1232384943) + Path.GetExtension(file.FileName);
             }
 
-            var filePath = Path.Combine(hostingEnvironment.WebRootPath, "images/custom");
+            var filePath = Path.Combine(_hostingEnvironment.WebRootPath, "images/custom");
             filePath = Path.Combine(filePath, file_name);
             using (var stream = new FileStream(filePath, FileMode.Create))
             {

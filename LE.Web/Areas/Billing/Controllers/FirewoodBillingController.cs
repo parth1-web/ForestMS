@@ -16,6 +16,7 @@ using LE.Web.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -64,7 +65,10 @@ namespace LE.Web.Areas.Billing.Controllers
         public IActionResult add()
         {
             FireWoodBillModel model = new FireWoodBillModel();
-            var membersList = _memberRepo.getQueryable().Where(a => a.IsActive && a.Membership.MembershipValidity.ValidityDate.Date >= DateTime.Now.Date).ToList();
+            var membersList = _memberRepo.getQueryable()
+                .Include(a => a.Membership)
+                    .ThenInclude(m => m.MembershipValidity)
+                .Where(a => a.IsActive && a.Membership != null && a.Membership.MembershipValidity != null && a.Membership.MembershipValidity.ValidityDate.Date >= DateTime.Now.Date).ToList();
             ViewBag.members = new SelectList(membersList, "MemberId", "FullName");
 
             var firewoodItem = _stockItemRepo.getQueryable().Where(a => a.is_enabled == true).ToList();
@@ -80,7 +84,11 @@ namespace LE.Web.Areas.Billing.Controllers
         {
             try
             {
-                var membershipId = _memberRepo.getQueryable().Where(a => a.MemberId == model.MemberId).FirstOrDefault().MembershipId; ;
+                var member = _memberRepo.getQueryable().Where(a => a.MemberId == model.MemberId).FirstOrDefault();
+                if (member == null)
+                    return Json(new { error = true, responseText = "Member not found." });
+
+                var membershipId = member.MembershipId;
                 var isMembershipValid = _memberPunishmentController.GetMemberValidity(membershipId);
                 if (isMembershipValid)
                 {

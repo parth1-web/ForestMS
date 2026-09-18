@@ -36,6 +36,8 @@ namespace LE.Web.Areas.Inventory.Controllers
             _paginatedMetaService = paginatedMetaService;
         }
 
+        [Route("")]
+        [Route("index", Name = "inventory_stockunit_index")]
         public IActionResult Index(StockUnitFilter filter)
         {
             var stockUnit = _stockUnitRepo.getQueryable();
@@ -44,9 +46,7 @@ namespace LE.Web.Areas.Inventory.Controllers
                 stockUnit = stockUnit.Where(a => a.name.Contains(filter.name));
             }
             ViewBag.pagerInfo = _paginatedMetaService.GetMetaData(stockUnit.Count(), filter.page, filter.number_of_rows);
-            stockUnit = stockUnit.Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows);
-
-            var stockUnits = stockUnit.OrderByDescending(a=>a.stock_unit_id).ToList();
+            var stockUnits = stockUnit.OrderByDescending(a => a.stock_unit_id).Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows).ToList();
 
             StockUnitIndexViewModel stockUnitIndexVM = getViewModelFrom(stockUnits);
             return View(stockUnitIndexVM);

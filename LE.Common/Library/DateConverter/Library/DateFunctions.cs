@@ -6,6 +6,7 @@ namespace LE.Common.Library.DateConverter.Library
     public class DateFunctions : iDateFunctions
     {
         iNepaliDateData nepaliDateArray;
+        private static readonly TimeZoneInfo NptTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Nepal Standard Time");
 
         public DateFunctions(iNepaliDateData _nepaliDateArray)
         {
@@ -14,13 +15,14 @@ namespace LE.Common.Library.DateConverter.Library
 
         public DateTime FormatUnixTime(double timestamp)
         {
-            DateTime startUnixTime = new DateTime(1970, 1, 1, 0, 0, 0, 0);
-            return startUnixTime.AddSeconds(timestamp).ToUniversalTime();
+            DateTime startUnixTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+            return startUnixTime.AddSeconds(timestamp);
         }
 
         public DateTime getDateTimeByTimeZone(string timeZone = "")
         {
-            return DateTime.Now;
+            var utcNow = DateTime.UtcNow;
+            return TimeZoneInfo.ConvertTimeFromUtc(utcNow, NptTimeZone);
         }
 
 

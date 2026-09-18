@@ -62,8 +62,8 @@
                                     <tr>
                                         <td>@sn</td>
                                         <td>@item.name</td>
-                                        <td>@item.wood_type.name</td>
-                                        <td>@item.stock_unit.name</td>
+                                        <td>@(item.wood_type?.name ?? "N/A")</td>
+                                        <td>@(item.stock_unit?.name ?? "N/A")</td>
                                         <td>@item.threshold</td>
                                         <td>@item.default_sales_rate</td>
                                         <td>@item.stock_item_availability?.qty</td>
@@ -85,7 +85,7 @@
                         </tbody>
                     </table>
                     <br />
-                    <LeadingEdgePager info="@ViewBag.pagerInfo"></LeadingEdgePager>
+                    <LeadingEdgePager info="@ViewBag.pagerInfo" route="inventory_stockitem_index"></LeadingEdgePager>
                 </div>
             </div>
         </div>

@@ -1,6 +1,9 @@
-﻿using LE.Entities.User;
+﻿using LE.Common.Enums;
+using LE.Context.Data;
+using LE.Entities.User;
 using LE.Service.Repository.Interface;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,23 +20,33 @@ namespace LE.Web.ViewComponents
         private readonly DynamicMenuRepository _dynamicMenuRepo;
         private readonly AuthenticationRepository _authenticationRepo;
         private readonly RolePermissionMapRepository _rolePermissionMapRepo;
+        private readonly AppDbContext _dbContext;
 
-        public NavbarViewComponent(ModuleRepository moduleRepo, UserRoleRepository userRoleRepo, DynamicMenuRepository dynamicMenuRepo, AuthenticationRepository authenticationRepo, RolePermissionMapRepository rolePermissionMapRepo)
+        public NavbarViewComponent(ModuleRepository moduleRepo, UserRoleRepository userRoleRepo, DynamicMenuRepository dynamicMenuRepo, AuthenticationRepository authenticationRepo, RolePermissionMapRepository rolePermissionMapRepo, AppDbContext dbContext)
         {
             _moduleRepo = moduleRepo;
             _userRoleRepo = userRoleRepo;
             _dynamicMenuRepo = dynamicMenuRepo;
             _authenticationRepo = authenticationRepo;
             _rolePermissionMapRepo = rolePermissionMapRepo;
+            _dbContext = dbContext;
         }
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
             var loggedInAuthenticationId = Request.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(loggedInAuthenticationId))
+            {
+                return View();
+            }
 
             long loggedInUserId = _authenticationRepo.getById(Convert.ToInt64(loggedInAuthenticationId)).type_id;
 
-            List<Role> rolesAssignedToUser = _userRoleRepo.getByTypeId(Common.Enums.UserType.user, loggedInUserId).Select(a => a.role).ToList();
+            List<Role> rolesAssignedToUser = await _dbContext.user_roles
+                .Where(a => a.type == UserType.user && a.type_id == loggedInUserId)
+                .Include(a => a.role)
+                .Select(a => a.role)
+                .ToListAsync();
 
             List<long> roleIdsAssignedToUser = rolesAssignedToUser.Select(a => a.role_id).ToList();
 

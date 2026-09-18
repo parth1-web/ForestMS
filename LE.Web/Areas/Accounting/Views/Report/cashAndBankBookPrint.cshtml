@@ -36,11 +36,6 @@
                     {
                         foreach (var transactionData in Model.transactionDetail)
                         {
-                            var prefix = "By";
-                            if (transactionData.cr_amount > 0)
-                            {
-                                prefix = "To";
-                            }
                             <tr>
                                 <td>@sn.ToString().ConvertNumerals()</td>
                                 <td>@DateConverter.Core.Service_Factory.DateConverterFactory.getDateConverterService().ToBS(transactionData.transaction_date.Date, DateFormats.yMd).getFormattedDate().ConvertNumerals()</td>

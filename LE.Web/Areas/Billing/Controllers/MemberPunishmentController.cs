@@ -67,20 +67,22 @@ namespace LE.Web.Areas.Billing.Controllers
         }
 
         [Route("")]
-        [Route("index")]
+        [Route("index", Name = "billing_memberpunishment_index")]
         public IActionResult Index(MemberFilter filter)
-
         {
-            var memPunishment = _memPunishmentRepo.getQueryable().Where(a => a.IsCancelled == false).ToList();
+            var memPunishment = _memPunishmentRepo.getQueryable()
+                .Include(a => a.Membership)
+                    .ThenInclude(m => m.MemberDetails)
+                .Where(a => a.IsCancelled == false);
             if (!string.IsNullOrWhiteSpace(filter.name))
             {
-                memPunishment = memPunishment.Where(a => a.Membership.MembershipCode.Contains(filter.name)).ToList();
+                memPunishment = memPunishment.Where(a => a.Membership.MembershipCode.Contains(filter.name));
             }
 
             ViewBag.pagerInfo = _paginatedMetaService.GetMetaData(memPunishment.Count(), filter.page, filter.number_of_rows);
-            memPunishment = memPunishment.Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows).ToList();
+            var memPunishmentList = memPunishment.OrderBy(a => a.MemberPunishmentId).Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows).ToList();
 
-            MemberPunishmentViewModel memIndexVm = getViewModelFrom(memPunishment);
+            MemberPunishmentViewModel memIndexVm = getViewModelFrom(memPunishmentList);
             return View(memIndexVm);
         }
 
@@ -228,7 +230,11 @@ namespace LE.Web.Areas.Billing.Controllers
         [HttpGet("check-member-validity/{MemberId}")]
         public JsonResult getMemberPunishmentValidity(long MemberId)
         {
-            var membershipId = _memRepo.getQueryable().Where(a => a.MemberId == MemberId).FirstOrDefault().MembershipId; ;
+            var member = _memRepo.getQueryable().Where(a => a.MemberId == MemberId).FirstOrDefault();
+            if (member == null)
+                return Json(false);
+
+            var membershipId = member.MembershipId;
 
             bool isValid = GetMemberValidity(membershipId);
             return Json(isValid);

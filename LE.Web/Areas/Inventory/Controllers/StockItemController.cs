@@ -13,6 +13,7 @@ using LE.Web.LEPagination;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,17 +45,24 @@ namespace LE.Web.Areas.Inventory.Controllers
             _stockItemAvailRepo = stockItemAvailRepo;
         }
 
+        [Route("")]
+        [Route("index", Name = "inventory_stockitem_index")]
         public IActionResult Index(StockItemFilter filter)
         {
-            var stockItem = _stockItemRepo.getQueryable();
+            var stockItem = _stockItemRepo.getQueryable()
+                .Include(a => a.wood_type)
+                .Include(a => a.stock_unit);
+
+            IQueryable<StockItem> query = stockItem;
             if (!string.IsNullOrWhiteSpace(filter.name))
             {
-                stockItem = stockItem.Where(a => a.name.Contains(filter.name));
+                query = query.Where(a => a.name.Contains(filter.name));
             }
-            ViewBag.pagerInfo = _paginatedMetaService.GetMetaData(stockItem.Count(), filter.page, filter.number_of_rows);
-            stockItem = stockItem.Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows);
 
-            var stockItems = stockItem.OrderByDescending(a=>a.stock_item_id).ToList();
+            ViewBag.pagerInfo = _paginatedMetaService.GetMetaData(query.Count(), filter.page, filter.number_of_rows);
+            var pagedResult = query.OrderByDescending(a => a.stock_item_id).Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows);
+
+            var stockItems = pagedResult.ToList();
 
             StockItemIndexViewModel stockItemIndexVM = getViewModelFrom(stockItems);
             return View(stockItemIndexVM);

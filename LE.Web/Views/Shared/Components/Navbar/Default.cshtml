@@ -4,10 +4,10 @@
     Layout = null;
     List<LE.Entities.User.Module>
     modules = (List<LE.Entities.User.Module>
-        )ViewBag.modules;
+        )ViewBag.modules ?? new List<LE.Entities.User.Module>();
     List<LE.Entities.User.DynamicMenu>
         menus = (List<LE.Entities.User.DynamicMenu>
-            )ViewBag.menus;
+            )ViewBag.menus ?? new List<LE.Entities.User.DynamicMenu>();
 
 }
 <div class="navbar-custom">

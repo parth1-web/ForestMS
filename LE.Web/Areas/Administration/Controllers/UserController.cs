@@ -24,9 +24,6 @@ namespace LE.Web.Areas.Administration.Controllers
     [Route("administration/user")]
     public class UserController : BaseController
     {
-        public readonly UserRepository _userRepo;
-        private readonly AuthenticationRepository _authenticationRepo;
-        private readonly UserRoleRepository _userRoleRepo;
         private readonly IMapper _mapper;
         private readonly RoleRepository _roleRepo;
         private readonly UserService _userService;
@@ -50,7 +47,7 @@ namespace LE.Web.Areas.Administration.Controllers
         }
 
         [Route("")]
-        [Route("index")]
+        [Route("index", Name = "administration_user_index")]
         public IActionResult Index(UserFilter filter=null)
         {
             try
@@ -64,10 +61,7 @@ namespace LE.Web.Areas.Administration.Controllers
 
                 ViewBag.pagerInfo = _paginatedMetaService.GetMetaData(users.Count(), filter.page, filter.number_of_rows);
 
-
-                users = users.Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows);
-
-                var userDetails = users.ToList();
+                var userDetails = users.OrderBy(a => a.user_id).Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows).ToList();
 
                 UserIndexViewModel userIndexVM = getUserIndexVMFromUserList(userDetails);
 

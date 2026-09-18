@@ -64,8 +64,8 @@
                                     <tr>
                                         <td>@sn</td>
                                         <td>@service.name</td>
-                                        <td>@service.service_category.name</td>
-                                        <td>@service.ledger.name</td>
+                                        <td>@(service.service_category?.name ?? "N/A")</td>
+                                        <td>@(service.ledger?.name ?? "N/A")</td>
                                         <td>@rate</td>
                                         <td>@taxAmt</td>
                                         <td>@service.created_date.Date</td>
@@ -87,7 +87,7 @@
                         </tbody>
                     </table>
                     <br />
-                    <LeadingEdgePager info="@ViewBag.pagerInfo"></LeadingEdgePager>
+                    <LeadingEdgePager info="@ViewBag.pagerInfo" route="billing_service_index"></LeadingEdgePager>
                 </div>
             </div>
         </div>

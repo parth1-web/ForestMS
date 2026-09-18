@@ -34,7 +34,7 @@ namespace LE.Web.Areas.Inventory.Controllers
         }
 
         [Route("")]
-        [Route("index")]
+        [Route("index", Name = "inventory_piling_index")]
         public IActionResult Index(PilingFilter filter)
         {
             var piling = _pilingRepo.getQueryable();
@@ -45,7 +45,7 @@ namespace LE.Web.Areas.Inventory.Controllers
             }
 
             ViewBag.pagerInfo = _paginatedMetaService.GetMetaData(piling.Count(), filter.page, filter.number_of_rows);
-            piling = piling.Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows);
+            piling = piling.OrderBy(a => a.piling_id).Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows);
 
             var vm = getViewModel(piling.ToList());
 

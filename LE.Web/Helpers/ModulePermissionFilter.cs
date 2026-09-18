@@ -21,6 +21,10 @@ namespace LE.Web.Helpers
     // is 'billing'; the seed defines Billing and Utilities under that code).
     // Areas with no module mapping (counter POS API) and root-level pages are left
     // to the global authentication requirement.
+    //
+    // P2: Menu-level permissions (beyond module-level). When role_permission_maps
+    // has menu_id set, that specific menu's URL is allowed even if the user lacks
+    // the broader module permission. This enables granular access control.
     public class ModulePermissionFilter : IAuthorizationFilter
     {
         private readonly RolePermissionMapRepository _rolePermissionMapRepo;
@@ -41,6 +45,11 @@ namespace LE.Web.Helpers
         public void OnAuthorization(AuthorizationFilterContext context)
         {
             // Anonymous endpoints (login, error pages) are exempt.
+            if (context.ActionDescriptor.EndpointMetadata.OfType<AllowAnonymousAttribute>().Any())
+            {
+                return;
+            }
+
             if (context.Filters.OfType<IAllowAnonymousFilter>().Any())
             {
                 return;
@@ -73,6 +82,35 @@ namespace LE.Web.Helpers
 
             // "area/controller" prefix shared by the request and the seeded menus.
             var basePrefix = $"{segments[0]}/{segments[1]}";
+
+            // First, check if there's an explicit menu permission for this exact URL.
+            var menuPermission = _rolePermissionMapRepo.getQueryable()
+                .Where(a => a.menu_id.HasValue)
+                .Select(a => new { a.menu_id, a.role_id })
+                .ToList();
+
+            if (menuPermission.Count > 0)
+            {
+                // Find menus matching this URL prefix
+                var matchingMenus = _dynamicMenuRepo.getQueryable()
+                    .Where(a => a.web_url != null)
+                    .Select(a => new { a.dynamic_menu_id, a.web_url })
+                    .ToList()
+                    .Where(a => basePrefixOf(a.web_url) == basePrefix)
+                    .Select(a => a.dynamic_menu_id)
+                    .Distinct()
+                    .ToList();
+
+                if (matchingMenus.Count > 0)
+                {
+                    var grantedMenuIds = getGrantedMenuIds(context);
+                    if (grantedMenuIds != null && grantedMenuIds.Intersect(matchingMenus).Any())
+                    {
+                        // Explicit menu permission granted - allow
+                        return;
+                    }
+                }
+            }
 
             // Modules that expose a menu under this URL prefix (same rule the
             // navbar uses, so what a user cannot see they cannot open).
@@ -157,6 +195,34 @@ namespace LE.Web.Helpers
                     return null;
             }
             return moduleIds;
+        }
+
+        // Menu IDs granted to the logged-in user through any of their roles;
+        // null when the identity cannot be resolved (treated as denied).
+        private List<long> getGrantedMenuIds(AuthorizationFilterContext context)
+        {
+            var authenticationIdValue = context.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(authenticationIdValue) || !long.TryParse(authenticationIdValue, out long authenticationId))
+            {
+                return null;
+            }
+
+            var authentication = _authenticationRepo.getById(authenticationId);
+            if (authentication == null)
+            {
+                return null;
+            }
+
+            List<long> roleIds = _userRoleRepo
+                .getByTypeId(UserType.user, authentication.type_id)
+                .Select(a => a.role_id)
+                .ToList();
+
+            return _rolePermissionMapRepo.getQueryable()
+                .Where(a => roleIds.Contains(a.role_id) && a.menu_id.HasValue)
+                .Select(a => a.menu_id.Value)
+                .Distinct()
+                .ToList();
         }
 
         // Modules granted to the logged-in user through any of their roles;

@@ -15,6 +15,7 @@ using LE.Web.LEPagination;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using Rotativa.AspNetCore;
 using System;
 using System.Collections.Generic;
@@ -52,19 +53,24 @@ namespace LE.Web.Areas.Inventory.Controllers
 
         [HttpGet]
         [Route("")]
-        [Route("index")]
+        [Route("index", Name = "inventory_wooddetails_index")]
         public IActionResult Index(WoodDetailsFilter filter)
         {
-            var woodDetail = _woodDetailsRepo.getQueryable();
+            var woodDetail = _woodDetailsRepo.getQueryable()
+                .Include(a => a.wood_type)
+                .Include(a => a.category_purpose)
+                .Include(a => a.piling);
+
+            IQueryable<WoodDetails> query = woodDetail;
             if (!string.IsNullOrWhiteSpace(filter.name))
             {
-                woodDetail = woodDetail.Where(a => a.goliya_number.Contains(filter.name));
+                query = query.Where(a => a.goliya_number.Contains(filter.name));
             }
 
-            ViewBag.pagerInfo = _paginatedMetaService.GetMetaData(woodDetail.Count(), filter.page, filter.number_of_rows);
-            woodDetail = woodDetail.OrderByDescending(a => a.wood_details_id).Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows);
+            ViewBag.pagerInfo = _paginatedMetaService.GetMetaData(query.Count(), filter.page, filter.number_of_rows);
+            var pagedResult = query.OrderByDescending(a => a.wood_details_id).Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows);
 
-            var woodDetails = woodDetail.ToList();
+            var woodDetails = pagedResult.ToList();
 
             WoodDetailsIndexViewModel woodDetailsIndexVM = getViewModelFrom(woodDetails);
             return View(woodDetailsIndexVM);
@@ -255,7 +261,7 @@ namespace LE.Web.Areas.Inventory.Controllers
         }
 
         [HttpGet]
-        [Route("report")]
+        [Route("report", Name = "inventory_wooddetails_report")]
         public IActionResult report(WoodDetailsIndexViewModel woodDetailsIndexVM)
         {
             var categoryPurpose = _stockCategoryPurposeRepo.getQueryable().Where(a => a.is_enabled == true).ToList();
@@ -322,8 +328,7 @@ namespace LE.Web.Areas.Inventory.Controllers
             }
 
             ViewBag.pagerInfo = _paginatedMetaService.GetMetaData(woodDetails.Count(), woodDetailsIndexVM.page, woodDetailsIndexVM.number_of_rows);
-            woodDetails = woodDetails.Skip(woodDetailsIndexVM.number_of_rows * (woodDetailsIndexVM.page - 1)).Take(woodDetailsIndexVM.number_of_rows);
-            return woodDetails.OrderByDescending(a => a.wood_details_id).ToList();
+            return woodDetails.OrderByDescending(a => a.wood_details_id).Skip(woodDetailsIndexVM.number_of_rows * (woodDetailsIndexVM.page - 1)).Take(woodDetailsIndexVM.number_of_rows).ToList();
         }
     }
 }

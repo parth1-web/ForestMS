@@ -13,6 +13,7 @@ using LE.Web.LEPagination;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,17 +42,23 @@ namespace LE.Web.Areas.Accounting.Controllers
             _transactionDetailService = transactionDetailService;
         }
 
+        [Route("")]
+        [Route("index", Name = "accounting_ledger_index")]
         public IActionResult Index(LedgerFilter filter)
         {
-            var ledger = _ledgerRepo.getQueryable();
+            var ledger = _ledgerRepo.getQueryable()
+                .Include(a => a.ledger_group);
+
+            IQueryable<Ledger> query = ledger;
             if (!string.IsNullOrWhiteSpace(filter.name))
             {
-                ledger = ledger.Where(a => a.name.Contains(filter.name));
+                query = query.Where(a => a.name.Contains(filter.name));
             }
-            ViewBag.pagerInfo = _paginatedMetaService.GetMetaData(ledger.Count(), filter.page, filter.number_of_rows);
-            ledger = ledger.OrderByDescending(a => a.ledger_id).Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows);
 
-            var ledgers = ledger.ToList();
+            ViewBag.pagerInfo = _paginatedMetaService.GetMetaData(query.Count(), filter.page, filter.number_of_rows);
+            var pagedResult = query.OrderByDescending(a => a.ledger_id).Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows);
+
+            var ledgers = pagedResult.ToList();
             LedgerIndexViewModel ledgerIndexVM = getViewModelFrom(ledgers);
             return View(ledgerIndexVM);
         }

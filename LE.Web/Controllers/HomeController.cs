@@ -23,7 +23,6 @@ namespace LE.Web.Controllers
     [Authorize]
     public class HomeController : BaseController
     {
-        private UserRepository _userRepo;
         private OrganizationSetupRepository _orgSetupRepo;
         private CounterSalesRepository _counterSalesRepository;
         private WoodBillRepository _woodSalesRepository;

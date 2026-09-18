@@ -35,6 +35,8 @@ namespace LE.Web.Areas.Billing.Controllers
             _paginatedMetaService = paginatedMetaService;
             _mapper = mapper;
         }
+        [Route("")]
+        [Route("index", Name = "billing_servicecategory_index")]
         public IActionResult Index(ServiceCategoryFilter filter)
         {
             var serviceCategory = _serviceCategoryRepo.getQueryable();
@@ -43,9 +45,7 @@ namespace LE.Web.Areas.Billing.Controllers
                 serviceCategory = serviceCategory.Where(a => a.name.Contains(filter.name));
             }
             ViewBag.pagerInfo = _paginatedMetaService.GetMetaData(serviceCategory.Count(), filter.page, filter.number_of_rows);
-            serviceCategory = serviceCategory.Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows);
-
-            var serviceCategories = serviceCategory.ToList();
+            var serviceCategories = serviceCategory.OrderBy(a => a.category_id).Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows).ToList();
 
             ServiceCategoryIndexViewModel serviceCategoryIndexVM = getViewModelFrom(serviceCategories);
             return View(serviceCategoryIndexVM);

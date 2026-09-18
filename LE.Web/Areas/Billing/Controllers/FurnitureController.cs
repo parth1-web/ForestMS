@@ -12,6 +12,7 @@ using LE.Web.LEPagination;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,17 +41,23 @@ namespace LE.Web.Areas.Billing.Controllers
             _mapper = mapper;
         }
 
+        [Route("")]
+        [Route("index", Name = "billing_furniture_index")]
         public IActionResult Index(FurnitureFilter filter)
         {
-            var furniture = _furnitureRepo.getQueryable();
+            var furniture = _furnitureRepo.getQueryable()
+                .Include(a => a.furnitureCategory);
+
+            IQueryable<Furniture> query = furniture;
             if (!string.IsNullOrWhiteSpace(filter.name))
             {
-                furniture = furniture.Where(a => a.name.Contains(filter.name));
+                query = query.Where(a => a.name.Contains(filter.name));
             }
-            ViewBag.pagerInfo = _paginatedMetaService.GetMetaData(furniture.Count(), filter.page, filter.number_of_rows);
-            furniture = furniture.Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows);
 
-            var furnitures = furniture.ToList();
+            ViewBag.pagerInfo = _paginatedMetaService.GetMetaData(query.Count(), filter.page, filter.number_of_rows);
+            var pagedResult = query.OrderBy(a => a.furniture_id).Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows);
+
+            var furnitures = pagedResult.ToList();
 
             FurnitureIndexViewModel furnitureIndexVM = getViewModelFrom(furnitures);
             return View(furnitureIndexVM);
