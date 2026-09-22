@@ -31,7 +31,7 @@ namespace LE.Billing.Service.Services.Implementations
 
                     if (serviceCategory == null)
                     {
-                        throw new ItemNotFoundException($"Service Category with id {service_category_id} doesnot exist.");
+                        throw new ItemNotFoundException($"Service Category with id {service_category_id} does not exist.");
                     }
 
                     if (serviceCategory.hasServices())
@@ -61,7 +61,7 @@ namespace LE.Billing.Service.Services.Implementations
 
                     if (serviceCategory == null)
                     {
-                        throw new ItemNotFoundException($"Customer Category with id {service_category_id} doesnot exist.");
+                        throw new ItemNotFoundException($"Customer Category with id {service_category_id} does not exist.");
                     }
 
                     serviceCategory.disable();
@@ -87,7 +87,7 @@ namespace LE.Billing.Service.Services.Implementations
 
                     if (serviceCategory == null)
                     {
-                        throw new ItemNotFoundException($"Customer Category with id {service_category_id} doesnot exist.");
+                        throw new ItemNotFoundException($"Customer Category with id {service_category_id} does not exist.");
                     }
 
                     serviceCategory.enable();
@@ -142,7 +142,7 @@ namespace LE.Billing.Service.Services.Implementations
 
                     if (serviceCategory == null)
                     {
-                        throw new ItemNotFoundException($"Service Category with the id {service_category_dto.category_id} doesnot exist.");
+                        throw new ItemNotFoundException($"Service Category with the id {service_category_dto.category_id} does not exist.");
                     }
 
                     _serviceCategoryAssembler.copy(serviceCategory, service_category_dto);

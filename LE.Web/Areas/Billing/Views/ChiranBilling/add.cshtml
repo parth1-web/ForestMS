@@ -197,8 +197,6 @@
         </div>
     </div>
 </div>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
 @section scripts {
     <script>
         $(document).ready(function () {
@@ -234,7 +232,6 @@
                 if (salesTypeId == @((int)LE.Billing.Common.Enums.SalesType.Member)) {
                     $(".member-row").show();
                     $(".customer-row").hide();
-                    $("#MemberId_chosen").css("width", "280");
                     $("#other_customer").val("");
                 }
                 else if (salesTypeId == @((int)LE.Billing.Common.Enums.SalesType.Others) || salesTypeId == @((int)LE.Billing.Common.Enums.SalesType.Anudhan) ) {
@@ -404,8 +401,8 @@
 
                 var saleTypeId = $(".sales_type").val();
                 if (saleTypeId == @((int)LE.Billing.Common.Enums.SalesType.Member)) {
-                    $memVal = $("#MemberId").val();
-                    if ($memVal == "" || $memVal <= 0) {
+                    $memVal = $("#memberSelect").val();
+                    if ($memVal == "" || $memVal == null || $memVal <= 0) {
                         showMessage("Member Not Selected.");
                         return false;
                     }
@@ -428,8 +425,9 @@
                     $('#loading').show();
                     var items = {};
                     items.nep_sales_date = $("#nep_sales_date").val();
-                    items.sales_type = $("#sales_type").val();
-                    items.MemberId = $("#MemberId").val();
+                    items.sales_type = parseInt($("#sales_type").val(), 10);
+                    var selectedMemberId = $("#memberSelect").val();
+                    items.MemberId = (selectedMemberId === "" || selectedMemberId == null) ? null : parseInt(selectedMemberId, 10);
                     items.other_customer = $("#other_customer").val();
                     items.total_amount = parseFloat($("#final_total_amt").val());
                     items.tender_amount = parseFloat($("#paid_amt").val());

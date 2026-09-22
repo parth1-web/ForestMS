@@ -40,7 +40,7 @@ namespace LE.Billing.Service.Services.Implementations
             var chiranSale = _chiranSalesRepo.getById(chiran_sales_id);
             if (chiranSale == null)
             {
-                throw new ItemNotFoundException($"Chiran Bill with id {chiran_sales_id} doesnot exist.");
+                throw new ItemNotFoundException($"Chiran Bill with id {chiran_sales_id} does not exist.");
             }
             if (chiranSale.is_cancelled)
             {

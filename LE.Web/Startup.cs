@@ -98,13 +98,14 @@ namespace LE.Web
         {
             services.AddDbContext<AppDbContext>(options =>
             {
+                options.UseLazyLoadingProxies();
                 options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("LE.Web"));
                 options.ConfigureWarnings(x => x.Ignore(RelationalEventId.AmbientTransactionWarning));
             });
 
             services.AddAutoMapper(typeof(Startup).Assembly);
             services.Configure<ForwardedHeadersOptions>(options => { options.KnownProxies.Add(IPAddress.Parse("10.0.0.100")); });
-            registerElements(services);
+            RegisterElements(services);
             services.AddAuthentication(options =>
             {
                 // Cookie auth is the default for the web UI (login pages, MVC controllers).
@@ -161,6 +162,10 @@ namespace LE.Web
               .AddNewtonsoftJson(jsonOptions =>
               {
                   jsonOptions.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
+                  jsonOptions.SerializerSettings.StringEscapeHandling = Newtonsoft.Json.StringEscapeHandling.Default;
+                  // Lazy-loading proxies can pull circular navigation graphs during
+                  // entity serialization; ignore loops instead of throwing.
+                  jsonOptions.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
               }).AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
                 .AddDataAnnotationsLocalization(options => options.DataAnnotationLocalizerProvider = (t, f) => f.Create(typeof(SharedResource)));
 
@@ -192,7 +197,7 @@ namespace LE.Web
            });
         }
 
-        public void Configure(IApplicationBuilder app, Microsoft.AspNetCore.Hosting.IWebHostEnvironment env, Microsoft.Extensions.Hosting.IHostApplicationLifetime appLifetime)
+        public void Configure(IApplicationBuilder app, Microsoft.AspNetCore.Hosting.IWebHostEnvironment env)
         {
 
             if (env.IsDevelopment())
@@ -238,8 +243,7 @@ namespace LE.Web
             app.UseAuthorization();
             app.UseResponseCompression();
 
-            var options = app.ApplicationServices.GetService<IOptions<RequestLocalizationOptions>>();
-            app.UseRequestLocalization(options.Value);
+            app.UseRequestLocalization(app.ApplicationServices.GetService<IOptions<RequestLocalizationOptions>>().Value);
 
             using (var scope = app.ApplicationServices.CreateScope())
             {
@@ -286,77 +290,77 @@ $$ LANGUAGE plpgsql;
             RotativaConfiguration.Setup((Microsoft.AspNetCore.Hosting.IHostingEnvironment)env, "Rotativa");
         }
 
-        private void registerElements(IServiceCollection services)
+        private void RegisterElements(IServiceCollection services)
         {
-            registerRepos(services);
-            registerAssemblers(services);
-            registerHelpers(services);
-            registerLibraries(services);
-            registerSetup(services);
-            registerServices(services);
-            registerAdapers(services);
-            registerFactories(services);
-            registerProviders(services);
-            registerSetupElements(services);
+            RegisterRepos(services);
+            RegisterAssemblers(services);
+            RegisterHelpers(services);
+            RegisterLibraries(services);
+            RegisterSetup(services);
+            RegisterServices(services);
+            RegisterAdapers(services);
+            RegisterFactories(services);
+            RegisterProviders(services);
+            RegisterSetupElements(services);
         }
 
-        private void registerSetupElements(IServiceCollection services)
+        private void RegisterSetupElements(IServiceCollection services)
         {
             services.AddScoped<OrganizationSetupRepository, OrganizationSetupRepositoryImpl>();
             services.AddScoped<OrganizationSetupService, OrganizationSetupServiceImpl>();
             services.AddScoped<ModuleRepository, ModuleRepositoryImpl>();
         }
 
-        private void registerProviders(IServiceCollection services)
+        private void RegisterProviders(IServiceCollection services)
         {
-            registerAccountProviders(services);
+            RegisterAccountProviders(services);
         }
 
-        private void registerAccountProviders(IServiceCollection services)
+        private void RegisterAccountProviders(IServiceCollection services)
         {
             services.AddScoped<LedgerIdProvider, LegerIdProviderImpl>();
         }
 
-        private void registerFactories(IServiceCollection services)
+        private void RegisterFactories(IServiceCollection services)
         {
             services.AddScoped<MemberServiceFactory, MemberServiceFactoryImpl>();
             services.AddScoped<WoodBillServiceFactory, WoodBillServiceFactoryImpl>();
         }
 
-        private void registerAdapers(IServiceCollection services)
+        private void RegisterAdapers(IServiceCollection services)
         {
             services.AddScoped<Movement_ItemAvailabilityAdapter, Movement_ItemAvailabilityAdapterImpl>();
         }
 
-        private void registerLibraries(IServiceCollection services)
+        private void RegisterLibraries(IServiceCollection services)
         {
-            registerUserLibraries(services);
+            RegisterUserLibraries(services);
             services.AddSingleton<PaginatedMetaService, PaginatedMetaServiceImpl>();
             services.AddSingleton<DateConverterService, DateConverterServiceImpl>();
             services.AddSingleton<LoginAttemptTracker, LoginAttemptTracker>();
             services.AddSingleton<iDateFunctions, DateFunctions>();
         }
 
-        private void registerUserLibraries(IServiceCollection services)
+        private void RegisterUserLibraries(IServiceCollection services)
         {
             services.AddScoped<EncryptDecrypt, EncryptDecryptImpl>();
             services.AddScoped<PasswordHash, PasswordHashImpl>();
         }
 
-        private void registerHelpers(IServiceCollection services)
+        private void RegisterHelpers(IServiceCollection services)
         {
             services.AddScoped<FileHelper, FileHelperImpl>();
         }
 
-        private void registerAssemblers(IServiceCollection services)
+        private void RegisterAssemblers(IServiceCollection services)
         {
-            registerUserMakers(services);
-            registerAccountMakers(services);
-            registerBillingAssemblers(services);
-            registerInventoryAssemblers(services);
+            RegisterUserMakers(services);
+            RegisterAccountMakers(services);
+            RegisterBillingAssemblers(services);
+            RegisterInventoryAssemblers(services);
         }
 
-        private void registerInventoryAssemblers(IServiceCollection services)
+        private void RegisterInventoryAssemblers(IServiceCollection services)
         {
             services.AddScoped<StockCategoryPurposeAssembler, StockCategoryPurposeAssemblerImpl>();
             services.AddScoped<WoodTypeAssembler, WoodTypeAssemblerImpl>();
@@ -370,7 +374,7 @@ $$ LANGUAGE plpgsql;
             services.AddScoped<DamagedWoodDetailAssembler, DamagedWoodDetailAssemblerImpl>();
         }
 
-        private void registerBillingAssemblers(IServiceCollection services)
+        private void RegisterBillingAssemblers(IServiceCollection services)
         {
             services.AddScoped<ChiranSalesAssembler, ChiranSalesAssemblerImpl>();
             services.AddScoped<ChiranSalesDetailAssembler, ChiranSalesDetailAssemblerImpl>();
@@ -396,7 +400,7 @@ $$ LANGUAGE plpgsql;
             services.AddScoped<DayCloseAssembler, DayCloseAssemblerImpl>();
         }
 
-        private void registerAccountMakers(IServiceCollection services)
+        private void RegisterAccountMakers(IServiceCollection services)
         {
             services.AddScoped<LedgerAssembler, LedgerAssemblerImpl>();
             services.AddScoped<LedgerBalanceAssembler, LedgerBalanceAssemblerImpl>();
@@ -407,7 +411,7 @@ $$ LANGUAGE plpgsql;
             services.AddScoped<ReceiptAssembler, ReceiptAssemblerImpl>();
         }
 
-        private void registerUserMakers(IServiceCollection services)
+        private void RegisterUserMakers(IServiceCollection services)
         {
             services.AddScoped<AuthenticationMaker, AuthenticationMakerImpl>();
             services.AddScoped<LoginSessionMaker, LoginSessionMakerImpl>();
@@ -416,17 +420,17 @@ $$ LANGUAGE plpgsql;
             services.AddScoped<DynamicMenuAssembler, DynamicMenuAssemblerImpl>();
         }
 
-        private void registerRepos(IServiceCollection services)
+        private void RegisterRepos(IServiceCollection services)
         {
             services.AddScoped(typeof(BaseRepository<>), typeof(BaseRepositoryImpl<>));
-            registerUserRepos(services);
-            registerAccountRepos(services);
-            registerBillingRepos(services);
-            registerInventoryRepos(services);
-            registerOrganizationSetup(services);
+            RegisterUserRepos(services);
+            RegisterAccountRepos(services);
+            RegisterBillingRepos(services);
+            RegisterInventoryRepos(services);
+            RegisterOrganizationSetup(services);
         }
 
-        private void registerInventoryRepos(IServiceCollection services)
+        private void RegisterInventoryRepos(IServiceCollection services)
         {
             services.AddScoped<StockCategoryPurposeRepository, StockCategoryPurposeRepositoryImpl>();
             services.AddScoped<WoodTypeRepository, WoodTypeRepositoryImpl>();
@@ -442,7 +446,7 @@ $$ LANGUAGE plpgsql;
             services.AddScoped<DamagedWoodDetailRepository, DamagedWoodDetailRepositoryImpl>();
         }
 
-        private void registerBillingRepos(IServiceCollection services)
+        private void RegisterBillingRepos(IServiceCollection services)
         {
             services.AddScoped<ChiranSalesRepository, ChiranSalesRepositoryImpl>();
             services.AddScoped<ChiranSalesDetailRepository, ChiranSalesDetailRepositoryImpl>();
@@ -469,20 +473,20 @@ $$ LANGUAGE plpgsql;
             services.AddScoped<DayCloseRepository, DayCloseRepositoryImpl>();
         }
 
-        private void registerOrganizationSetup(IServiceCollection services)
+        private void RegisterOrganizationSetup(IServiceCollection services)
         {
             services.AddScoped<OrganizationSetupRepository, OrganizationSetupRepositoryImpl>();
         }
 
-        private void registerServices(IServiceCollection services)
+        private void RegisterServices(IServiceCollection services)
         {
-            registerUserServices(services);
-            registerAccountServices(services);
-            registerBillingServices(services);
-            registerInventoryServices(services);
+            RegisterUserServices(services);
+            RegisterAccountServices(services);
+            RegisterBillingServices(services);
+            RegisterInventoryServices(services);
         }
 
-        private void registerInventoryServices(IServiceCollection services)
+        private void RegisterInventoryServices(IServiceCollection services)
         {
             services.AddScoped<StockCategoryPurposeService, StockCategoryPurposeServiceImpl>();
             services.AddScoped<WoodTypeService, WoodTypeServiceImpl>();
@@ -496,7 +500,7 @@ $$ LANGUAGE plpgsql;
             services.AddScoped<DamagedWoodDetailService, DamagedWoodDetailServiceImpl>();
         }
 
-        private void registerBillingServices(IServiceCollection services)
+        private void RegisterBillingServices(IServiceCollection services)
         {
             services.AddScoped<ChiranSalesService, ChiranSalesServiceImpl>();
             services.AddScoped<ChiranSalesDetailService, ChiranSalesDetailServiceImpl>();
@@ -522,12 +526,12 @@ $$ LANGUAGE plpgsql;
             services.AddScoped<DayCloseService, DayCloseServiceImpl>();
         }
 
-        private void registerOrganizationSetupServices(IServiceCollection services)
+        private void RegisterOrganizationSetupServices(IServiceCollection services)
         {
             services.AddScoped<OrganizationSetupService, OrganizationSetupServiceImpl>();
         }
 
-        private void registerUserRepos(IServiceCollection services)
+        private void RegisterUserRepos(IServiceCollection services)
         {
             services.AddScoped<AuthenticationRepository, AuthenticationRepositoryImpl>();
             services.AddScoped<DynamicMenuRepository, DynamicMenuRepositoryImpl>();
@@ -539,7 +543,7 @@ $$ LANGUAGE plpgsql;
             services.AddScoped<RoleRepository, RoleRepositoryImpl>();
         }
 
-        private void registerAccountRepos(IServiceCollection services)
+        private void RegisterAccountRepos(IServiceCollection services)
         {
             services.AddScoped<LedgerGroupRepository, LedgerGroupRepositoryImpl>();
             services.AddScoped<LedgerRepository, LedgerRepositoryImpl>();
@@ -554,7 +558,7 @@ $$ LANGUAGE plpgsql;
 
 
 
-        private void registerUserServices(IServiceCollection services)
+        private void RegisterUserServices(IServiceCollection services)
         {
             services.AddScoped<AuthenticationService, AuthenticationServiceImpl>();
             services.AddScoped<LoginSessionService, LoginSessionServiceImpl>();
@@ -567,7 +571,7 @@ $$ LANGUAGE plpgsql;
         }
 
 
-        private void registerAccountServices(IServiceCollection services)
+        private void RegisterAccountServices(IServiceCollection services)
         {
             services.AddScoped<LedgerGroupService, LedgerGroupServiceImpl>();
             services.AddScoped<LedgerService, LedgerServiceImpl>();
@@ -586,13 +590,13 @@ $$ LANGUAGE plpgsql;
             services.AddScoped<FinancialYearServices, FinancialYearServices>();
         }
 
-        private void registerSetup(IServiceCollection services)
+        private void RegisterSetup(IServiceCollection services)
         {
-            registerAccountSetup(services);
+            RegisterAccountSetup(services);
 
         }
 
-        private void registerAccountSetup(IServiceCollection services)
+        private void RegisterAccountSetup(IServiceCollection services)
         {
             services.AddScoped<SettingSetup, SettingsSetupImpl>();
         }

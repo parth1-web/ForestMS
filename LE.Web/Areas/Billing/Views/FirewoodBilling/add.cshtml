@@ -405,8 +405,10 @@
                     var items = {};
                     items.nep_sales_date = $("#nep_sales_date").val();
                     items.sales_type = $("#sales_type").val();
-                    items.type_id = $("#MemberId").val();
-                    items.MemberId = $("#MemberId").val();
+                    var selectedMemberId = $("#MemberId").val();
+                    var memberIdOrNull = (selectedMemberId === "" || selectedMemberId == null) ? null : parseInt(selectedMemberId, 10);
+                    items.type_id = memberIdOrNull;
+                    items.MemberId = memberIdOrNull;
                     items.others_name = $("#other_customer").val();
                     items.address = $("#address").val();
                     items.total_amount = parseFloat($("#final_total_amt").val());

@@ -51,7 +51,7 @@ namespace LE.Billing.Service.Services.Implementations
             var billDetail = _woodBillRepository.getById(wood_bill_id);
             if (billDetail == null)
             {
-                throw new ItemNotFoundException($"Wood Bill with id {wood_bill_id} doesnot exist.");
+                throw new ItemNotFoundException($"Wood Bill with id {wood_bill_id} does not exist.");
             }
             if (billDetail.is_cancelled)
             {
@@ -124,7 +124,7 @@ namespace LE.Billing.Service.Services.Implementations
             {
                 return lakadiSalesLedger;
             }
-            return 0;
+            throw new ItemNotFoundException($"Sales ledger not defined for stock type ID {stockTypeId}. Please configure the ledger setup.");
         }
 
         private long getLakadiSalesLedgerId()
@@ -334,15 +334,19 @@ namespace LE.Billing.Service.Services.Implementations
             foreach (var groupData in grouped)
             {
                 decimal salesAmount = groupData.amount;
-                long salesLedgerId = 0;
+                long salesLedgerId;
                 DateTime transactionDate = wood_bill_dto.bill_date;
                 if (Convert.ToInt32(groupData.salesTypeId) == Convert.ToInt32(StockTypes.BallaBalli))
                 {
                     salesLedgerId = ballaballiSalesLedger;
                 }
-                if (Convert.ToInt32(groupData.salesTypeId) == Convert.ToInt32(StockTypes.Lakadi))
+                else if (Convert.ToInt32(groupData.salesTypeId) == Convert.ToInt32(StockTypes.Lakadi))
                 {
                     salesLedgerId = lakadiSalesLedger;
+                }
+                else
+                {
+                    throw new ItemNotFoundException($"Sales ledger not defined for stock type ID {groupData.salesTypeId}. Please configure the ledger setup.");
                 }
                 if (salesAmount > 0)
                 {

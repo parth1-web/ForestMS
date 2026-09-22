@@ -89,23 +89,26 @@ namespace LE.Web.Areas.Billing.Controllers
         {
             try
             {
-
-                var member = _memberRepo.getQueryable().Where(a => a.MemberId == model.MemberId).FirstOrDefault();
-                if (member == null)
-                    return Json(new { error = true, responseText = "Member not found." });
-
-                var membershipId = member.MembershipId;
-                var isMembershipValid = _memberPunishmentController.GetMemberValidity(membershipId);
-                if (isMembershipValid)
+                if (model.sales_type == SalesType.Member)
                 {
-                    ChiranSalesDto dto = getWoodBillDtoFromModel(model);
-                    long billId = _chiranSalesService.insert(dto);
-                    return Json(billId);
+                    if (!model.MemberId.HasValue || model.MemberId.Value <= 0)
+                        return Json(new { error = true, responseText = "Member Not Selected." });
+
+                    var member = _memberRepo.getQueryable().Where(a => a.MemberId == model.MemberId.Value).FirstOrDefault();
+                    if (member == null)
+                        return Json(new { error = true, responseText = "Member not found. Make sure member is active and membership not expired." });
+
+                    var membershipId = member.MembershipId;
+                    var isMembershipValid = _memberPunishmentController.GetMemberValidity(membershipId);
+                    if (!isMembershipValid)
+                    {
+                        return Json(new { error = true, responseText = "Membership is punished!" });
+                    }
                 }
-                else
-                {
-                    return Json(new { error = true, responseText = "Membership is punished!" });
-                }
+
+                ChiranSalesDto dto = getWoodBillDtoFromModel(model);
+                long billId = _chiranSalesService.insert(dto);
+                return Json(billId);
             }
             catch (Exception ex)
             {
@@ -136,7 +139,7 @@ namespace LE.Web.Areas.Billing.Controllers
 
             List<ChiranSalesDetailDto> chiranSalesDetailDtos = new List<ChiranSalesDetailDto>();
 
-            foreach (var item in model.chiranItems)
+            foreach (var item in model.chiranItems ?? new List<ChiranItems>())
             {
                 ChiranSalesDetailDto detailDto = new ChiranSalesDetailDto();
                 detailDto.rate = item.rate;
@@ -164,7 +167,7 @@ namespace LE.Web.Areas.Billing.Controllers
                 ViewBag.Address = _organizationSetupRepository.getByKey(OrganizationSetup.Address.ToString()).value;
 
                 var dateConverterService = DateConverterFactory.getDateConverterService();
-                var billData = _chiranSalesDetailRepo.getQueryable().Where(a => a.chiran_sales_id == chiran_sales_id).ToList();
+                var billData = _chiranSalesDetailRepo.getQueryable().Include(a => a.woodType).Where(a => a.chiran_sales_id == chiran_sales_id).ToList();
 
                 string name = "";
                 string address = "";
@@ -172,10 +175,10 @@ namespace LE.Web.Areas.Billing.Controllers
                 var bill = _chiranSalesRepo.getById(chiran_sales_id);
                 if (bill.sales_type == SalesType.Member)
                 {
-                    var members = _memberRepo.getQueryable().Where(a => a.MemberId == bill.member_id).Single();
-                    name = members.FullName;
-                    address = members.Address;
-                    tole_no = members.Membership.ToleNo;
+                    var members = _memberRepo.getQueryable().Include(a => a.Membership).FirstOrDefault(a => a.MemberId == bill.member_id);
+                    name = members?.FullName ?? "N/A";
+                    address = members?.Address ?? string.Empty;
+                    tole_no = members?.Membership?.ToleNo ?? string.Empty;
                 }
                 else if (bill.sales_type == SalesType.Antarik)
                 {

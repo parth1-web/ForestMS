@@ -37,9 +37,10 @@ namespace LE.Web.Areas.Billing.Controllers
         private readonly FurnitureSalesService _furnitureSalesService;
         private readonly OrganizationSetupRepository _organizationSetupRepository;
 		private readonly UserRepository _urerRepo;
+		private readonly MemberPunishmentController _memberPunishmentController;
 		private IMapper _mapper;
 
-		public FurnitureBillingController(MemberRepository memberRepo, WoodTypeRepository woodTypeRepo, FurnitureRepository furnitureRepo, FurnitureSalesDetailRepository furnitureSalesDetailRepo, FurnitureSalesRepository furnitureSalesRepo, FurnitureSalesService furnitureSalesService, OrganizationSetupRepository organizationSetupRepository, IMapper mapper, UserRepository urerRepo)
+		public FurnitureBillingController(MemberRepository memberRepo, WoodTypeRepository woodTypeRepo, FurnitureRepository furnitureRepo, FurnitureSalesDetailRepository furnitureSalesDetailRepo, FurnitureSalesRepository furnitureSalesRepo, FurnitureSalesService furnitureSalesService, OrganizationSetupRepository organizationSetupRepository, IMapper mapper, UserRepository urerRepo, MemberPunishmentController memberPunishmentController)
 		{
 			_memberRepo = memberRepo;
 			_woodTypeRepo = woodTypeRepo;
@@ -50,6 +51,7 @@ namespace LE.Web.Areas.Billing.Controllers
 			_organizationSetupRepository = organizationSetupRepository;
 			_mapper = mapper;
 			_urerRepo = urerRepo;
+			_memberPunishmentController = memberPunishmentController;
 		}
 
 		[HttpGet]
@@ -76,21 +78,26 @@ namespace LE.Web.Areas.Billing.Controllers
         {
             try
             {
-                //if (Convert.ToInt16(model.sales_type) == (int)FirewoodSalesType.Member)
-                //{
-                //    if (model.type_id > 0)
-                //    {
-                //        var memDetail = _memberRepo.getById((long)model.type_id);
-                //        if (memDetail != null)
-                //        {
-                //            var checkMemberValidity = memDetail.Membership.MembershipValidity.ValidityDate.Date >= DateTime.Now.Date;
-                //            if (!checkMemberValidity)
-                //            {
-                //                return Json(new {error = true, responseText = "Member with membership has been expired." });
-                //            }
-                //        }
-                //    }
-                //}
+                FirewoodSalesType parsedFurnitureSaleType;
+                if (string.IsNullOrWhiteSpace(model.sales_type) || !Enum.TryParse(model.sales_type, true, out parsedFurnitureSaleType) || !Enum.IsDefined(typeof(FirewoodSalesType), parsedFurnitureSaleType))
+                {
+                    return Json(new { error = true, responseText = "Sales type is required." });
+                }
+                if (parsedFurnitureSaleType == FirewoodSalesType.Member)
+                {
+                    if (!model.type_id.HasValue || model.type_id.Value <= 0)
+                        return Json(new { error = true, responseText = "Member Not Selected." });
+
+                    var member = _memberRepo.getQueryable().Where(a => a.MemberId == model.type_id.Value).FirstOrDefault();
+                    if (member == null)
+                        return Json(new { error = true, responseText = "Member not found. Make sure member is active and membership not expired." });
+
+                    var isMembershipValid = _memberPunishmentController.GetMemberValidity(member.MembershipId);
+                    if (!isMembershipValid)
+                    {
+                        return Json(new { error = true, responseText = "Membership is punished!" });
+                    }
+                }
                 FurnitureSalesDto furnitureSalesDto = getDtoFromModel(model);
                 long billId = _furnitureSalesService.makeSales(furnitureSalesDto);
                 return Json(billId);
@@ -122,12 +129,12 @@ namespace LE.Web.Areas.Billing.Controllers
             dto.address = model.address;
             dto.total_amount = model.total_amount;
             dto.remarks = model.remarks;
-            dto.user_id = getLoggedInAuthenticationId();
+            dto.user_id = getLoggedInUserId();
         }
 
         private void setFurnitureSalesDetailDto(FurnitureSalesDto dto, FurnitureBillModel model)
         {
-            foreach (var detail in model.items)
+            foreach (var detail in model.items ?? new System.Collections.Generic.List<furnitureItems>())
             {
                 FurnitureSalesDetailDto sales_dto = new FurnitureSalesDetailDto();
                 sales_dto.amount = Math.Round(detail.quantity * detail.rate, 2);
@@ -165,10 +172,10 @@ namespace LE.Web.Areas.Billing.Controllers
 
                 if (bill.sales_type == FirewoodSalesType.Member)
                 {
-                    var member = _memberRepo.getById(Convert.ToInt32(bill.type_id));
-                    vm.customer = member.FullName + " (" + member.Membership.MembershipCode + ")";
-                    vm.address = member.Address;
-                    vm.tole_no = member.Membership.ToleNo;
+                    var member = _memberRepo.getQueryable().Include(a => a.Membership).FirstOrDefault(a => a.MemberId == bill.type_id);
+                    vm.customer = member != null ? member.FullName + " (" + (member.Membership?.MembershipCode ?? "N/A") + ")" : "N/A";
+                    vm.address = member?.Address ?? string.Empty;
+                    vm.tole_no = member?.Membership?.ToleNo ?? string.Empty;
                 }
                 else
                 {
@@ -231,7 +238,12 @@ namespace LE.Web.Areas.Billing.Controllers
                 {
                     if (detail.type_id != null)
                     {
-                        bill.others_name = _memberRepo.getById(Convert.ToInt32(detail.type_id)).FullName;
+                        var reportMember = _memberRepo.getById(Convert.ToInt32(detail.type_id));
+                        bill.others_name = reportMember?.FullName ?? "N/A";
+                    }
+                    else
+                    {
+                        bill.others_name = "N/A";
                     }
                 }
                 else

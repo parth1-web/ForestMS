@@ -29,7 +29,7 @@ namespace LE.Billing.Service.Services.Implementations
 
                     if (tole == null)
                     {
-                        throw new ItemNotFoundException($"Tole with id {tole_id} doesnot exist.");
+                        throw new ItemNotFoundException($"Tole with id {tole_id} does not exist.");
                     }
 
                     _toleRepo.delete(tole);
@@ -83,7 +83,7 @@ namespace LE.Billing.Service.Services.Implementations
 
                     if (tole == null)
                     {
-                        throw new ItemNotFoundException($"Tole with the id {tole_dto.tole_id} doesnot exist.");
+                        throw new ItemNotFoundException($"Tole with the id {tole_dto.tole_id} does not exist.");
                     }
 
                     if (tole != null)

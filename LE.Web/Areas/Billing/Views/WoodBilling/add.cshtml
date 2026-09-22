@@ -276,7 +276,12 @@
                         method: 'Get',
                         url: '/billing/api/wood-detail/' + woodId,
                         success: function (data) {
-                            $detail = data[0];
+                            $detail = Array.isArray(data) ? data[0] : data;
+                            if (!$detail) {
+                                $('#loading').hide();
+                                alert("Wood detail not found.");
+                                return;
+                            }
                             $(".type").val(getWoodTypeById($detail.wood_type_id));
                             $(".wood_size").val($detail.circle_size + " X " + $detail.length);
                             if ($detail.damaged_first_size > 0) {
@@ -421,8 +426,8 @@
 
                 var saleTypeId = parseInt($(".sales_type").val());
                 if (saleTypeId == @((int)LE.Billing.Common.Enums.SalesType.Member)) {
-                    let memVal = parseInt($(".member").val());
-                    if (isNaN(memVal)) {
+                    var memVals = $(".member").val();
+                    if (!memVals || memVals.length === 0) {
                         showMessage("Member Not Selected.");
                         e.preventDefault();
                         return;
@@ -447,7 +452,7 @@
                     items.nep_bill_date = $("#nep_bill_date").val();
                     items.sales_type = $("#sales_type").val();
 
-                    var x = $("[name='MemberId[]']").val();
+                    var x = $("[name='MemberId[]']").val() || [];
                     var member = [];
                     for (i = 0; i < x.length; i++) {
                         var mem = {};

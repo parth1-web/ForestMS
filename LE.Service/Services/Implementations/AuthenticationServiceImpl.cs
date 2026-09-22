@@ -165,31 +165,37 @@ namespace LE.Service.Services.Implementations
 
         public Authentication validateUser(string username, string password)
         {
-            var authentication = _authenticationRepo.getByUsername(username);
-            if (authentication == null)
+            try
             {
-                return null;
-            }
-            if (!authentication.is_enabled)
-            {
-                // Disabled accounts must never authenticate, regardless of a correct password.
-                return null;
-            }
-            if (!_passwordHash.ValidatePassword(password, authentication.password))
-            {
-                return null;
-            }
+                var authentication = _authenticationRepo.getByUsername(username);
+                if (authentication == null)
+                {
+                    return null;
+                }
+                if (!authentication.is_enabled)
+                {
+                    return null;
+                }
+                if (!_passwordHash.ValidatePassword(password, authentication.password))
+                {
+                    return null;
+                }
 
-            // Upgrade a legacy (low-iteration) stored hash to the current format.
-            // The password itself is unchanged; only its stored representation is strengthened.
-            if (_passwordHash.NeedsRehash(authentication.password))
-            {
-                authentication.password = _passwordHash.CreateHash(password);
-                _authenticationRepo.update(authentication);
-                _authenticationRepo.saveChanges();
-            }
+                // Upgrade a legacy (low-iteration) stored hash to the current format.
+                // The password itself is unchanged; only its stored representation is strengthened.
+                if (_passwordHash.NeedsRehash(authentication.password))
+                {
+                    authentication.password = _passwordHash.CreateHash(password);
+                    _authenticationRepo.update(authentication);
+                    _authenticationRepo.saveChanges();
+                }
 
-            return authentication;
+                return authentication;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
     }
 }

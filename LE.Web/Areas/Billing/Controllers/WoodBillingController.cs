@@ -1,4 +1,5 @@
 using AutoMapper;
+using BillingModels = LE.Web.Areas.Billing.Models;
 using DateConverter.Core.Service_Factory;
 using LE.Billing.Common.Enums;
 using LE.Billing.Entities;
@@ -95,17 +96,33 @@ namespace LE.Web.Areas.Billing.Controllers
             try
             {
                 var isMembershipValid = true;
-                foreach (var member in model.members)
+                SalesType parsedWoodSaleType;
+                if (string.IsNullOrWhiteSpace(model.sales_type) || !Enum.TryParse(model.sales_type, true, out parsedWoodSaleType) || !Enum.IsDefined(typeof(SalesType), parsedWoodSaleType))
                 {
-                    var memberEntity = _memberRepo.getQueryable().Where(a => a.MemberId == member.MemberId).FirstOrDefault();
-                    if (memberEntity == null)
-                        return Json(new { error = true, responseText = "Member not found." });
+                    return Json(new { error = true, responseText = "Sales type is required." });
+                }
+                bool isWoodMemberSale = parsedWoodSaleType == SalesType.Member;
 
-                    var membershipId = memberEntity.MembershipId;
-                    isMembershipValid = _memberPunishmentController.GetMemberValidity(membershipId);
-                    if (!isMembershipValid)
+                if (isWoodMemberSale)
+                {
+                    if (model.members == null || !model.members.Any())
+                        return Json(new { error = true, responseText = "Member Not Selected." });
+
+                    foreach (var member in model.members)
                     {
-                        return Json(new {error=true, responseText= "one of the member is punished." });
+                        if (member == null || member.MemberId <= 0)
+                            return Json(new { error = true, responseText = "Member Not Selected." });
+
+                        var memberEntity = _memberRepo.getQueryable().Where(a => a.MemberId == member.MemberId).FirstOrDefault();
+                        if (memberEntity == null)
+                            return Json(new { error = true, responseText = "Member not found. Make sure member is active and membership not expired." });
+
+                        var membershipId = memberEntity.MembershipId;
+                        isMembershipValid = _memberPunishmentController.GetMemberValidity(membershipId);
+                        if (!isMembershipValid)
+                        {
+                            return Json(new {error=true, responseText= "one of the member is punished." });
+                        }
                     }
                 }
 
@@ -140,16 +157,16 @@ namespace LE.Web.Areas.Billing.Controllers
 
             List<WoodBillMemberTransactionDto> transDtos = new List<WoodBillMemberTransactionDto>();
 
-            foreach (var member in model.members)
+            foreach (var member in model.members ?? new List<BillingModels.MemberList>())
             {
                 WoodBillMemberDto memberDto = new WoodBillMemberDto();
                 memberDto.wood_bill_id = dto.wood_bill_id;
                 memberDto.member_id = member.MemberId;
                 woodBillMemberDtos.Add(memberDto);
-                for (int detailIndex = 0; detailIndex < model.items.Count; detailIndex++)
+                for (int detailIndex = 0; detailIndex < (model.items?.Count ?? 0); detailIndex++)
                 {
                     var detail = model.items[detailIndex];
-                    var memberCount = model.members.Count();
+                    var memberCount = model.members?.Count ?? 0;
                     WoodBillMemberTransactionDto transDto = new WoodBillMemberTransactionDto();
                     transDto.wood_details_id = detail.wood_details_id;
                     transDto.wood_bill_id = dto.wood_bill_id;
@@ -169,11 +186,11 @@ namespace LE.Web.Areas.Billing.Controllers
                     // quantity. All members except the last now receive the rounded
                     // share; the last member absorbs the remaining remainder.
                     decimal providedQuantity;
-                    bool isLastMember = member.MemberId == model.members.Last().MemberId;
+                    bool isLastMember = model.members?.Any() == true && member.MemberId == model.members.Last().MemberId;
                     if (isLastMember)
                     {
                         decimal assignedSoFar = 0;
-                        foreach (var other in model.members)
+                        foreach (var other in model.members ?? new List<BillingModels.MemberList>())
                         {
                             if (other.MemberId == member.MemberId) continue;
                             assignedSoFar += Math.Round(qty / memberCount, 4);
@@ -214,7 +231,7 @@ namespace LE.Web.Areas.Billing.Controllers
         private List<WoodBillDetailDto> setWoodBillDetailDto(WoodBillModel model, WoodBillDto dto)
         {
             List<WoodBillDetailDto> woodDetailDto = new List<WoodBillDetailDto>();
-            foreach (var item in model.items)
+            foreach (var item in model.items ?? new List<Items>())
             {
                 WoodBillDetailDto detailDto = new WoodBillDetailDto();
                 detailDto.wood_details_id = item.wood_details_id;
@@ -269,6 +286,8 @@ namespace LE.Web.Areas.Billing.Controllers
                         .ThenInclude(wd => wd.category_purpose)
                     .Include(a => a.woodDetails)
                         .ThenInclude(wd => wd.piling)
+                    .Include(a => a.woodDetails)
+                        .ThenInclude(wd => wd.DamagedWoodDetails)
                     .Where(a => a.wood_bill_id == wood_bill_id).ToList();
 
                 List<string> name = new List<string>();
@@ -279,12 +298,16 @@ namespace LE.Web.Areas.Billing.Controllers
                 if (bill.sales_type == SalesType.Member)
                 {
 
-                    var members = _woodBillMemberRepo.getQueryable().Where(a => a.wood_bill_id == bill.wood_bill_id).ToList();
+                    var members = _woodBillMemberRepo.getQueryable()
+                        .Include(a => a.member)
+                            .ThenInclude(m => m.Membership)
+                        .Where(a => a.wood_bill_id == bill.wood_bill_id).ToList();
                     foreach (var member in members)
                     {
-                        name.Add(member.member.FullName + " (" + member.member.Membership.MembershipCode + ")");
-                        address.Add(member.member.Address);
-                        tole_no.Add(member.member.Membership.ToleNo);
+                        var billMember = member.member;
+                        name.Add((billMember?.FullName ?? "N/A") + " (" + (billMember?.Membership?.MembershipCode ?? "N/A") + ")");
+                        address.Add(billMember?.Address ?? string.Empty);
+                        tole_no.Add(billMember?.Membership?.ToleNo ?? string.Empty);
                     }
 
                 }
@@ -367,23 +390,28 @@ namespace LE.Web.Areas.Billing.Controllers
             var startDate = dateConverterService.ToAD(vm.start_date).getFormattedDate();
             var endDate = dateConverterService.ToAD(vm.end_date).getFormattedDate();
 
-            var details = _woodBillRepo.getQueryable().Where(a => a.bill_date.Date >= startDate.Date && a.bill_date.Date <= endDate.Date && a.is_cancelled == vm.is_cancelled).ToList();
+            var details = _woodBillRepo.getQueryable()
+                .Include(a => a.wood_bill_detail)
+                    .ThenInclude(d => d.woodDetails)
+                .Where(a => a.bill_date.Date >= startDate.Date && a.bill_date.Date <= endDate.Date && a.is_cancelled == vm.is_cancelled).ToList();
 
 
             foreach (var detail in details)
             {
-                foreach (var stockType in detail.wood_bill_detail)
+                foreach (var stockType in detail.wood_bill_detail ?? Enumerable.Empty<WoodBillDetail>())
                 {
-                    if (stockType.woodDetails.stock_type_id == stock_type_id)
+                    if ((stockType.woodDetails?.stock_type_id ?? 0) == stock_type_id)
                     {
                         var bill = _mapper.Map<WoodBillReportDetails>(detail);
                         var str = "";
                         if (detail.sales_type == SalesType.Member)
                         {
-                            var memberIds = _woodBillMemberRepo.getQueryable().Where(a => a.wood_bill_id == detail.wood_bill_id).ToList();
+                            var memberIds = _woodBillMemberRepo.getQueryable()
+                                .Include(a => a.member)
+                                .Where(a => a.wood_bill_id == detail.wood_bill_id).ToList();
                             foreach (var member in memberIds)
                             {
-                                str = str + "" + member.member.FullName;
+                                str = str + "" + (member.member?.FullName ?? "N/A");
                             }
 
                             bill.name = str;

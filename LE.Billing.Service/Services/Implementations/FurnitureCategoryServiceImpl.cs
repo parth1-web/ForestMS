@@ -29,7 +29,7 @@ namespace LE.Billing.Service.Services.Implementations
 
                     if (furnitureCategory == null)
                     {
-                        throw new ItemNotFoundException($"Furniture Category with id {furniture_category_id} doesnot exist.");
+                        throw new ItemNotFoundException($"Furniture Category with id {furniture_category_id} does not exist.");
                     }
 
                     if (furnitureCategory.hasFurnitures())
@@ -59,7 +59,7 @@ namespace LE.Billing.Service.Services.Implementations
 
                     if (furnitureCategory == null)
                     {
-                        throw new ItemNotFoundException($"Customer Category with id {furniture_category_id} doesnot exist.");
+                        throw new ItemNotFoundException($"Customer Category with id {furniture_category_id} does not exist.");
                     }
 
                     furnitureCategory.disable();
@@ -85,7 +85,7 @@ namespace LE.Billing.Service.Services.Implementations
 
                     if (furnitureCategory == null)
                     {
-                        throw new ItemNotFoundException($"Customer Category with id {furniture_category_id} doesnot exist.");
+                        throw new ItemNotFoundException($"Customer Category with id {furniture_category_id} does not exist.");
                     }
 
                     furnitureCategory.enable();
@@ -140,7 +140,7 @@ namespace LE.Billing.Service.Services.Implementations
 
                     if (furnitureCategory == null)
                     {
-                        throw new ItemNotFoundException($"Furniture Category with the id {furniture_category_dto.furniture_category_id} doesnot exist.");
+                        throw new ItemNotFoundException($"Furniture Category with the id {furniture_category_dto.furniture_category_id} does not exist.");
                     }
 
                     _furnitureCategoryAssembler.copy(furnitureCategory, furniture_category_dto);

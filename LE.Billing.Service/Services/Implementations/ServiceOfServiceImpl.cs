@@ -32,7 +32,7 @@ namespace LE.Billing.Service.Services.Implementations
 
                     if (service == null)
                     {
-                        throw new ItemNotFoundException($"Service with id {service_id} doesnot exist.");
+                        throw new ItemNotFoundException($"Service with id {service_id} does not exist.");
                     }
 
                     //var salesDetailOfSpecifiedService = _salesDetailRepo.getByTypeAndId(neeldavid.common.Enums.SalesType.service, service_id);
@@ -64,7 +64,7 @@ namespace LE.Billing.Service.Services.Implementations
 
                     if (service == null)
                     {
-                        throw new ItemNotFoundException($"Service with id {service_id} doesnot exist.");
+                        throw new ItemNotFoundException($"Service with id {service_id} does not exist.");
                     }
 
                     service.disable();
@@ -90,7 +90,7 @@ namespace LE.Billing.Service.Services.Implementations
 
                     if (service == null)
                     {
-                        throw new ItemNotFoundException($"Service with id {service_id} doesnot exist.");
+                        throw new ItemNotFoundException($"Service with id {service_id} does not exist.");
                     }
 
                     service.enable();
@@ -123,7 +123,7 @@ namespace LE.Billing.Service.Services.Implementations
 
                     _serviceAssembler.copy(service, service_dto);
 
-                    service.service_category = _serviceCategoryRepo.getById(service_dto.category_id) ?? throw new ItemNotFoundException($"Service category with the id {service_dto.category_id} doesnot exist.");
+                    service.service_category = _serviceCategoryRepo.getById(service_dto.category_id) ?? throw new ItemNotFoundException($"Service category with the id {service_dto.category_id} does not exist.");
 
                     _serviceRepo.insert(service);
 
@@ -147,7 +147,7 @@ namespace LE.Billing.Service.Services.Implementations
 
                     if (service == null)
                     {
-                        throw new ItemNotFoundException($"Service with the id {service_dto.service_id} doesnot exist.");
+                        throw new ItemNotFoundException($"Service with the id {service_dto.service_id} does not exist.");
                     }
 
                     bool isNameValid = checkNameValidity(service_dto);
@@ -159,7 +159,7 @@ namespace LE.Billing.Service.Services.Implementations
 
                     _serviceAssembler.copy(service, service_dto);
 
-                    service.service_category = _serviceCategoryRepo.getById(service_dto.category_id) ?? throw new ItemNotFoundException($"Service category with the id {service_dto.category_id} doesnot exist.");
+                    service.service_category = _serviceCategoryRepo.getById(service_dto.category_id) ?? throw new ItemNotFoundException($"Service category with the id {service_dto.category_id} does not exist.");
 
                     _serviceRepo.update(service);
 

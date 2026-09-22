@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace LE.Web.Helpers
 {
@@ -20,7 +20,16 @@ namespace LE.Web.Helpers
             public DateTime? LockedUntil;
         }
 
-        private readonly ConcurrentDictionary<string, AttemptRecord> _attempts = new ConcurrentDictionary<string, AttemptRecord>();
+        // Use a simple dictionary with lock instead of ConcurrentDictionary
+        private static readonly Dictionary<string, AttemptRecord> _attempts = new Dictionary<string, AttemptRecord>();
+        private static readonly object _lock = new object();
+
+        static LoginAttemptTracker()
+        {
+            // Ensure static fields are initialized
+            if (_attempts == null) _attempts = new Dictionary<string, AttemptRecord>();
+            if (_lock == null) _lock = new object();
+        }
 
         private static string keyFor(string username, string remoteIp)
         {
@@ -32,29 +41,32 @@ namespace LE.Web.Helpers
         /// </summary>
         public bool IsLockedOut(string username, string remoteIp)
         {
-            string key = keyFor(username, remoteIp);
-            if (!_attempts.TryGetValue(key, out AttemptRecord record))
+            lock (_lock)
             {
-                return false;
-            }
-
-            if (record.LockedUntil.HasValue)
-            {
-                if (DateTime.UtcNow < record.LockedUntil.Value)
+                string key = keyFor(username, remoteIp);
+                if (!_attempts.TryGetValue(key, out AttemptRecord record))
                 {
-                    return true;
+                    return false;
                 }
-                // Lockout expired; start fresh.
-                _attempts.TryRemove(key, out _);
+
+                if (record.LockedUntil.HasValue)
+                {
+                    if (DateTime.UtcNow < record.LockedUntil.Value)
+                    {
+                        return true;
+                    }
+                    // Lockout expired; start fresh.
+                    _attempts.Remove(key);
+                    return false;
+                }
+
+                // Window expired without reaching the threshold; start fresh.
+                if (DateTime.UtcNow - record.FirstFailedAt > LOCKOUT_WINDOW)
+                {
+                    _attempts.Remove(key);
+                }
                 return false;
             }
-
-            // Window expired without reaching the threshold; start fresh.
-            if (DateTime.UtcNow - record.FirstFailedAt > LOCKOUT_WINDOW)
-            {
-                _attempts.TryRemove(key, out _);
-            }
-            return false;
         }
 
         /// <summary>
@@ -63,25 +75,32 @@ namespace LE.Web.Helpers
         /// </summary>
         public void RecordFailure(string username, string remoteIp)
         {
-            string key = keyFor(username, remoteIp);
-            var record = _attempts.GetOrAdd(key, _ => new AttemptRecord
+            lock (_lock)
             {
-                FailedCount = 0,
-                FirstFailedAt = DateTime.UtcNow
-            });
+                string key = keyFor(username, remoteIp);
+                if (!_attempts.TryGetValue(key, out AttemptRecord record))
+                {
+                    record = new AttemptRecord
+                    {
+                        FailedCount = 0,
+                        FirstFailedAt = DateTime.UtcNow
+                    };
+                    _attempts[key] = record;
+                }
 
-            if (DateTime.UtcNow - record.FirstFailedAt > LOCKOUT_WINDOW)
-            {
-                record.FailedCount = 0;
-                record.FirstFailedAt = DateTime.UtcNow;
-                record.LockedUntil = null;
-            }
+                if (DateTime.UtcNow - record.FirstFailedAt > LOCKOUT_WINDOW)
+                {
+                    record.FailedCount = 0;
+                    record.FirstFailedAt = DateTime.UtcNow;
+                    record.LockedUntil = null;
+                }
 
-            record.FailedCount++;
+                record.FailedCount++;
 
-            if (record.FailedCount >= MAX_FAILED_ATTEMPTS)
-            {
-                record.LockedUntil = DateTime.UtcNow.Add(LOCKOUT_WINDOW);
+                if (record.FailedCount >= MAX_FAILED_ATTEMPTS)
+                {
+                    record.LockedUntil = DateTime.UtcNow.Add(LOCKOUT_WINDOW);
+                }
             }
         }
 
@@ -90,7 +109,10 @@ namespace LE.Web.Helpers
         /// </summary>
         public void RecordSuccess(string username, string remoteIp)
         {
-            _attempts.TryRemove(keyFor(username, remoteIp), out _);
+            lock (_lock)
+            {
+                _attempts.Remove(keyFor(username, remoteIp));
+            }
         }
     }
 }

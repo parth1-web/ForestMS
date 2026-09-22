@@ -351,7 +351,8 @@
                     var items = {};
                     items.nep_sales_date = $("#nep_sales_date").val();
                     items.sales_type = $("#sales_type").val();
-                    items.type_id = $("#memName").val();
+                    var selectedFurnitureMemberId = $("#memName").val();
+                    items.type_id = (selectedFurnitureMemberId === "" || selectedFurnitureMemberId == null) ? null : parseInt(selectedFurnitureMemberId, 10);
                     items.others_name = $("#other_customer").val();
                     items.address = $("#address").val();
 

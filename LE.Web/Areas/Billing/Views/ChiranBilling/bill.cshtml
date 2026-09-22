@@ -199,7 +199,7 @@
                     {
                         <tr>
                             <td class="tableitem"><p class="itemtext text-uppercase">@sn.ToString().ConvertNumerals()</p></td>
-                            <td class="tableitem"><p class="itemtext text-uppercase">@item.wood_type.name</p></td>
+                            <td class="tableitem"><p class="itemtext text-uppercase">@(item.wood_type?.name ?? "N/A")</p></td>
                             <td class="tableitem"><p class="itemtext text-uppercase">@item.circle_size.ToString().ConvertNumerals() X @item.length.ToString().ConvertNumerals() X @item.breadth.ToString().ConvertNumerals()</p></td>
                             <td class="tableitem"><p class="itemtext text-uppercase">@item.quantity.ToString().ConvertNumerals()</p></td>
                             @{

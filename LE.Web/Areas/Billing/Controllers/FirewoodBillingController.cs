@@ -84,24 +84,38 @@ namespace LE.Web.Areas.Billing.Controllers
         {
             try
             {
-                var member = _memberRepo.getQueryable().Where(a => a.MemberId == model.MemberId).FirstOrDefault();
-                if (member == null)
-                    return Json(new { error = true, responseText = "Member not found." });
-
-                var membershipId = member.MembershipId;
-                var isMembershipValid = _memberPunishmentController.GetMemberValidity(membershipId);
-                if (isMembershipValid)
+                FirewoodSalesType parsedSalesType;
+                if (string.IsNullOrWhiteSpace(model.sales_type) || !Enum.TryParse(model.sales_type, true, out parsedSalesType) || !Enum.IsDefined(typeof(FirewoodSalesType), parsedSalesType))
                 {
+                    return Json(new { error = true, responseText = "Sales type is required." });
+                }
+                bool isMemberSale = parsedSalesType == FirewoodSalesType.Member;
+                // Validation uses MemberId while persistence uses type_id; keep them
+                // in sync for member sales so a valid selection is never lost.
+                if (isMemberSale && model.MemberId.HasValue && model.MemberId.Value > 0)
+                {
+                    model.type_id = model.MemberId;
+                }
+                if (isMemberSale)
+                {
+                    if (!model.MemberId.HasValue || model.MemberId.Value <= 0)
+                        return Json(new { error = true, responseText = "Member Not Selected." });
+
+                    var member = _memberRepo.getQueryable().Where(a => a.MemberId == model.MemberId.Value).FirstOrDefault();
+                    if (member == null)
+                        return Json(new { error = true, responseText = "Member not found. Make sure member is active and membership not expired." });
+
+                    var membershipId = member.MembershipId;
+                    var isMembershipValid = _memberPunishmentController.GetMemberValidity(membershipId);
+                    if (!isMembershipValid)
+                    {
+                        return Json(new { error = true, responseText = "Membership is punished!" });
+                    }
+                }
+
                 FirewoodSalesDto firewoodSalesDto = getDtoFromModel(model);
                 long billId = _firwoodSalesService.makeSales(firewoodSalesDto);
                 return Json(billId);
-
-                }
-                else
-                {
-                    return Json(new { error = true, responseText = "Membership is punished!" });
-                }
-
             }
             catch (Exception ex)
             {
@@ -126,7 +140,7 @@ namespace LE.Web.Areas.Billing.Controllers
 
             dto.sales_date = dateService.ToAD(model.nep_sales_date).getFormattedDate().Add(currentTime.TimeOfDay);
             dto.sales_type = (FirewoodSalesType)Enum.Parse(typeof(FirewoodSalesType), model.sales_type, true);
-            dto.type_id = model.type_id;
+            dto.type_id = model.MemberId ?? model.type_id;
             dto.others_name = model.others_name;
             dto.address = model.address;
             dto.total_amount = model.total_amount;
@@ -136,7 +150,7 @@ namespace LE.Web.Areas.Billing.Controllers
 
         private void setFirewoodSalesDetailDto(FirewoodSalesDto dto, FireWoodBillModel model)
         {
-            foreach (var detail in model.items)
+            foreach (var detail in model.items ?? new System.Collections.Generic.List<firewoodItems>())
             {
                 FirewoodSalesDetailDto sales_dto = new FirewoodSalesDetailDto();
                 sales_dto.amount = Math.Round(detail.quantity * detail.rate, 2);
@@ -174,10 +188,10 @@ namespace LE.Web.Areas.Billing.Controllers
 
                 if (bill.sales_type == FirewoodSalesType.Member)
                 {
-                    var member = _memberRepo.getById(Convert.ToInt32(bill.type_id));
-                    vm.customer = member.FullName;
-                    vm.address = member.Address;
-                    vm.tole_no = member.Membership.ToleNo;
+                    var member = _memberRepo.getQueryable().Include(a => a.Membership).FirstOrDefault(a => a.MemberId == bill.type_id);
+                    vm.customer = member?.FullName ?? "N/A";
+                    vm.address = member?.Address ?? string.Empty;
+                    vm.tole_no = member?.Membership?.ToleNo ?? string.Empty;
                 }
                 else
                 {
@@ -240,7 +254,12 @@ namespace LE.Web.Areas.Billing.Controllers
                 {
                     if (detail.type_id != null)
                     {
-                        bill.others_name = _memberRepo.getById(Convert.ToInt32(detail.type_id)).FullName;
+                        var reportMember = _memberRepo.getById(Convert.ToInt32(detail.type_id));
+                        bill.others_name = reportMember?.FullName ?? "N/A";
+                    }
+                    else
+                    {
+                        bill.others_name = "N/A";
                     }
                 }
                 else

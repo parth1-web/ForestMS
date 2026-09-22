@@ -24,7 +24,7 @@ namespace LE.Billing.Service.Assemblers.Implementations
             service.is_enabled = service_dto.is_enabled;
             service.ledger_id = service_dto.ledger_id;
             service.tax = service_dto.tax;
-            service.service_category = _serviceCategoryRepo.getById(service_dto.category_id) ?? throw new ItemNotFoundException($"Service category with the id {service_dto.category_id} doesnot exist.");
+            service.service_category = _serviceCategoryRepo.getById(service_dto.category_id) ?? throw new ItemNotFoundException($"Service category with the id {service_dto.category_id} does not exist.");
         }
     }
 }

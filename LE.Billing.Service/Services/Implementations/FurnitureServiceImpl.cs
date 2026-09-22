@@ -31,7 +31,7 @@ namespace LE.Billing.Service.Services.Implementations
 
                     if (furniture == null)
                     {
-                        throw new ItemNotFoundException($"Furniture with id {furniture_id} doesnot exist.");
+                        throw new ItemNotFoundException($"Furniture with id {furniture_id} does not exist.");
                     }
 
                     //var salesDetailOfSpecifiedService = _salesDetailRepo.getByTypeAndId(neeldavid.common.Enums.SalesType.service, service_id);
@@ -63,7 +63,7 @@ namespace LE.Billing.Service.Services.Implementations
 
                     if (furniture == null)
                     {
-                        throw new ItemNotFoundException($"Furniture with id {furniture_id} doesnot exist.");
+                        throw new ItemNotFoundException($"Furniture with id {furniture_id} does not exist.");
                     }
 
                     furniture.disable();
@@ -89,7 +89,7 @@ namespace LE.Billing.Service.Services.Implementations
 
                     if (furniture == null)
                     {
-                        throw new ItemNotFoundException($"Furniture with id {furniture_id} doesnot exist.");
+                        throw new ItemNotFoundException($"Furniture with id {furniture_id} does not exist.");
                     }
 
                     furniture.enable();
@@ -122,7 +122,7 @@ namespace LE.Billing.Service.Services.Implementations
 
                     _furnitureAssembler.copy(furniture, furniture_dto);
 
-                    furniture.furnitureCategory = _furnitureCategoryRepo.getById(furniture_dto.furniture_category_id) ?? throw new ItemNotFoundException($"Furniture category with the id {furniture_dto.furniture_id} doesnot exist.");
+                    furniture.furnitureCategory = _furnitureCategoryRepo.getById(furniture_dto.furniture_category_id) ?? throw new ItemNotFoundException($"Furniture category with the id {furniture_dto.furniture_id} does not exist.");
 
                     _furnitureRepo.insert(furniture);
 
@@ -146,7 +146,7 @@ namespace LE.Billing.Service.Services.Implementations
 
                     if (furniture == null)
                     {
-                        throw new ItemNotFoundException($"Furniture with the id {furniture_dto.furniture_id} doesnot exist.");
+                        throw new ItemNotFoundException($"Furniture with the id {furniture_dto.furniture_id} does not exist.");
                     }
 
                     bool isNameValid = checkNameValidity(furniture_dto);
@@ -158,7 +158,7 @@ namespace LE.Billing.Service.Services.Implementations
 
                     _furnitureAssembler.copy(furniture, furniture_dto);
 
-                    furniture.furnitureCategory = _furnitureCategoryRepo.getById(furniture_dto.furniture_category_id) ?? throw new ItemNotFoundException($"Furniture category with the id {furniture_dto.furniture_id} doesnot exist.");
+                    furniture.furnitureCategory = _furnitureCategoryRepo.getById(furniture_dto.furniture_category_id) ?? throw new ItemNotFoundException($"Furniture category with the id {furniture_dto.furniture_id} does not exist.");
 
                     _furnitureRepo.update(furniture);
 

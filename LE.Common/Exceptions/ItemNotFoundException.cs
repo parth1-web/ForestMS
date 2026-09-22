@@ -6,7 +6,7 @@ namespace LE.Common.Exceptions
 {
     public class ItemNotFoundException : CustomException
     {
-        public ItemNotFoundException(string message = "Item doesnot exist.") : base(message)
+        public ItemNotFoundException(string message = "Item does not exist.") : base(message)
         {
 
         }

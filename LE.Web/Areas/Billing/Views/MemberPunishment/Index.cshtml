@@ -109,6 +109,7 @@
                             </div>
                             <div class="modal-body">
                                 <form id="cancelPunishmentForm" method="post">
+                                    @Html.AntiForgeryToken()
                                     <div class="form-group">
                                         <label for="IsCancelledRemarks" class="col-form-label">कैफियत:</label>
                                         <input type="text" class="form-control" id="IsCancelledRemarks" name="IsCancelledRemarks" required minlength="3">
@@ -127,10 +128,9 @@
         </div>
     </div>
 </div>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
+@section Scripts {
 <script>
-        $(document).ready(function () {
+    $(document).ready(function () {
         $('#exampleModal').on('show.bs.modal', function (event) {
             var button = $(event.relatedTarget); 
             var memberPunishmentId = button.data('member-punishment-id'); 
@@ -159,18 +159,25 @@
                 type: "POST",
                 contentType: "application/json",
                 data: JSON.stringify(data),
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader("XSRF-TOKEN",
+                        $('input:hidden[name="__RequestVerificationToken"]').val());
+                },
                 success: function (response) {
-                    console.log("Success:", response);
-                    alert("Punishment updated successfully!");
-                    $('#exampleModal').modal('hide');
-                    location.reload(); 
+                    if (response && response.success) {
+                        alert("Punishment updated successfully!");
+                        $('#exampleModal').modal('hide');
+                        location.reload();
+                    } else {
+                        alert("Error: " + ((response && (response.message || response.responseText)) || "Request failed. Please try again."));
+                    }
                 },
                 error: function (xhr) {
-                    console.log("Error:", xhr.responseJSON);
-                    alert("Error: " + xhr.responseJSON.message);
+                    var message = (xhr.responseJSON && (xhr.responseJSON.message || xhr.responseJSON.responseText)) || xhr.responseText || "Request failed. Please try again.";
+                    alert("Error: " + message);
                 }
             });
         });
     });
-
 </script>
+}

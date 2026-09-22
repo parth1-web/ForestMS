@@ -24,8 +24,8 @@ namespace LE.Web.Controllers
     public class AccountController : BaseController
     {
         private readonly userNS.AuthenticationService _authenticationService;
-        private LoginSessionService _loginSessionService;
-        private OrganizationSetupRepository _orgSetupRepo;
+        private readonly LoginSessionService _loginSessionService;
+        private readonly OrganizationSetupRepository _orgSetupRepo;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         private readonly LoginAttemptTracker _loginAttemptTracker;
 
@@ -40,7 +40,7 @@ namespace LE.Web.Controllers
         }
 
         [Route("login")]
-        public IActionResult login()
+        public IActionResult Login()
         {
             ViewBag.organizationName = _orgSetupRepo.getByKey(OrganizationSetup.Organization_Name.ToString())?.value;
             return View();
@@ -49,7 +49,7 @@ namespace LE.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Route("login")]
-        public async Task<IActionResult> login(LoginModel model)
+        public async Task<IActionResult> Login(LoginModel model)
         {
             try
             {
@@ -104,38 +104,60 @@ namespace LE.Web.Controllers
 
         [HttpPost]
         [Route("jwtlogin")]
-        public IActionResult jwtLogin([FromBody] LoginModel model)
+        [AllowAnonymous]
+        [IgnoreAntiforgeryToken]
+        public IActionResult JwtLogin()
         {
             try
             {
-                if (_loginAttemptTracker.IsLockedOut(model.username, HttpContext.Connection.RemoteIpAddress?.ToString()))
+                string rawBody = "";
+                using (var reader = new System.IO.StreamReader(HttpContext.Request.Body))
+                {
+                    rawBody = reader.ReadToEndAsync().Result;
+                }
+                Console.WriteLine($"Raw request body: {rawBody}");
+
+                var model = Newtonsoft.Json.JsonConvert.DeserializeObject<LoginModel>(rawBody);
+                Console.WriteLine($"Deserialized model: username={model?.username}, password={model?.password}");
+
+                if (model == null || string.IsNullOrWhiteSpace(model.username) || string.IsNullOrWhiteSpace(model.password))
+                {
+                    return Content(JsonWrapper.buildErrorJson("Username and password are required."), "application/json");
+                }
+
+                string remoteIp = HttpContext.Connection?.RemoteIpAddress?.ToString() ?? "unknown";
+                if (_loginAttemptTracker.IsLockedOut(model.username, remoteIp))
                 {
                     return Content(JsonWrapper.buildErrorJson("Account is temporarily locked due to too many failed attempts. Please try again later."), "application/json");
                 }
 
-                IActionResult response = Unauthorized();
                 var authenticationDetail = _authenticationService.validateUser(model.username, model.password);
-
-
                 if (authenticationDetail == null)
                 {
-                    _loginAttemptTracker.RecordFailure(model.username, HttpContext.Connection.RemoteIpAddress?.ToString());
+                    _loginAttemptTracker.RecordFailure(model.username, remoteIp);
                     throw new Exception("Username and password didnot match.");
                 }
 
-                _loginAttemptTracker.RecordSuccess(model.username, HttpContext.Connection.RemoteIpAddress?.ToString());
+                _loginAttemptTracker.RecordSuccess(model.username, remoteIp);
 
                 var tokenString = GenerateToken(authenticationDetail);
 
-                //record this token as valid
+                var user = _userRepo.getById(authenticationDetail.type_id);
+                if (user == null)
+                {
+                    return Content(JsonWrapper.buildErrorJson("User account not found."), "application/json");
+                }
+
+                var orgName = _orgSetupRepo.getByKey(OrganizationSetup.Organization_Name.ToString());
+                var orgAddress = _orgSetupRepo.getByKey(OrganizationSetup.Address.ToString());
 
                 var responseData = new
                 {
                     user_id = authenticationDetail.authentication_id,
                     token = tokenString,
-                    user = _userRepo.getById(authenticationDetail.type_id).full_name,
-                    org_name = _orgSetupRepo.getByKey(OrganizationSetup.Organization_Name.ToString()).value,
-                    address = _orgSetupRepo.getByKey(OrganizationSetup.Address.ToString()).value
+                    user = user.full_name,
+                    org_name = orgName?.value ?? string.Empty,
+                    address = orgAddress?.value ?? string.Empty
                 };
                 return Content(JsonWrapper.buildSuccessJson(responseData), "application/json");
             }
@@ -143,7 +165,6 @@ namespace LE.Web.Controllers
             {
                 return Content(ExceptionMessageHelper.buildErrorJson(ex), "application/json");
             }
-
         }
 
         private string GenerateToken(Authentication userInfo)
@@ -168,7 +189,7 @@ namespace LE.Web.Controllers
         [Route("logout")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> logout()
+        public async Task<IActionResult> Logout()
         {
             var authenticationId = getLoggedInAuthenticationId();
             await HttpContext.SignOutAsync();
@@ -185,7 +206,7 @@ namespace LE.Web.Controllers
 
         [Route("logout")]
         [HttpGet]
-        public async Task<IActionResult> logoutGet()
+        public async Task<IActionResult> LogoutGet()
         {
             // Plain sign-out for legacy GET links/bookmarks. Logout is a state change,
             // so browsers should use the POST form in the header menu; this GET variant

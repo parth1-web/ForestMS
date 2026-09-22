@@ -50,7 +50,7 @@
                                     <tr>
                                         <td>@sn</td>
                                         <td>@piling.title</td>
-                                        <td>@piling.description</td>
+                                        <td>@(!string.IsNullOrWhiteSpace(piling.description) ? piling.description : "N/A")</td>
                                         <td>@piling.is_enabled</td>
                                         <td>
                                             <a href="/inventory/piling/edit/@piling.piling_id" title="Edit" class="btn btn-icon waves-effect waves-light btn-primary btn-sm"><i class="fa fa-pencil"></i></a>

@@ -169,7 +169,7 @@ namespace LE.Web.Areas.Billing.Controllers
 
         private void setUserNameOfUserPerformingAction(ref string username, long user_id)
         {
-            var authenticationDetail = _authenticationRepo.getById(user_id) ?? throw new ItemNotFoundException($"Authentication with id {user_id} doesnot exist.");
+            var authenticationDetail = _authenticationRepo.getById(user_id) ?? throw new ItemNotFoundException($"Authentication with id {user_id} does not exist.");
 
             var userId = authenticationDetail.type_id;
 

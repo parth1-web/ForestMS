@@ -473,14 +473,16 @@ namespace LE.Web.Areas.Billing.Controllers
         [Route("members", Name = "billing_membership_members")]
         public IActionResult Members(MemberFilter filter)
         {
-            var members = _memberRepo.getAll().Where(m => m.IsDeleted == false);
+            IQueryable<Member> query = _memberRepo.getQueryable()
+                .Include(m => m.Membership)
+                .Where(m => m.IsDeleted == false);
             if (!string.IsNullOrWhiteSpace(filter.name))
             {
-                members = members.Where(a => a.Membership.MembershipCode.Contains(filter.name, StringComparison.OrdinalIgnoreCase) || a.FullName.Contains(filter.name, StringComparison.OrdinalIgnoreCase));
+                query = query.Where(a => (a.Membership != null && a.Membership.MembershipCode.Contains(filter.name)) || a.FullName.Contains(filter.name));
             }
 
-            ViewBag.pagerInfo = _paginatedMetaService.GetMetaData(members.Count(), filter.page, filter.number_of_rows);
-            var membersList = members.OrderBy(a => a.MemberId).Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows).ToList();
+            ViewBag.pagerInfo = _paginatedMetaService.GetMetaData(query.Count(), filter.page, filter.number_of_rows);
+            var membersList = query.OrderBy(a => a.MemberId).Skip(filter.number_of_rows * (filter.page - 1)).Take(filter.number_of_rows).ToList();
             return View(membersList);
         }
 

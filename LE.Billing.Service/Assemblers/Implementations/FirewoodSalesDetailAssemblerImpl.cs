@@ -21,7 +21,7 @@ namespace LE.Billing.Service.Assemblers.Implementations
             sales_detail.quantity = sales_detail_dto.quantity;
             sales_detail.amount = sales_detail_dto.amount;
             sales_detail.stock_item_id = sales_detail_dto.stock_item_id;
-            sales_detail.firewoodSales = _firewoodSalesRepo.getById(sales_detail_dto.firewood_sales_id) ?? throw new ItemNotFoundException($"Firewood Sales with the id {sales_detail_dto.firewood_sales_id} doesnot exist.");
+            sales_detail.firewoodSales = _firewoodSalesRepo.getById(sales_detail_dto.firewood_sales_id) ?? throw new ItemNotFoundException($"Firewood Sales with the id {sales_detail_dto.firewood_sales_id} does not exist.");
         }
     }
 }

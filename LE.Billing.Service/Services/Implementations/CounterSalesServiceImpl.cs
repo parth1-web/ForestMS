@@ -29,7 +29,7 @@ namespace LE.Billing.Service.Services.Implementations
             var sales = _counterSalesRepo.getById(counter_sales_id);
             if (sales == null)
             {
-                throw new ItemNotFoundException($"Counter bill with id {counter_sales_id} doesnot exist.");
+                throw new ItemNotFoundException($"Counter bill with id {counter_sales_id} does not exist.");
             }
             var IsClosed = _dayCloseRepository.getByDate(sales.sales_date.Date);
             if (IsClosed != null)

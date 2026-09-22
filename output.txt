@@ -1,0 +1,6 @@
+Using launch settings from LE.Web\Properties\launchSettings.json...
+[13:24:02 INF] Starting LE.Web host
+[13:24:02 INF] Updating fn_get_fiscal_year_id function...
+[13:24:04 INF] fn_get_fiscal_year_id function updated successfully
+[13:24:52 WRN] Failed to determine the https port for redirect.
+[13:24:53 INF] HTTP POST /account/jwtlogin responded 200 in 388.4841 ms

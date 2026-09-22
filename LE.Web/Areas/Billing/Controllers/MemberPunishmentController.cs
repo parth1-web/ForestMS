@@ -120,11 +120,18 @@ namespace LE.Web.Areas.Billing.Controllers
         [Route("new")]
         public IActionResult add()
         {
-            var members = _memRepo.getQueryable().Where(a => a.IsActive).ToList();
-            members.ForEach(mem => mem.FullName = $"{mem.FullName} ( {mem.Membership.MembershipCode} )");
-            ViewBag.members = new SelectList(members, "MembershipId", "FullName");
-
+            ViewBag.members = getMemberSelectList();
             return View();
+        }
+
+        private SelectList getMemberSelectList()
+        {
+            var members = _memRepo.getQueryable()
+                .Include(a => a.Membership)
+                .Where(a => a.IsActive)
+                .ToList();
+            members.ForEach(mem => mem.FullName = $"{mem.FullName} ( {mem.Membership?.MembershipCode ?? "N/A"} )");
+            return new SelectList(members, "MembershipId", "FullName");
         }
 
         [HttpPost]
@@ -135,9 +142,7 @@ namespace LE.Web.Areas.Billing.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    var members = _memRepo.getQueryable().Where(a => a.IsActive).ToList();
-                    members.ForEach(mem => mem.FullName = $"{mem.FullName} ( {mem.Membership.MembershipCode} )");
-                    ViewBag.members = new SelectList(members, "MembershipId", "FullName");
+                    ViewBag.members = getMemberSelectList();
                     AlertHelper.setMessage(this, "Please enter valid details.", messageType.error);
                     return View(dto);
                 }
@@ -145,9 +150,7 @@ namespace LE.Web.Areas.Billing.Controllers
                 // Check if the member is already punished
                 if (IsMemberAlreadyPunished(dto.MembershipId))
                 {
-                    var members = _memRepo.getQueryable().Where(a => a.IsActive).ToList();
-                    members.ForEach(mem => mem.FullName = $"{mem.FullName} ( {mem.Membership.MembershipCode} )");
-                    ViewBag.members = new SelectList(members, "MembershipId", "FullName");
+                    ViewBag.members = getMemberSelectList();
                     AlertHelper.setMessage(this, "Member is already punished.", messageType.error);
                     return View(dto);
                 }
@@ -161,9 +164,7 @@ namespace LE.Web.Areas.Billing.Controllers
             }
             catch (Exception ex)
             {
-                var members = _memRepo.getQueryable().Where(a => a.IsActive).ToList();
-                members.ForEach(mem => mem.FullName = $"{mem.FullName} ( {mem.Membership.MembershipCode} )");
-                ViewBag.members = new SelectList(members, "MembershipId", "FullName");
+                ViewBag.members = getMemberSelectList();
                 ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 return View(dto);
             }
@@ -207,7 +208,8 @@ namespace LE.Web.Areas.Billing.Controllers
             }
             catch (Exception ex)
             {
-                return Json(500, ExceptionMessageHelper.buildFailObject(ex));
+                Response.StatusCode = 500;
+                return Json(ExceptionMessageHelper.buildFailObject(ex));
             }
         }
 

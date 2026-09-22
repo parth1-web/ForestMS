@@ -20,7 +20,7 @@ namespace LE.Billing.Service.Assemblers.Implementations
             furniture.furniture_category_id = furniture_dto.furniture_category_id;
             furniture.name = furniture_dto.name;
             furniture.is_enabled = furniture_dto.is_enabled;
-            furniture.furnitureCategory = _furnitureCategoryRepo.getById(furniture_dto.furniture_category_id) ?? throw new ItemNotFoundException($"Furniture category with the id {furniture_dto.furniture_category_id} doesnot exist.");
+            furniture.furnitureCategory = _furnitureCategoryRepo.getById(furniture_dto.furniture_category_id) ?? throw new ItemNotFoundException($"Furniture category with the id {furniture_dto.furniture_category_id} does not exist.");
         }
     }
 }

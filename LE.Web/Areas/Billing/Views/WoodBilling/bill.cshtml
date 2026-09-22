@@ -253,7 +253,7 @@
                             <td class="tableitem">
                                 <p class="itemtext text-uppercase">
                                     @{
-                                        foreach (var damage in item.woodDetails.DamagedWoodDetails)
+                                        foreach (var damage in item.woodDetails?.DamagedWoodDetails ?? new System.Collections.Generic.List<LE.Inventory.Entities.DamagedWoodDetail>())
                                         {
                                             <span><i class="fa fa-arrow-circle-right"> </i> @damage.damaged_first_size.ToString().ConvertNumerals() + @damage.damaged_second_size.ToString().ConvertNumerals() + @damage.damaged_third_size.ToString().ConvertNumerals() + @damage.damaged_fourth_size.ToString().ConvertNumerals() + @damage.damaged_fifth_size.ToString().ConvertNumerals() X @damage.damaged_feet_size.ToString().ConvertNumerals()</span>
                                             <br />
