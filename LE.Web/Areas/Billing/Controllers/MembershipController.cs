@@ -539,23 +539,12 @@ namespace LE.Web.Areas.Billing.Controllers
 
                 if (ModelState.IsValid)
                 {
-                    var members = _memberRepo.getQueryable();
                     if (model.IsGharmuli)
                     {
                         var isGharmuliValid = _memberRepo.getQueryable().Where(a => a.Membership.MembershipCode == model.Membership.MembershipCode).ToList().Count() <= 2;
                         if (!isGharmuliValid)
                         {
                             AlertHelper.setMessage(this, "Only 2 member are allowed to be gharmuli in a membership.", messageType.error);
-                            return View(memberDetail);
-                        }
-                    }
-
-                    if (!string.IsNullOrEmpty(model.MemberCitizenship))
-                    {
-                        var isCitizenshipNoDuplicate = members.Where(m => m.MemberId != model.MemberId && m.MemberCitizenship == model.MemberCitizenship).ToList().Count() > 0;
-                        if (isCitizenshipNoDuplicate)
-                        {
-                            AlertHelper.setMessage(this, $"A member with the citizenship no. {model.MemberCitizenship} already exists.", messageType.error);
                             return View(memberDetail);
                         }
                     }

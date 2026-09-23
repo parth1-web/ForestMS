@@ -38,6 +38,13 @@ namespace LE.Inventory.Service.Services.Implementations
                     throw new ItemUsedException("This wood is already sold.You cannot delete at a moment.");
                 }
 
+                // Child damage rows carry a RESTRICT FK to wood_details, so
+                // they must be removed before the parent stock row.
+                foreach (var damage in (woodDetails.DamagedWoodDetails ?? Enumerable.Empty<DamagedWoodDetail>()).ToList())
+                {
+                    _damagedWoodDetailService.delete(damage.damaged_wood_details_id);
+                }
+
                 _woodDetailsRepo.delete(woodDetails);
                 _woodDetailsRepo.saveChanges();
                 tx.Commit();
