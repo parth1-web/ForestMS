@@ -20,9 +20,20 @@ namespace LE.Web.Areas.Billing.AutomapperProfiles
 
 			CreateMap<FurnitureCategoryModel, FurnitureCategory>().ReverseMap();
 
+			// Without this map every furniture add/edit throws
+			// AutoMapperMappingException (shown as a generic error).
+			CreateMap<FurnitureModel, FurnitureDto>().ReverseMap();
+
 			CreateMap<ServiceDto, ServiceModel>().ReverseMap();
 
-			CreateMap<MemberModel, MemberDto>().ReverseMap();
+			// MemberModel.ImageName is an uploaded file (IFormFile) while
+			// MemberDto.ImageName is the saved file name (string): the file
+			// itself can never auto-map, and trying throws on every save.
+			// Callers persist the file first and set the name explicitly.
+			CreateMap<MemberModel, MemberDto>()
+				.ForMember(d => d.ImageName, opt => opt.Ignore())
+				.ReverseMap()
+				.ForMember(m => m.ImageName, opt => opt.Ignore());
 
 			CreateMap<MemberDetail, Member>().ReverseMap();
 
@@ -55,7 +66,7 @@ namespace LE.Web.Areas.Billing.AutomapperProfiles
 			CreateMap<MemberDetail, MemberModel>();
 
 			CreateMap<MemberModel, MemberDetail>()
-				.ForMember(md => md.ImageName, opt => opt.MapFrom(src => src.ImageName.FileName ?? string.Empty));
+				.ForMember(md => md.ImageName, opt => opt.MapFrom(src => src.ImageName != null ? src.ImageName.FileName : string.Empty));
 
 			CreateMap<Membership, MembershipIndexViewModel>().ReverseMap();
 			CreateMap<MemberPunishment, MemberPunishmentDto>().ReverseMap();

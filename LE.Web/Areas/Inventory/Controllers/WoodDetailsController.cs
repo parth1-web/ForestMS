@@ -295,7 +295,7 @@ namespace LE.Web.Areas.Inventory.Controllers
             ViewBag.Address = _organizationSetupRepository.getByKey(OrganizationSetup.Address.ToString()).value;
             List<WoodDetails> woodDetails = getWoodDetails(woodDetailsIndexVM);
             woodDetailsIndexVM = getViewModelFrom(woodDetails);
-            return new ViewAsPdf("reportPrint", woodDetailsIndexVM);
+            return new ChromiumPdfResult("reportPrint", woodDetailsIndexVM);
         }
 
         private List<WoodDetails> getWoodDetails(WoodDetailsIndexViewModel woodDetailsIndexVM)

@@ -15,10 +15,12 @@ using LE.Web.Controllers;
 using LE.Web.Helpers;
 using LE.Web.LEPagination;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,11 +46,13 @@ namespace LE.Web.Areas.Billing.Controllers
         private readonly MembershipValidityService _membershipValidityService;
         private readonly LedgerGroupIdProviderService _ledgerGroupIdProviderService;
         private readonly LedgerService _ledgerService;
+        private readonly IWebHostEnvironment _env;
 
         public MembershipController(MemberService memberService, MemberRepository memberRepo, MemberPunishmentRepository memPunishmentRepo,
             ToleRepository toleRepo, PaginatedMetaService paginatedMetaService, FileHelper fileHelper, IMapper mapper,
             DateConverterService dateConverterService, MembershipService membershipService, MembershipRepository membershipRepo,
-            MembershipValidityService membershipValidityService, LedgerGroupIdProviderService ledgerGroupIdProviderService, LedgerService ledgerService, MembershipValidityRepository membershipValidityRepo)
+            MembershipValidityService membershipValidityService, LedgerGroupIdProviderService ledgerGroupIdProviderService, LedgerService ledgerService, MembershipValidityRepository membershipValidityRepo,
+            IWebHostEnvironment env)
         {
             _memberService = memberService;
             _memberRepo = memberRepo;
@@ -64,6 +68,21 @@ namespace LE.Web.Areas.Billing.Controllers
             _ledgerGroupIdProviderService = ledgerGroupIdProviderService;
             _ledgerService = ledgerService;
             _membershipValidityRepo = membershipValidityRepo;
+            _env = env;
+        }
+
+        // Development-only diagnostic suffix: the sanitizer intentionally hides
+        // infrastructure errors, which makes localhost debugging a guessing game.
+        // Never emitted in production.
+        private string membershipErrorMessage(Exception ex)
+        {
+            var message = ExceptionMessageHelper.getDisplayMessage(ex);
+            if (_env != null && _env.IsDevelopment())
+            {
+                var inner = ex.InnerException != null ? " <- " + ex.InnerException.GetType().Name + ": " + ex.InnerException.Message : string.Empty;
+                message += " [Technical: " + ex.GetType().Name + ": " + ex.Message + inner + "]";
+            }
+            return message;
         }
 
         [Route("")]
@@ -192,7 +211,8 @@ namespace LE.Web.Areas.Billing.Controllers
                 ExceptionMessageHelper.setMessage(this, ex, messageType.error);
                 // P1/B15 fix: the failure branch returned success = true ("Membership
                 // failed to save."), so the UI reported every failure as a success.
-                return Json(new { success = false, message = "Membership failed to save." });
+                // Surface the real (sanitized) reason so the form can show it.
+                return Json(new { success = false, message = membershipErrorMessage(ex) });
             }
         }
 
@@ -267,14 +287,28 @@ namespace LE.Web.Areas.Billing.Controllers
                 using (var tx = _membershipRepo.beginTransaction())
                 {
                     var membership = _membershipRepo.getById(model.MembershipId);
+                    if (membership == null)
+                    {
+                        return Json(new { success = false, message = "Membership not found. It may have been deleted." });
+                    }
                     var checkMembershipCode = _membershipRepo.getQueryable().Where(m => m.MembershipId != model.MembershipId && m.MembershipCode == model.MembershipCode).ToList().Count() > 0;
                     if (checkMembershipCode)
                     {
                         return Json(new { success = false, message = "Membership code already exists." });
                     }
 
-                    //Update Membership
+                    //Update Membership. The edit form only manages a subset of
+                    // fields, so carry the rest over from the stored record —
+                    // otherwise the assembler would overwrite them with defaults
+                    // (LedgerId 0 violates FK_membership_ledger_LedgerId, and
+                    // Remarks/CancelledDate/audit fields would be wiped).
                     var membershipDto = getMembershipDtoFromModel(model);
+                    membershipDto.LedgerId = membership.LedgerId;
+                    membershipDto.CreatedBy = membership.CreatedBy;
+                    membershipDto.IsActive = membership.IsActive;
+                    membershipDto.IsCancelled = membership.IsCancelled;
+                    membershipDto.Remarks = membership.Remarks;
+                    membershipDto.CancelledDate = membership.CancelledDate;
                     _membershipService.Update(membershipDto);
 
                     if (model.MemberDetails != null && model.MemberDetails.Count() > 0)
@@ -305,10 +339,10 @@ namespace LE.Web.Areas.Billing.Controllers
             }
             catch (Exception ex)
             {
-                var toles = _toleRepo.getAll();
-                ViewBag.toles = toles;
                 ExceptionMessageHelper.setMessage(this, ex, messageType.error);
-                return RedirectToAction("index");
+                // This endpoint serves an AJAX caller expecting JSON; a redirect
+                // would come back as HTML and surface as "Failed : undefined".
+                return Json(new { success = false, message = membershipErrorMessage(ex) });
             }
         }
 

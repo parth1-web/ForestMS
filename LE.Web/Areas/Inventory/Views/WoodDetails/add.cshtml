@@ -236,6 +236,13 @@
 
             $('.save').on('click', function (e) {
                 e.preventDefault();
+                var selectedStockTypeId = parseInt($("#stock_type_id").val());
+                if (selectedStockTypeId == @((int)LE.Inventory.Common.Enums.StockTypes.BallaBalli)) {
+                    if (!$("#balla_balli_category_id").val()) {
+                        alert("Please select Balla Balli category.");
+                        return;
+                    }
+                }
                 var items = {};
                 items.stock_category_purpose_id = parseInt($("#stock_category_purpose_id").val());
                 items.piling_id = parseInt($("#piling_id").val());
@@ -252,12 +259,12 @@
                 $(".damaged_table tr").each(function (i, row) {
                     var data = {};
                     var $row = $(row);
-                    data.damaged_first_size = parseInt($row.find('input[name*="damaged_first_size"]').val());
-                    data.damaged_second_size = parseInt($row.find('input[name*="damaged_second_size"]').val());
-                    data.damaged_third_size = parseInt($row.find('input[name*="damaged_third_size"]').val());
-                    data.damaged_fourth_size = parseInt($row.find('input[name*="damaged_fourth_size"]').val());
-                    data.damaged_fifth_size = parseInt($row.find('input[name*="damaged_fifth_size"]').val());
-                    data.damaged_feet_size = parseInt($row.find('input[name*="damaged_feet_size"]').val());
+                    data.damaged_first_size = parseFloat($row.find('input[name*="damaged_first_size"]').val());
+                    data.damaged_second_size = parseFloat($row.find('input[name*="damaged_second_size"]').val());
+                    data.damaged_third_size = parseFloat($row.find('input[name*="damaged_third_size"]').val());
+                    data.damaged_fourth_size = parseFloat($row.find('input[name*="damaged_fourth_size"]').val());
+                    data.damaged_fifth_size = parseFloat($row.find('input[name*="damaged_fifth_size"]').val());
+                    data.damaged_feet_size = parseFloat($row.find('input[name*="damaged_feet_size"]').val());
                     item.push(data);
                 });
                 items["damagedWoodDetailModels"] = item;
@@ -265,6 +272,10 @@
                 $.ajax({
                     contentType: 'application/json; charset=utf-8',
                     type: "POST",
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader("XSRF-TOKEN",
+                            $('input:hidden[name="__RequestVerificationToken"]').val());
+                    },
                     url: "/inventory/wood-details/new",
                     dataType: "json",
                     data: JSON.stringify(items),
@@ -278,8 +289,9 @@
                         }
                         $('#loading').hide();
                     },
-                    error: function (response) {
-                        alert(response.responseText)
+                    error: function (xhr) {
+                        var message = (xhr.responseJSON && (xhr.responseJSON.message || xhr.responseJSON.responseText)) || xhr.responseText || "Request failed. Please try again.";
+                        alert(message);
                         $('#loading').hide();
                     }
                 });

@@ -18,18 +18,18 @@ namespace LE.Billing.Entities
 
         public virtual List<Furniture> furnitures { get; set; }
 
-        public void enable()
-        {
-            is_enabled = true;
-            furnitures.ForEach(a => a.is_enabled = true);
-        }
+		public void enable()
+		{
+			is_enabled = true;
+			furnitures?.ForEach(a => a.is_enabled = true);
+		}
 
-        public void disable()
-        {
-            is_enabled = false;
-            furnitures.ForEach(a => a.is_enabled = false);
-        }
+		public void disable()
+		{
+			is_enabled = false;
+			furnitures?.ForEach(a => a.is_enabled = false);
+		}
 
-        public bool hasFurnitures() => furnitures.Count > 0;
+		public bool hasFurnitures() => furnitures != null && furnitures.Count > 0;
     }
 }

@@ -64,7 +64,7 @@ namespace LE.Web.Areas.Accounting.Controllers
         public ViewAsPdf receiptPdf(ReceiptIndexViewModel vm)
         {
             vm = getViewModel(vm);
-            return new ViewAsPdf("report", vm);
+            return new ChromiumPdfResult("report", vm);
         }
 
         [Route("bill/{receipt_id}")]

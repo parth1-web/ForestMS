@@ -32,7 +32,7 @@ namespace LE.Inventory.Service.Services.Implementations
                     var stockItem = _stockItemRepo.getById(stock_item_id);
 
                     if (stockItem == null)
-                        throw new ItemNotFoundException($"The Stock Item with {stock_item_id} doesnot exist.");
+                        throw new ItemNotFoundException($"The Stock Item with {stock_item_id} does not exist.");
 
                     if (stockItem.hasPurchases())
                         throw new ItemUsedException($"The Stock Item with id {stock_item_id} already has purchases .You cannot delete at this moment.");
@@ -56,7 +56,7 @@ namespace LE.Inventory.Service.Services.Implementations
                     var stockItem = _stockItemRepo.getById(stock_item_id);
 
                     if (stockItem == null)
-                        throw new ItemNotFoundException($"The Stock Item with id {stock_item_id} doesnot exist.");
+                        throw new ItemNotFoundException($"The Stock Item with id {stock_item_id} does not exist.");
 
                     stockItem.disable();
                     _stockItemRepo.update(stockItem);
@@ -79,7 +79,7 @@ namespace LE.Inventory.Service.Services.Implementations
                 {
                     var stockItem = _stockItemRepo.getById(stock_item_id);
                     if (stockItem == null)
-                        throw new ItemNotFoundException($"The Stock Unit with id {stock_item_id} doesnot exist.");
+                        throw new ItemNotFoundException($"The Stock Unit with id {stock_item_id} does not exist.");
 
                     stockItem.enable();
                     _stockItemRepo.update(stockItem);
@@ -130,7 +130,7 @@ namespace LE.Inventory.Service.Services.Implementations
                 {
                     StockItem stockItem = _stockItemRepo.getById(stock_item_dto.stock_item_id);
                     if (stockItem == null)
-                        throw new ItemNotFoundException($"The Stock Item with id {stock_item_dto.stock_item_id} doesnot exist");
+                        throw new ItemNotFoundException($"The Stock Item with id {stock_item_dto.stock_item_id} does not exist");
 
                     _stockItemAssembler.copy(ref stockItem, stock_item_dto);
                     _stockItemRepo.update(stockItem);

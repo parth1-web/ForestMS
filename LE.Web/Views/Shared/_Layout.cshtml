@@ -130,9 +130,12 @@
 				ndpMonth: true,
 				ndpYearCount: 10,
 				readOnlyInput: true
+});
+			// Replace any image with a relative ~/ path with a data URI so PDF generators (wkhtmltopdf) can render it.
+			$('img[src^="~"]').each(function () {
+				$(this).attr('src', 'data:image/gif;base64,R0lGODdhAQABAPAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAI=');
 			});
 		});
-
 	</script>
 	@RenderSection("Scripts", required: false)
 

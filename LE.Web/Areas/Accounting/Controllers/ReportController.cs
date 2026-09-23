@@ -178,7 +178,7 @@ namespace LE.Web.Areas.Accounting.Controllers
 			viewModel.address = address;
 			viewModel.start_date = ledgerVM.start_date;
 			viewModel.end_date = ledgerVM.end_date;
-			return new ViewAsPdf("ledgerGroupReportPrint", viewModel);
+			return new ChromiumPdfResult("ledgerGroupReportPrint", viewModel);
 		}
 
 		private ListLedgerIndexViewModel getViewModelFrom(List<LedgerGroup> groups, DateTime startDate, DateTime endDate)
@@ -229,7 +229,7 @@ namespace LE.Web.Areas.Accounting.Controllers
 		public IActionResult journalPdf(TransactionIndexViewModel transactionVM)
 		{
 			transactionVM = getTransactionsWithin(transactionVM);
-			return new ViewAsPdf("transactionPrint", transactionVM);
+			return new ChromiumPdfResult("transactionPrint", transactionVM);
 		}
 
 		private TransactionIndexViewModel getTransactionsWithin(TransactionIndexViewModel transactionVM)
@@ -267,7 +267,7 @@ namespace LE.Web.Areas.Accounting.Controllers
 		public ViewAsPdf statementOfLedgerPdf(StatementOfLedgerIndexViewModel statementOfLedgerIndexVM)
 		{
 			statementOfLedgerIndexVM = getStatementOfLedger(statementOfLedgerIndexVM);
-			return new ViewAsPdf("statementOfLedgerPrint", statementOfLedgerIndexVM);
+			return new ChromiumPdfResult("statementOfLedgerPrint", statementOfLedgerIndexVM);
 		}
 
 		private StatementOfLedgerIndexViewModel getStatementOfLedger(StatementOfLedgerIndexViewModel statementOfLedgerIndexVM)
@@ -381,7 +381,7 @@ namespace LE.Web.Areas.Accounting.Controllers
 			vm.organization_name = org_name;
 			vm.address = address;
 			vm.logo = logo;
-			return new ViewAsPdf("dayBookPrint", vm);
+			return new ChromiumPdfResult("dayBookPrint", vm);
 		}
 
 		[HttpGet]
@@ -466,7 +466,7 @@ namespace LE.Web.Areas.Accounting.Controllers
 			try
 			{
 				vm = await GetBalanceSheetVM(vm);
-				return new ViewAsPdf("reportPrint", vm);
+				return new ChromiumPdfResult("reportPrint", vm);
 			}
 			catch (Exception e)
 			{
@@ -546,7 +546,7 @@ namespace LE.Web.Areas.Accounting.Controllers
 		public async Task<ViewAsPdf> trialBalancePdf(TrialBalanceDto trialBalanceDto)
 		{
 			var trialBalance = await getTrialBalanceData(trialBalanceDto);
-			return new ViewAsPdf("trialBalancePrint", trialBalance);
+			return new ChromiumPdfResult("trialBalancePrint", trialBalance);
 		}
 
 		private async Task<TrialBalanceDto> getTrialBalanceData(TrialBalanceDto trialBalanceDto)
@@ -687,7 +687,7 @@ namespace LE.Web.Areas.Accounting.Controllers
 		public async Task<ViewAsPdf> profitLossPdf(AccountingReportVm vm)
 		{
 			var report = await GetProfitLossReport(vm);
-			return new ViewAsPdf("reportPrint", report);
+			return new ChromiumPdfResult("reportPrint", report);
 		}
 
 		private async Task<AccountingReportVm> GetProfitLossReport(AccountingReportVm vm)
@@ -833,7 +833,7 @@ namespace LE.Web.Areas.Accounting.Controllers
 		public async Task<ViewAsPdf> TradingReportPdf(AccountingReportVm vm)
 		{
 			var report = await getTradingReport(vm);
-			return new ViewAsPdf("reportPrint", report);
+			return new ChromiumPdfResult("reportPrint", report);
 		}
 
 		private async Task<AccountingReportVm> getTradingReport(AccountingReportVm vm)

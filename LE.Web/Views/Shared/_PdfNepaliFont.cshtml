@@ -1,0 +1,11 @@
+@* Shared Nepali-font fix for Rotativa / wkhtmltopdf PDFs. *@
+@* wkhtmltopdf's default fonts (Times New Roman / Arial) contain no Devanagari *@
+@* glyphs, so Nepali text (e.g. Particulars, org name) renders as empty boxes. *@
+@* Forcing 'Nirmala UI' (ships with Windows) makes wkhtmltopdf embed the *@
+@* Devanagari subset — verified by inspecting embedded fonts in the output PDF. *@
+<meta charset="utf-8" />
+<style>
+    body, table, td, th, h1, h2, h3, h4, h5, h6, p, div, span {
+        font-family: 'Nirmala UI', 'Mangal', 'Noto Sans Devanagari', Arial, sans-serif;
+    }
+</style>

@@ -28,7 +28,7 @@ namespace LE.Inventory.Service.Services.Implementations
                     var woodType = _woodTypeRepo.getById(wood_type_id);
 
                     if (woodType == null)
-                        throw new ItemNotFoundException($"The Wood Type with {wood_type_id} doesnot exist.");
+                        throw new ItemNotFoundException($"The Wood Type with {wood_type_id} does not exist.");
 
                     if (woodType.hasWoodDetails())
                         throw new ItemUsedException($"The Wood Type with id {wood_type_id} already has stock.You cannot delete at this moment.");
@@ -53,7 +53,7 @@ namespace LE.Inventory.Service.Services.Implementations
                     var woodType = _woodTypeRepo.getById(wood_type_id);
 
                     if (woodType == null)
-                        throw new ItemNotFoundException($"The Wood Type with id {wood_type_id} doesnot exist.");
+                        throw new ItemNotFoundException($"The Wood Type with id {wood_type_id} does not exist.");
 
                     woodType.disable();
                     _woodTypeRepo.update(woodType);
@@ -76,7 +76,7 @@ namespace LE.Inventory.Service.Services.Implementations
                 {
                     var woodType = _woodTypeRepo.getById(wood_type_id);
                     if (woodType == null)
-                        throw new ItemNotFoundException($"The Wood Type with id {wood_type_id} doesnot exist.");
+                        throw new ItemNotFoundException($"The Wood Type with id {wood_type_id} does not exist.");
 
                     woodType.enable();
                     _woodTypeRepo.update(woodType);
@@ -118,7 +118,7 @@ namespace LE.Inventory.Service.Services.Implementations
                 {
                     WoodType woodType = _woodTypeRepo.getById(wood_type_dto.wood_type_id);
                     if (woodType == null)
-                        throw new ItemNotFoundException($"The Wood Type with id {wood_type_dto.wood_type_id} doesnot exist");
+                        throw new ItemNotFoundException($"The Wood Type with id {wood_type_dto.wood_type_id} does not exist");
 
                     _woodTypeAssembler.copy(woodType, wood_type_dto);
                     _woodTypeRepo.update(woodType);

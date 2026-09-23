@@ -176,6 +176,7 @@
 			<div class="col-lg-12">
 				<div class="form-group">
 					<p>@Localizer["Note"]: <span class="asterik"></span> @Localizer["Fields are mandatory"].</p>
+					@Html.AntiForgeryToken()
 					<button type="button" class="btn btn-primary waves-effect w-md waves-light" id="saveMembership"><i class="fa fa-save fa-lg"> @Localizer["Save"]</i></button>
 				</div>
 			</div>
@@ -251,6 +252,7 @@
 												</tr>`;
 				$('#membersTable tbody').append(memberRow);
 				$('#memberForm')[0].reset();
+				$("#FamilyRole").attr('disabled', false);
 				$('#image_preview').attr('src', '');
 			});
 
@@ -314,6 +316,7 @@
 				formData.append("HasBioGas", $('input[name="HasBioGas"]').is(':checked'));
 				formData.append("HasLPG", $('input[name="HasLPG"]').is(':checked'));
 
+				formData.append("__RequestVerificationToken", $('input:hidden[name="__RequestVerificationToken"]').val());
 				membersList.forEach((member, index) => {
 					formData.append(`MemberDetails[${index}].FullName`, member.FullName);
 					formData.append(`MemberDetails[${index}].MemberCitizenship`, member.MemberCitizenship);
@@ -323,7 +326,9 @@
 					formData.append(`MemberDetails[${index}].Gender`, member.Gender);
 					formData.append(`MemberDetails[${index}].FamilyRole`, member.FamilyRole);
 					formData.append(`MemberDetails[${index}].IsGharmuli`, member.IsGharmuli);
-					formData.append(`MemberDetails[${index}].ImageName`, member.ImageName);
+					if (member.ImageName instanceof File) {
+						formData.append(`MemberDetails[${index}].ImageName`, member.ImageName);
+					}
 				});
 
 				$.ajax({
@@ -333,14 +338,17 @@
 					processData: false,
 					data: formData,
 					success: function (response) {
-						if (response.success) {
+						if (response && response.success) {
 							window.location.reload();
+						} else if (response && typeof response === 'object') {
+							alert("Failed : " + (response.message || "Request failed. Please try again."));
 						} else {
-							alert("Failed : " + response.message);
+							alert("Failed : unexpected server response. Please refresh the page and try again.");
 						}
 					},
 					error: function (xhr, status, error) {
-						alert('Error submitting membership form.');
+						var message = (xhr.responseJSON && (xhr.responseJSON.message || xhr.responseJSON.responseText)) || 'Error submitting membership form.';
+						alert(message);
 					}
 				});
 			});

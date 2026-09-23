@@ -259,9 +259,8 @@
             $clone.find('#damaged_fourth_size').val('');
             $clone.find('#damaged_fifth_size').val('');
             $clone.find('#damaged_feet_size').val('');
-            var oldRowId = parseInt($tr.attr("rowid"));
-            $clone.attr("rowid", parseInt(oldRowId + 1));
-            $clone.find(".delete-damaged-row").attr("id", "delete" + parseInt(oldRowId + 1));
+            $clone.attr("rowid", 0);
+            $clone.find(".delete-damaged-row").attr("id", "delete-new-" + Date.now());
             $tr.after($clone);
         });
 
@@ -300,12 +299,12 @@
                 var $row = $(row);
                 data.damaged_wood_details_id = parseInt($row.attr("rowId"));
                 
-                data.damaged_first_size = parseInt($row.find('input[name*="damaged_first_size"]').val());
-                data.damaged_second_size = parseInt($row.find('input[name*="damaged_second_size"]').val());
-                data.damaged_third_size = parseInt($row.find('input[name*="damaged_third_size"]').val());
-                data.damaged_fourth_size = parseInt($row.find('input[name*="damaged_fourth_size"]').val());
-                data.damaged_fifth_size = parseInt($row.find('input[name*="damaged_fifth_size"]').val());
-                data.damaged_feet_size = parseInt($row.find('input[name*="damaged_feet_size"]').val());
+                data.damaged_first_size = parseFloat($row.find('input[name*="damaged_first_size"]').val());
+                data.damaged_second_size = parseFloat($row.find('input[name*="damaged_second_size"]').val());
+                data.damaged_third_size = parseFloat($row.find('input[name*="damaged_third_size"]').val());
+                data.damaged_fourth_size = parseFloat($row.find('input[name*="damaged_fourth_size"]').val());
+                data.damaged_fifth_size = parseFloat($row.find('input[name*="damaged_fifth_size"]').val());
+                data.damaged_feet_size = parseFloat($row.find('input[name*="damaged_feet_size"]').val());
                 item.push(data);
             });
             items["damagedWoodDetailModels"] = item;
@@ -330,8 +329,9 @@
                     }
                     $('#loading').hide();
                 },
-                error: function(response) {
-                    alert(response.responseText)
+                error: function(xhr) {
+                    var message = (xhr.responseJSON && (xhr.responseJSON.message || xhr.responseJSON.responseText)) || xhr.responseText || "Request failed. Please try again.";
+                    alert(message);
                     $('#loading').hide();
                 }
             });

@@ -63,7 +63,7 @@ namespace LE.Web.Areas.Accounting.Controllers
         public ViewAsPdf receiptPdf(PaymentIndexViewModel vm)
         {
             vm = getViewModel(vm);
-            return new ViewAsPdf("report", vm);
+            return new ChromiumPdfResult("report", vm);
         }
 
         private PaymentIndexViewModel getViewModel(PaymentIndexViewModel vm)

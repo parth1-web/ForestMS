@@ -28,7 +28,7 @@ namespace LE.Inventory.Service.Services.Implementations
                     var stockCategoryPurpose = _stockCategoryPurposeRepo.getById(stock_category_purpose_id);
 
                     if (stockCategoryPurpose == null)
-                        throw new ItemNotFoundException($"The Purpose Category with {stock_category_purpose_id} doesnot exist.");
+                        throw new ItemNotFoundException($"The Purpose Category with {stock_category_purpose_id} does not exist.");
 
                     if (stockCategoryPurpose.hasWoodDetails())
                         throw new ItemUsedException($"The Purpose Category with id {stock_category_purpose_id} already has Woods.You cannot delete at this moment.");
@@ -53,7 +53,7 @@ namespace LE.Inventory.Service.Services.Implementations
                     var ballaballiCategory = _stockCategoryPurposeRepo.getById(stock_category_purpose_id);
 
                     if (ballaballiCategory == null)
-                        throw new ItemNotFoundException($"The Purpose Category with id {stock_category_purpose_id} doesnot exist.");
+                        throw new ItemNotFoundException($"The Purpose Category with id {stock_category_purpose_id} does not exist.");
 
                     ballaballiCategory.disable();
                     _stockCategoryPurposeRepo.update(ballaballiCategory);
@@ -76,7 +76,7 @@ namespace LE.Inventory.Service.Services.Implementations
                 {
                     var stockCategoryPurpose = _stockCategoryPurposeRepo.getById(stock_category_purpose_id);
                     if (stockCategoryPurpose == null)
-                        throw new ItemNotFoundException($"The Purpose Category with id {stock_category_purpose_id} doesnot exist.");
+                        throw new ItemNotFoundException($"The Purpose Category with id {stock_category_purpose_id} does not exist.");
 
                     stockCategoryPurpose.enable();
                     _stockCategoryPurposeRepo.update(stockCategoryPurpose);
@@ -118,7 +118,7 @@ namespace LE.Inventory.Service.Services.Implementations
                 {
                     StockCategoryPurpose stock_category_purpose = _stockCategoryPurposeRepo.getById(stock_category_purpose_dto.stock_category_purpose_id);
                     if (stock_category_purpose == null)
-                        throw new ItemNotFoundException($"The Purpose Category with id {stock_category_purpose_dto.stock_category_purpose_id} doesnot exist");
+                        throw new ItemNotFoundException($"The Purpose Category with id {stock_category_purpose_dto.stock_category_purpose_id} does not exist");
 
                     _stockCategoryPurposeAssembler.copy(stock_category_purpose, stock_category_purpose_dto);
                     _stockCategoryPurposeRepo.update(stock_category_purpose);

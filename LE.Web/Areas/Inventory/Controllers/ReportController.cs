@@ -5,6 +5,7 @@ using LE.Inventory.Infrastructure.Repository.Interface;
 using LE.Service.Repository.Interface;
 using LE.Web.Areas.Inventory.ViewModels;
 using LE.Web.Controllers;
+using LE.Web.Helpers;
 using LE.Web.LEPagination;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -80,7 +81,7 @@ namespace LE.Web.Areas.Inventory.Controllers
 
             var res = woodDetails.OrderByDescending(a => a.created_date).ToList();
             vm = getViewModelFrom(res);
-            return new ViewAsPdf("salesReportPrint", vm);
+            return new ChromiumPdfResult("salesReportPrint", vm);
         }
 
         private WoodDetailsIndexViewModel getViewModelFrom(List<WoodDetails> woodDetails)
@@ -180,7 +181,7 @@ namespace LE.Web.Areas.Inventory.Controllers
             var res = woodDetails.OrderByDescending(a => a.created_date).ToList();
             var VM = getViewModelFrom(res);
             VM.piling_title = vm.piling_id > 0 ? _pilingRepo.getById(vm.piling_id).title : "N/A";
-            return new ViewAsPdf("pilingWiseReportPrint", VM);
+            return new ChromiumPdfResult("pilingWiseReportPrint", VM);
         }
     }
 }

@@ -145,7 +145,7 @@ namespace LE.Web
             });
 
             services.AddAntiforgery(o => o.HeaderName = "XSRF-TOKEN");
-            services.AddMvc(options =>
+            IMvcBuilder mvcBuilder = services.AddMvc(options =>
             {
                 // Require an authenticated user for every action unless it is explicitly
                 // opted-out with [AllowAnonymous] (login pages, error pages, public assets).
@@ -168,6 +168,15 @@ namespace LE.Web
                   jsonOptions.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
               }).AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
                 .AddDataAnnotationsLocalization(options => options.DataAnnotationLocalizerProvider = (t, f) => f.Create(typeof(SharedResource)));
+
+            // Views are compiled into the DLL at build time by default, so .cshtml
+            // edits (e.g. the shared _PdfNepaliFont PDF fix) are invisible until the
+            // next build. Enable Razor runtime compilation in Development so view
+            // changes apply on plain browser refresh — no rebuild needed.
+            if (_hostingEnvironment != null && _hostingEnvironment.IsDevelopment())
+            {
+                mvcBuilder.AddRazorRuntimeCompilation();
+            }
 
             services.AddResponseCaching();
             services.AddLocalization(opts => { opts.ResourcesPath = "Resources"; });

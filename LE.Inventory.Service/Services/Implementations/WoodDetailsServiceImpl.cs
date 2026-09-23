@@ -31,7 +31,7 @@ namespace LE.Inventory.Service.Services.Implementations
                 var woodDetails = _woodDetailsRepo.getById(wood_details_id);
 
                 if (woodDetails == null)
-                    throw new ItemNotFoundException($"The Wood with {wood_details_id} doesnot exist.");
+                    throw new ItemNotFoundException($"The Wood with {wood_details_id} does not exist.");
 
                 if (woodDetails.is_sold == true)
                 {
@@ -112,7 +112,7 @@ namespace LE.Inventory.Service.Services.Implementations
             {
                 var woodDetails = _woodDetailsRepo.getById(wood_details_dto.wood_details_id);
                 if (woodDetails == null)
-                    throw new ItemNotFoundException($"The wood with id {wood_details_dto.wood_details_id} doesnot exist");
+                    throw new ItemNotFoundException($"The wood with id {wood_details_dto.wood_details_id} does not exist");
 
                 if (woodDetails.is_sold == true)
                 {

@@ -55,7 +55,7 @@ namespace LE.Inventory.Service.Services.Implementations
             var purchases = _purchaseRepo.getById(purchaseId);
             if (purchases == null)
             {
-                throw new ItemNotFoundException("Purchase Data doesnot exist.");
+                throw new ItemNotFoundException("Purchase Data does not exist.");
             }
 
             // P1/B9 fix: the check + soft-delete + stock movement ran without any real

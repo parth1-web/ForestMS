@@ -362,8 +362,8 @@ namespace LE.Web.Areas.Billing.Controllers
         }
 
         [HttpGet]
-        [Route("report/{stock_type_id}")]
-        public IActionResult report(WoodBillReportIndexViewModel vm, long stock_type_id)
+        [Route("report/{stock_type_id?}")]
+        public IActionResult report(WoodBillReportIndexViewModel vm, long stock_type_id = 0)
         {
             ViewBag.urlId = stock_type_id;
             setReportViewModel(vm, stock_type_id);
@@ -371,8 +371,8 @@ namespace LE.Web.Areas.Billing.Controllers
         }
 
         [HttpGet]
-        [Route("report-print/{stock_type_id}")]
-        public IActionResult reportPrint(WoodBillReportIndexViewModel vm, long stock_type_id)
+        [Route("report-print/{stock_type_id?}")]
+        public IActionResult reportPrint(WoodBillReportIndexViewModel vm, long stock_type_id = 0)
         {
             ViewBag.urlId = stock_type_id;
 
@@ -400,7 +400,8 @@ namespace LE.Web.Areas.Billing.Controllers
             {
                 foreach (var stockType in detail.wood_bill_detail ?? Enumerable.Empty<WoodBillDetail>())
                 {
-                    if ((stockType.woodDetails?.stock_type_id ?? 0) == stock_type_id)
+                    // stock_type_id == 0 (no segment in URL) means all stock types.
+                    if (stock_type_id == 0 || (stockType.woodDetails?.stock_type_id ?? 0) == stock_type_id)
                     {
                         var bill = _mapper.Map<WoodBillReportDetails>(detail);
                         var str = "";

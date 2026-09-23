@@ -58,6 +58,14 @@ namespace LE.Inventory.Service.Services.Implementations
             {
                 foreach (var detail in damagedWoodDetailDto)
                 {
+                    // Rows added on the edit page carry id 0 and must be inserted.
+                    if (detail.damaged_wood_details_id <= 0)
+                    {
+                        DamagedWoodDetail damagedWoodDetail = new DamagedWoodDetail();
+                        _damagedWoodDetailAssembler.copy(damagedWoodDetail, detail);
+                        _damagedWoodDetailRepository.insert(damagedWoodDetail);
+                        continue;
+                    }
                     var damagedData = _damagedWoodDetailRepository.getById(detail.damaged_wood_details_id);
                     if (damagedData == null)
                         throw new ItemNotFoundException("Damaged Wood Detail not found.");

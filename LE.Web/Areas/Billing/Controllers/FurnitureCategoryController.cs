@@ -113,9 +113,12 @@ namespace LE.Web.Areas.Billing.Controllers
         {
             try
             {
-                var furnitureCategories = _furnitureCategoryRepo.getQueryable().ToList();
-
                 var categoryDetails = _furnitureCategoryRepo.getById(furniture_category_id);
+                if (categoryDetails == null)
+                {
+                    AlertHelper.setMessage(this, "Furniture Category not found. It may have been deleted.", messageType.error);
+                    return RedirectToAction("index");
+                }
                 var furnitureCategoryModel = getModelFrom(categoryDetails);
                 return View(furnitureCategoryModel);
             }

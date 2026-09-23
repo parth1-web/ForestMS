@@ -63,6 +63,7 @@
                                     </tr>
                                 </tbody>
                             </table>
+                            <button type="button" id="add-row" class="btn btn-success btn-sm"><i class="fa fa-plus"></i> Add Row</button>
                             <div class="row">
                                 <div class="col-md-8">
                                     @Html.TextAreaFor(a => a.remarks, new { @class = "form-control", required = "required", @id = "remarks", placeholder = "Remarks" })
@@ -135,38 +136,49 @@
             $("#type" + $cloneSrnNo).change();
 
 
+            function addJournalRow($drRow) {
+                if (!$drRow || $drRow.length === 0) {
+                    return;
+                }
+                $isFirstRow = parseInt($drRow.data("rowid"));
+                $clonedRow = $drRow.clone();
+
+                if ($cloneSrnNo == 1 || $isFirstRow == 1) {
+                    $clonedRow.append("<td><a href='#' class='btn btn-danger btn-md delete-row'><i class='fa fa-trash'></i></a></td>");
+                }
+                $cloneSrnNo = $cloneSrnNo + 1;
+                $clonedRow.find('td > .type').each(function (index, item) {
+                    //set new select to value of old select
+                    $(item).val($drRow.find('td > .type').val());
+                });
+                $clonedRow.find(".type").attr("id", "type" + $cloneSrnNo);
+                $clonedRow.find(".type").attr("data-srno", $cloneSrnNo);
+                $clonedRow.find(".type").attr("name", "name[" + $cloneSrnNo + "]");
+                $clonedRow.find(".drAmt").attr("id", "dr_amount" + $cloneSrnNo);
+                $clonedRow.find(".drAmt").val(0);
+                $clonedRow.find(".drAmt").attr("data-srno", $cloneSrnNo);
+                $clonedRow.find(".crAmt").attr("data-srno", $cloneSrnNo);
+                $clonedRow.find(".crAmt").val(0);
+                $clonedRow.find(".crAmt").attr("id", "cr_amount" + $cloneSrnNo);
+                $clonedRow.find(".ledger_id").attr("id", "ledger_id" + $cloneSrnNo);
+                $clonedRow.find(".ledger_id").attr("name", "ledger_id[" + $cloneSrnNo + "]");
+                $clonedRow.attr("data-rowid", $tableRowNo + 1);
+                $clonedRow.find(".type").removeAttr('disabled')
+                $('#journal> tbody:last-child').append($clonedRow);
+                $clonedRow.find("span").remove();
+                $clonedRow.find("select").select2();
+                $count = $count + 1;
+            }
+
             $(document).on("keyup", ".drAmt,.crAmt", function (e) {
                 if (e.keyCode == 13 || e.which == 13) {
-                    $drRow = $(this).closest("tr");
-                    $isFirstRow = parseInt($drRow.data("rowid"));
-                    $clonedRow = $drRow.clone();
-
-                    if ($cloneSrnNo == 1 || $isFirstRow == 1) {
-                        $clonedRow.append("<td><a href='#' class='btn btn-danger btn-md delete-row'><i class='fa fa-trash'></i></a></td>");
-                    }
-                    $cloneSrnNo = $cloneSrnNo + 1;
-                    $clonedRow.find('td > .type').each(function (index, item) {
-                        //set new select to value of old select
-                        $(item).val($drRow.find('td > .type').val());
-                    });
-                    $clonedRow.find(".type").attr("id", "type" + $cloneSrnNo);
-                    $clonedRow.find(".type").attr("data-srno", $cloneSrnNo);
-                    $clonedRow.find(".type").attr("name", "name[" + $cloneSrnNo + "]");
-                    $clonedRow.find(".drAmt").attr("id", "dr_amount" + $cloneSrnNo);
-                    $clonedRow.find(".drAmt").val(0);
-                    $clonedRow.find(".drAmt").attr("data-srno", $cloneSrnNo);
-                    $clonedRow.find(".crAmt").attr("data-srno", $cloneSrnNo);
-                    $clonedRow.find(".crAmt").val(0);
-                    $clonedRow.find(".crAmt").attr("id", "cr_amount" + $cloneSrnNo);
-                    $clonedRow.find(".ledger_id").attr("id", "ledger_id" + $cloneSrnNo);
-                    $clonedRow.find(".ledger_id").attr("name", "ledger_id[" + $cloneSrnNo + "]");
-                    $clonedRow.attr("data-rowid", $tableRowNo + 1);
-                    $clonedRow.find(".type").removeAttr('disabled')
-                    $('#journal> tbody:last-child').append($clonedRow);
-                    $clonedRow.find("span").remove();
-                    $clonedRow.find("select").select2();
-                    $count = $count + 1;
+                    addJournalRow($(this).closest("tr"));
                 }
+            });
+
+            $(document).on("click", "#add-row", function (e) {
+                e.preventDefault();
+                addJournalRow($("#journal tbody tr").last());
             });
 
             $(document).on("keyup keydown", ".drAmt", function () {
