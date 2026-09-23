@@ -73,15 +73,13 @@ namespace LE.Web
 {
     public class Startup
     {
-        [Obsolete]
-        private Microsoft.AspNetCore.Hosting.IHostingEnvironment _hostingEnvironment;
+        private Microsoft.AspNetCore.Hosting.IWebHostEnvironment _hostingEnvironment;
 
         public ILifetimeScope AutofacContainer { get; private set; }
 
         public IContainer ApplicationContainer { get; private set; }
 
-        [Obsolete]
-        public Startup(IConfiguration configuration, Microsoft.AspNetCore.Hosting.IHostingEnvironment hostingEnvironment)
+        public Startup(IConfiguration configuration, Microsoft.AspNetCore.Hosting.IWebHostEnvironment hostingEnvironment)
         {
             Configuration = configuration;
             _hostingEnvironment = hostingEnvironment;
@@ -296,7 +294,9 @@ $$ LANGUAGE plpgsql;
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
             });
+#pragma warning disable CS0618 // Rotativa 1.1.1 only exposes the obsolete IHostingEnvironment Setup overload
             RotativaConfiguration.Setup((Microsoft.AspNetCore.Hosting.IHostingEnvironment)env, "Rotativa");
+#pragma warning restore CS0618
         }
 
         private void RegisterElements(IServiceCollection services)

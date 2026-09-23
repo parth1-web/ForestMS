@@ -9,10 +9,4 @@
     <ProjectReference Include="..\LE.Inventory.Common\LE.Inventory.Common.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="System">
-      <HintPath>System</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>

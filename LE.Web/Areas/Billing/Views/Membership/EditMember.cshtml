@@ -9,6 +9,7 @@
 	<div class="card mb-3">
 		<div class="card-body">
 			<form class="form-horizontal" method="post" action="/billing/membership/members/edit" enctype="multipart/form-data">
+				@Html.AntiForgeryToken()
 				@Html.HiddenFor(a=>a.MemberId)
 				@Html.HiddenFor(a=>a.Membership.MembershipCode)
 				@Html.HiddenFor(a=>a.MembershipId)

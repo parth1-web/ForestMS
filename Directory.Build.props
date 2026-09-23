@@ -1,0 +1,9 @@
+<Project>
+  <!-- Solution-wide build settings for ForestMS. -->
+  <PropertyGroup>
+    <!-- NETSDK1138 (target framework out of support) cannot be fixed without
+         the planned .NET 3.1 -> LTS 8.x migration, so it is suppressed here
+         instead of repeating once per project. -->
+    <NoWarn>$(NoWarn);NETSDK1138</NoWarn>
+  </PropertyGroup>
+</Project>

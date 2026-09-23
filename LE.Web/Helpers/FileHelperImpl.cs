@@ -55,8 +55,11 @@ namespace LE.Web.Helpers
                 file_name = plainFilePrefix + random.Next(1, 1232384943) + Path.GetExtension(file.FileName);
             }
 
-            var filePath = Path.Combine(_hostingEnvironment.WebRootPath, "images/custom");
-            filePath = Path.Combine(filePath, file_name);
+            // The upload folder is git-ignored, so fresh clones/deployments lack
+            // it — ensure it exists or every image save throws DirectoryNotFound.
+            var uploadDir = Path.Combine(_hostingEnvironment.WebRootPath, "images/custom");
+            Directory.CreateDirectory(uploadDir);
+            var filePath = Path.Combine(uploadDir, file_name);
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
                 using (MagickImage magickImage = new MagickImage(file.OpenReadStream()))
