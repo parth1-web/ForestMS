@@ -607,9 +607,14 @@ namespace LE.Web.Areas.Accounting.Controllers
 			if (vm.FinancialYear == null)
 				throw new Exception("No fiscal year covers the closing date " + vm.ClosingDate + ". Please create it under Administration > Fiscal Year Setup first.");
 
-			var computed = await computeYearCloseResult(vm);
-			vm.Type = computed.Type;
-			vm.Amount = computed.Amount;
+			// The P&L figure belongs to the selected ledger's closing voucher,
+			// so compute it only once a ledger is chosen.
+			if (vm.LedgerId > 0)
+			{
+				var computed = await computeYearCloseResult(vm);
+				vm.Type = computed.Type;
+				vm.Amount = computed.Amount;
+			}
 
 			// Closing-voucher preview: same side rule CloseYear will apply.
 			if (vm.LedgerId > 0)
