@@ -41,7 +41,7 @@
 					</div>
 					<div class="col-2">
 						<label>This Year @Model.Type</label>
-						<input type="number" class="form-control" asp-for="Amount" value="@Model.Amount" />
+						<input type="number" class="form-control" asp-for="Amount" value="@Model.Amount" readonly title="Auto-computed from the books on every load and at closing time" />
 					</div>
 					<div class="col-2">
 						<br>
@@ -55,24 +55,49 @@
 			</div>
 			<div class="card-body">
 				<div class="card-header">
+					<i class="fa fa-file-text"></i>
+					Closing Voucher Preview
+				</div>
+				@if (Model.LedgerId > 0)
+				{
+					<p class="text-muted">This exact voucher will be posted when you close @Model.FinancialYear.Code.</p>
+					<table class="table table-bordered">
+						<thead><tr><th>Ledger</th><th>Dr</th><th>Cr</th><th>Remarks</th></tr></thead>
+						<tbody>
+							<tr>
+								<td>@Model.PreviewLedgerName</td>
+								<td>@(Model.PreviewSide == "Dr" ? Model.Amount.ToString() : "")</td>
+								<td>@(Model.PreviewSide == "Cr" ? Model.Amount.ToString() : "")</td>
+								<td>@Model.PreviewRemarks</td>
+							</tr>
+						</tbody>
+					</table>
+				}
+				else
+				{
+					<p class="text-muted">Select a ledger above and click "Load Profit & Loss" to preview the exact closing voucher.</p>
+				}
+			</div>
+			<div class="card-body">
+				<div class="card-header">
 					<i class="fa fa-info-circle"></i>
 					Agreement
 				</div>
 
-				<ul>
-					<li>
-						I ensure that the current running fiscal year is <kbd>@Model.FinancialYear.Code</kbd> is correct.
-					</li>
-					<li>
-						I ensure that the <kbd>OPENING</kbd> and <kbd>CLOSING</kbd> stock is correct.
-					</li>
-					<li>
-						I ensure that the <kbd>@Model.Type</kbd> with amount <kbd>@Model.Amount</kbd> is correct.
-					</li>
-					<li>
-						I have checked the <kbd>Profit & Loss</kbd> report and it is correct.
-					</li>
-				</ul>
+			<ul style="list-style:none; padding-left:0;">
+				<li>
+					<label><input type="checkbox" asp-for="AgreeFiscalYear" required /> I ensure that the current running fiscal year is <kbd>@Model.FinancialYear.Code</kbd> is correct.</label>
+				</li>
+				<li>
+					<label><input type="checkbox" asp-for="AgreeStocks" required /> I ensure that the <kbd>OPENING</kbd> and <kbd>CLOSING</kbd> stock is correct.</label>
+				</li>
+				<li>
+					<label><input type="checkbox" asp-for="AgreeAmount" required /> I ensure that the <kbd>@Model.Type</kbd> with amount <kbd>@Model.Amount</kbd> is correct.</label>
+				</li>
+				<li>
+					<label><input type="checkbox" asp-for="AgreeChecked" required /> I have checked the <kbd>Profit & Loss</kbd> report and it is correct.</label>
+				</li>
+			</ul>
 				<hr>
 
 				<button class="btn btn-info" type="submit">

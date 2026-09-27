@@ -32,6 +32,8 @@ namespace LE.Account.Infrastructure.Dto
         [Required]
         public string code { get; set; }
 
+        public string type { get; set; }
+
         [Required]
         public DateTime created_date { get; set; } = DateTime.Now;
 

@@ -23,5 +23,8 @@ namespace LE.Web.Areas.Accounting.Models
 
         [Display(Name = "Ledger Code")]
         public string code { set; get; }
+
+        [Display(Name = "Ledger Type")]
+        public string type { get; set; }
     }
 }

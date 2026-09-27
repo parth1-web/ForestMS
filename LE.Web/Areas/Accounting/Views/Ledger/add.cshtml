@@ -63,6 +63,14 @@
                                 <p class="text-danger">@Html.ValidationMessageFor(a => a.balance_type)</p>
                             </div>
 
+                            <div class="form-group row">
+                                @Html.LabelFor(a => a.type, new { @class = "col-md-3 control-label" })
+                                <div class="col-md-9">
+                                    @Html.DropDownListFor(a => a.type, new SelectList(new[] { new { Value = "", Text = "Regular" }, new { Value = "Trading", Text = "Trading" } }, "Value", "Text"), new { @class = "form-control" })
+                                </div>
+                                <p class="text-danger">@Html.ValidationMessageFor(a => a.type)</p>
+                            </div>
+
 
 
 

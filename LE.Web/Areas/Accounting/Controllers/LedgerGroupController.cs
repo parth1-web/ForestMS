@@ -1,4 +1,5 @@
 using AutoMapper;
+using LE.Account.Common.Enums;
 using LE.Account.Entities;
 using LE.Account.Infrastructure.Repository.Interface;
 using LE.Account.Service.Services.Interface;
@@ -82,7 +83,8 @@ namespace LE.Web.Areas.Accounting.Controllers
                     {
                         name = ledgerGroupModel.name,
                         parent_ledger_group_id = ledgerGroupModel.parent_ledger_group_id,
-                        ledger_group_type = ledgerGroupModel.ledger_group_type
+                        ledger_group_type = ledgerGroupModel.ledger_group_type,
+                        group_type_name = groupTypeDisplayName(ledgerGroupModel.ledger_group_type)
                     };
                     _ledgerGroupService.save(ledgerGroup);
                     AlertHelper.setMessage(this, "Ledger Group saved successfully.", messageType.success);
@@ -95,6 +97,21 @@ namespace LE.Web.Areas.Accounting.Controllers
                 return RedirectToAction("index");
             }
             return View(ledgerGroupModel);
+        }
+
+        // Display names used by report headers (coa_structure.ParentName),
+        // matching the seeded convention (Assets, Liabilities, ...).
+        private string groupTypeDisplayName(LedgerGroupType type)
+        {
+            switch (type)
+            {
+                case LedgerGroupType.asset: return "Assets";
+                case LedgerGroupType.liability: return "Liabilities";
+                case LedgerGroupType.income: return "Income";
+                case LedgerGroupType.expenses: return "Expenses";
+                case LedgerGroupType.nominal: return "Nominal";
+                default: return type.ToString();
+            }
         }
 
         [HttpGet]
@@ -149,12 +166,18 @@ namespace LE.Web.Areas.Accounting.Controllers
             {
                 if (ModelState.IsValid)
                 {
+                    // Never clobber an existing display name; only fill blanks.
+                    var existingGroup = _ledgerGroupRepo.getById(ledgerGroupModel.ledger_group_id);
+                    var displayName = existingGroup != null && !string.IsNullOrWhiteSpace(existingGroup.group_type_name)
+                        ? existingGroup.group_type_name
+                        : groupTypeDisplayName(ledgerGroupModel.ledger_group_type);
                     LedgerGroup ledgerGroup = new LedgerGroup()
                     {
                         ledger_group_id = ledgerGroupModel.ledger_group_id,
                         name = ledgerGroupModel.name,
                         parent_ledger_group_id = ledgerGroupModel.parent_ledger_group_id,
                         ledger_group_type = ledgerGroupModel.ledger_group_type,
+                        group_type_name = displayName,
                         code = ledgerGroupModel.code
 
                     };

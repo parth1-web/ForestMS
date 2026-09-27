@@ -34,6 +34,26 @@ namespace LE.Account.Service.Services.FinancialYearService
 			return await connection.QueryFirstOrDefaultAsync<FinancialYear>("SELECT * FROM financial_year WHERE CAST(StartDate AS DATE) <= @date AND CAST(EndDate AS DATE) >= @date", new { date });
 		}
 
+		/// <summary>
+		/// Which side the year-close voucher posts to the selected ledger.
+		/// Asset/expense ledgers are debited, everything else credited.
+		/// Compares the group TYPE id (never the display name: names are
+		/// pluralized/free-text and string matching silently misfires).
+		/// Shared by CloseYear and the year-close preview so both agree.
+		/// </summary>
+		public async Task<bool> IsCloseDebitAsync(long ledgerId)
+		{
+			await using var conn = _connectionProvider.GetDbConnection();
+			return await IsCloseDebitAsync(ledgerId, conn, null);
+		}
+
+		private async Task<bool> IsCloseDebitAsync(long ledgerId, Npgsql.NpgsqlConnection conn, Npgsql.NpgsqlTransaction tx)
+		{
+			const string sql = "SELECT lg.ledger_group_type FROM ledger_group lg INNER JOIN ledger l ON lg.ledger_group_id = l.ledger_group_id WHERE l.ledger_id = @ledgerId";
+			var groupType = await conn.QueryFirstOrDefaultAsync<int?>(new CommandDefinition(sql, new { ledgerId }, tx));
+			return groupType == (int)LedgerGroupType.asset || groupType == (int)LedgerGroupType.expenses;
+		}
+
 		public async Task CloseYear(FiscalYearCloseDto dto)
 		{
 			// P1/B13 fix: this whole flow ran on a Dapper connection separate from the EF
@@ -51,16 +71,12 @@ namespace LE.Account.Service.Services.FinancialYearService
 				await EnsureOlderFiscalYearIsClosed(conn, connTx);
 				var currentYear = await UpdateForThisYear(conn, connTx, dto);
 
-				// P1/B13 fix: the code compared the SQL *string literal* instead of the
-				// executed result, so the P/L amount was always posted as a credit. The
-				// group type is now actually queried and used.
-				var ledgerTypeSql = "SELECT lg.group_type_name from ledger_group as lg INNER JOIN ledger as l ON lg.ledger_group_id = l.ledger_group_id WHERE l.ledger_id = @ledgerId";
-				var ledgerTypeName = await conn.QueryFirstOrDefaultAsync<string>(new CommandDefinition(ledgerTypeSql, new { ledgerId = dto.LedgerId }, connTx));
+				var debitSelectedLedger = await IsCloseDebitAsync(dto.LedgerId, conn, connTx);
 
 				var transactionDto = new TransactionDto();
 				transactionDto.remarks = "Being year closed";
 
-				if (string.Equals(ledgerTypeName, "asset", StringComparison.OrdinalIgnoreCase) || string.Equals(ledgerTypeName, "expenses", StringComparison.OrdinalIgnoreCase))
+				if (debitSelectedLedger)
 				{
 					transactionDto.addDebitData(new LedgerTransactionDto()
 					{

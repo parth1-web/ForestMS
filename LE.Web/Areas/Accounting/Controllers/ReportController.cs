@@ -579,17 +579,22 @@ namespace LE.Web.Areas.Accounting.Controllers
 		[Route("year-close")]
 		public async Task<IActionResult> YearClose(YearCloseVm vm)
 		{
-			var dateConverterService = DateConverterFactory.getDateConverterService();
-			var closingEnglishDate = DateTime.Now.Date;
+			try
+			{
+				return View(await buildYearCloseVm(vm));
+			}
+			catch (Exception e)
+			{
+				AlertHelper.setMessage(this, friendlyYearCloseError(e), messageType.error);
+				return Redirect("/");
+			}
+		}
 
-			if (!string.IsNullOrEmpty(vm.ClosingDate))
-			{
-				closingEnglishDate = dateConverterService.ToAD(vm.ClosingDate).getFormattedDate();
-			}
-			else
-			{
+		private async Task<YearCloseVm> buildYearCloseVm(YearCloseVm vm)
+		{
+			var dateConverterService = DateConverterFactory.getDateConverterService();
+			if (string.IsNullOrEmpty(vm.ClosingDate))
 				vm.ClosingDate = dateConverterService.ToBS(DateTime.Now.Date, NepaliDate.DateFormats.yMd).getFormattedDate();
-			}
 
 			var groups = _ledgerGroupRepo.getQueryable().Where(x =>
 					x.ledger_group_type == LedgerGroupType.asset || x.ledger_group_type == LedgerGroupType.liability)
@@ -597,33 +602,70 @@ namespace LE.Web.Areas.Accounting.Controllers
 
 			vm.Ledgers = await _ledgerRepo.getQueryable().Where(x => groups.Contains(x.ledger_group_id)).ToListAsync();
 
-			vm.FinancialYear = await _financialYearService.GetFiscalYearByDate(closingEnglishDate);
+			vm.FinancialYear = await _financialYearService.GetFiscalYearByDate(
+				dateConverterService.ToAD(vm.ClosingDate).getFormattedDate());
+			if (vm.FinancialYear == null)
+				throw new Exception("No fiscal year covers the closing date " + vm.ClosingDate + ". Please create it under Administration > Fiscal Year Setup first.");
+
+			var computed = await computeYearCloseResult(vm);
+			vm.Type = computed.Type;
+			vm.Amount = computed.Amount;
+
+			// Closing-voucher preview: same side rule CloseYear will apply.
+			if (vm.LedgerId > 0)
+			{
+				var previewLedger = vm.Ledgers.FirstOrDefault(l => l.ledger_id == vm.LedgerId);
+				vm.PreviewLedgerName = previewLedger != null ? previewLedger.name : "Ledger #" + vm.LedgerId;
+				vm.PreviewSide = await _financialYearService.IsCloseDebitAsync(vm.LedgerId) ? "Dr" : "Cr";
+				vm.PreviewRemarks = "Being year closed";
+			}
+			return vm;
+		}
+
+		// Shared by the GET page and the POST close: identical P&L math, so the
+		// closed figure can never differ from the displayed one.
+		private async Task<(string Type, decimal Amount)> computeYearCloseResult(YearCloseVm vm)
+		{
+			var dateConverterService = DateConverterFactory.getDateConverterService();
+			var closingEnglishDate = string.IsNullOrEmpty(vm.ClosingDate)
+				? DateTime.Now.Date
+				: dateConverterService.ToAD(vm.ClosingDate).getFormattedDate();
+			var fiscalYear = await _financialYearService.GetFiscalYearByDate(closingEnglishDate);
+			if (fiscalYear == null)
+				throw new Exception("No fiscal year covers the closing date " + (vm.ClosingDate ?? "") + ". Please create it under Administration > Fiscal Year Setup first.");
 
 			var raw = await GetProfitAndLossData(vm: new AccountingReportVm()
 			{
 				OpeningBalance = vm.OpeningStock,
 				ClosingBalance = vm.ClosingStock
-			}, fromDate: vm.FinancialYear.StartDate.Date, vm.FinancialYear.EndDate.Date);
+			}, fromDate: fiscalYear.StartDate.Date, toDate: fiscalYear.EndDate.Date);
+			return applyYearCloseBalance(raw);
+		}
 
-			var dr = raw.LeftReport[0].Balance;
-			var cr = raw.RightReport[0].Balance;
+		private (string Type, decimal Amount) applyYearCloseBalance(AccountingReportVm raw)
+		{
+			var dr = raw.LeftReport.Count > 0 ? raw.LeftReport[0].Balance : 0;
+			var cr = raw.RightReport.Count > 0 ? raw.RightReport[0].Balance : 0;
 
 			var diff = dr - cr > 0 ? dr - cr : cr - dr;
 			if (dr > cr)
 			{
-				raw.RightReport[0].Balance += diff;
-				vm.Type = "Net Loss";
-				vm.Amount = diff;
+				if (raw.RightReport.Count > 0)
+					raw.RightReport[0].Balance += diff;
+				return ("Net Loss", diff);
 			}
 
-			else
-			{
+			if (raw.LeftReport.Count > 0)
 				raw.LeftReport[0].Balance += diff;
-				vm.Type = "Net Profit";
-				vm.Amount = diff;
-			}
+			return ("Net Profit", diff);
+		}
 
-			return View(vm);
+		private string friendlyYearCloseError(Exception e)
+		{
+			var msg = e.Message ?? "";
+			if (msg.Contains("No running financial year"))
+				return "There is no running fiscal year — it may already be closed. Please check Fiscal Year Setup under Administration.";
+			return e.Message;
 		}
 
 		[HttpPost]
@@ -634,8 +676,19 @@ namespace LE.Web.Areas.Accounting.Controllers
 			{
 				if (vm.LedgerId == 0)
 				{
-					throw new Exception("Please select ledger");
+					throw new Exception("Please select the ledger that will carry the profit or loss.");
 				}
+				if (!vm.AgreeFiscalYear || !vm.AgreeStocks || !vm.AgreeAmount || !vm.AgreeChecked)
+				{
+					AlertHelper.setMessage(this, "Please tick all four agreement confirmations before closing the year.", messageType.error);
+					return View(await buildYearCloseVm(vm));
+				}
+
+				// Never trust the typed Amount/Type: recompute from the books so the
+				// closed figure always matches the displayed P&L.
+				var computed = await computeYearCloseResult(vm);
+				vm.Type = computed.Type;
+				vm.Amount = computed.Amount;
 
 				var dateConverterService = DateConverterFactory.getDateConverterService();
 				var dto = new FiscalYearCloseDto()
@@ -653,7 +706,7 @@ namespace LE.Web.Areas.Accounting.Controllers
 			}
 			catch (Exception e)
 			{
-				AlertHelper.setMessage(this, e.Message, messageType.error);
+				AlertHelper.setMessage(this, friendlyYearCloseError(e), messageType.error);
 				return Redirect("/accounting/report/year-close");
 			}
 		}
@@ -877,13 +930,19 @@ namespace LE.Web.Areas.Accounting.Controllers
 				Balance = vm.ClosingBalance,
 				PreviousBalance = 0,
 			});
-			vm.LeftReport[0].Balance += vm.OpeningBalance;
-			vm.RightReport[0].Balance += vm.ClosingBalance;
+			if (vm.LeftReport.Count > 0)
+				vm.LeftReport[0].Balance += vm.OpeningBalance;
+			if (vm.RightReport.Count > 0)
+				vm.RightReport[0].Balance += vm.ClosingBalance;
 
-			if (vm.LeftReport[0].Balance < vm.RightReport[0].Balance)
+			var leftBalance = vm.LeftReport.Count > 0 ? vm.LeftReport[0].Balance : vm.OpeningBalance;
+			var rightBalance = vm.RightReport.Count > 0 ? vm.RightReport[0].Balance : vm.ClosingBalance;
+
+			if (leftBalance < rightBalance)
 			{
-				var balance = vm.RightReport[0].Balance - vm.LeftReport[0].Balance;
-				vm.LeftReport[0].Balance += balance;
+				var balance = rightBalance - leftBalance;
+				if (vm.LeftReport.Count > 0)
+					vm.LeftReport[0].Balance += balance;
 				vm.LeftReport.Add(new AccountingReportVo()
 				{
 					Name = "Gross Profit",
@@ -896,8 +955,9 @@ namespace LE.Web.Areas.Accounting.Controllers
 			}
 			else
 			{
-				var balance = vm.LeftReport[0].Balance - vm.RightReport[0].Balance;
-				vm.RightReport[0].Balance += balance;
+				var balance = leftBalance - rightBalance;
+				if (vm.RightReport.Count > 0)
+					vm.RightReport[0].Balance += balance;
 				vm.RightReport.Add(new AccountingReportVo()
 				{
 					Name = "Gross Loss",
@@ -985,6 +1045,13 @@ public class YearCloseVm
 	public decimal ClosingStock { get; set; }
 	public string Type { get; set; }
 	public decimal Amount { get; set; }
+	public bool AgreeFiscalYear { get; set; }
+	public bool AgreeStocks { get; set; }
+	public bool AgreeAmount { get; set; }
+	public bool AgreeChecked { get; set; }
+	public string PreviewLedgerName { get; set; }
+	public string PreviewSide { get; set; }
+	public string PreviewRemarks { get; set; }
 	public List<Ledger> Ledgers = new List<Ledger>();
 	public SelectList GetLedgerOptions() =>
 		new SelectList(Ledgers, nameof(Ledger.ledger_id), nameof(Ledger.name), LedgerId);

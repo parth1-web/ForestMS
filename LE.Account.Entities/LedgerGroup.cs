@@ -27,6 +27,10 @@ namespace LE.Account.Entities
         [Required]
         public string code { get; set; }
 
+        // Display name used by report headers (coa_structure.ParentName).
+        // Auto-filled from ledger_group_type when blank; never overwritten.
+        public string group_type_name { get; set; }
+
         [Required]
         public LedgerGroupType ledger_group_type { get; set; }
 

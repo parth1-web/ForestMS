@@ -41,6 +41,10 @@ namespace LE.Account.Entities
         }
         [Required]
         public string code { get; set; }
+
+        // Maps the existing ledger.type column (varchar(10)). Used by reports:
+        // a ledger flagged "Trading" flows into the Trading A/C section.
+        public string type { get; set; }
         public DateTime created_date { get; set; } = DateFunctionsFactory.getDateFunctionsService().getDateTimeByTimeZone();
         public string nep_created_date { get; set; }
 
