@@ -25,7 +25,7 @@ namespace LE.Account.Service.Services.FinancialYearService
 		public async Task<FinancialYear> GetRunningFinancialYear()
 		{
 			await using var connection = _connectionProvider.GetDbConnection();
-			return await connection.QueryFirstOrDefaultAsync<FinancialYear>("SELECT * FROM financial_year WHERE Running = 1");
+			return await connection.QueryFirstOrDefaultAsync<FinancialYear>("SELECT * FROM financial_year WHERE Running = TRUE");
 		}
 
 		public async Task<FinancialYear> GetFiscalYearByDate(DateTime date)
@@ -135,7 +135,7 @@ namespace LE.Account.Service.Services.FinancialYearService
 				throw new Exception("Please close financial year on the last day of the year");
 			}
 
-			var updateQuery = "UPDATE financial_year SET OpeningStock = @OpeningStock, ClosingStock = @ClosingStock, Type = @Type, PlAmount = @PlAmount WHERE Running = 1";
+			var updateQuery = "UPDATE financial_year SET OpeningStock = @OpeningStock, ClosingStock = @ClosingStock, Type = @Type, PlAmount = @PlAmount WHERE Running = TRUE";
 			await conn.ExecuteAsync(new CommandDefinition(updateQuery, new
 			{
 				OpeningStock = dto.OpeningStock,
@@ -145,7 +145,7 @@ namespace LE.Account.Service.Services.FinancialYearService
 			}, tx));
 
 			var markAsClosedQuery =
-				"UPDATE financial_year SET Running = 0, Closed = 1, ClosedDate = @ClosedDate WHERE Running = 1";
+				"UPDATE financial_year SET Running = FALSE, Closed = TRUE, ClosedDate = @ClosedDate WHERE Running = TRUE";
 			await conn.ExecuteAsync(new CommandDefinition(markAsClosedQuery, new { ClosedDate = currentYear.EndDate }, tx));
 
 			// P1/B13 fix: assumed the next fiscal year is exactly 'Id + 1' and blindly set it
@@ -163,7 +163,7 @@ namespace LE.Account.Service.Services.FinancialYearService
 				throw new Exception("The next financial year is already closed. Please create a new fiscal year before closing this one.");
 			}
 
-			var markAsRunningQuery = "UPDATE financial_year SET Running = 1 WHERE Id = @Id";
+			var markAsRunningQuery = "UPDATE financial_year SET Running = TRUE WHERE Id = @Id";
 			await conn.ExecuteAsync(new CommandDefinition(markAsRunningQuery, new { Id = nextYear.Id }, tx));
 
 			return currentYear;
@@ -171,7 +171,7 @@ namespace LE.Account.Service.Services.FinancialYearService
 
 		private async Task<FinancialYear> GetRunningFinancialYear(Npgsql.NpgsqlConnection conn, Npgsql.NpgsqlTransaction tx)
 		{
-			return await conn.QueryFirstOrDefaultAsync<FinancialYear>(new CommandDefinition("SELECT * FROM financial_year WHERE Running = 1", transaction: tx));
+			return await conn.QueryFirstOrDefaultAsync<FinancialYear>(new CommandDefinition("SELECT * FROM financial_year WHERE Running = TRUE", transaction: tx));
 		}
 	}
 }
